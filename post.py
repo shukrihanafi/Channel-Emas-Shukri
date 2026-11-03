@@ -63,8 +63,8 @@ def wa_auto_for(mode):
     return os.getenv("WA_ENABLED") == "1" and whapi.enabled() and mode.split("-")[0] in modes
 
 
-def send(text, image=None, label="post"):
-    text = f"{text.rstrip()}\n\n{CLOSING}"
+def send(text, image=None, label="post", closing=True):
+    text = f"{text.rstrip()}\n\n{CLOSING}" if closing else text.rstrip()
     os.makedirs(OUT, exist_ok=True)
     stamp = now_my().strftime("%Y%m%d-%H%M%S")
     open(f"{OUT}/{stamp}-{label}.txt", "w", encoding="utf-8").write(text)
@@ -239,7 +239,8 @@ def mode_ilmu(p, st):
     n = int(st.get("ilmu_n", 0)) + 1          # nombor siaran: 1,2,...365,366,...
     t = items[(n - 1) % len(items)]            # lepas 365 pusing balik ke entri 1
     st["ilmu_n"] = n
-    send(f"💡 Ilmu Emas #{n}: {t['tajuk']}\n\n{t['isi']}", None, "ilmu-emas")
+    # skrip sudah ada ayat ajakan sendiri di hujung, jadi tak tambah CLOSING
+    send(f"💡 ILMU #{n} - {t['tajuk']}\n\n{t['isi']}", None, "ilmu-emas", closing=False)
 
 
 USE_MALL = False  # PG Mall menyekat GitHub (403). Tukar kepada True jika akses PG Mall sudah ada.

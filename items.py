@@ -4,7 +4,9 @@ import requests
 
 UA = {"User-Agent": "Mozilla/5.0 (compatible; PGChannelBot/1.0)", "Accept": "application/json, text/html"}
 JEWEL_API = "https://api.pgjewel.my/api"
-JEWEL_SITE = "https://pgjewel.my/product/product"
+JEWEL_SITE = "https://www.pgjewel.my/product/product"
+JEWEL_RPC = "PG032390"
+MALL_RPC = "m.shukri.hanafi@gmail.com"
 # Kategori PG Jewel (cincin, rantai, loket, gelang, dll.) - dipusing bergilir
 JEWEL_CATS = [1565, 1562, 1568, 1563, 1566, 1561, 1556, 1553, 1559, 1554, 1557, 1552, 1564, 1567]
 MALL_URL = "https://pgmall.my/hotsales"
@@ -51,22 +53,16 @@ def jewel_text(d):
     skus = [s for s in d.get("sku", []) if int(s.get("quantity") or 0) > 0] or d.get("sku", [])
     lo, hi = float(d["min_price"]), float(d["max_price"])
     price = rm(lo) if lo == hi else f"{rm(lo)} - {rm(hi)}"
-    lines = [f"💎 Item PG Jewel", "", f"Item: {d['name']}", "", f"Harga: {price}", ""]
-    if skus:
-        lines.append(f"Pilihan ({skus[0].get('option_name', 'Weight, Length, Width')}):")
-        for s in skus[:6]:
-            lines.append(f"• {s['option_value_name']} = {rm(s['price'])}")
-        if len(skus) > 6:
-            lines.append(f"• dan {len(skus) - 6} pilihan lain di pautan")
-        locs = []
-        for s in skus:
-            for l in (s.get("locations") or [{"name": s.get("location")}]):
-                n = (l.get("name") or "").strip()
-                if n and n not in locs:
-                    locs.append(n)
-        if locs:
-            lines += ["", "Available At:"] + [f"• {n}" for n in locs[:6]]
-    lines += ["", f"Link: {JEWEL_SITE}/{d['product_id']}", "", "Nice kan? Dapatkan segera dekat link di atas."]
+    lines = ["💎 Item PG Jewel", "", f"Item: {d['name']}", "", f"Harga: {price}"]
+    locs = []
+    for s in skus:
+        for l in (s.get("locations") or [{"name": s.get("location")}]):
+            n = (l.get("name") or "").strip()
+            if n and n not in locs:
+                locs.append(n)
+    if locs:
+        lines += ["", "Available At:"] + [f"• {n}" for n in locs[:6]]
+    lines += ["", f"Link: {JEWEL_SITE}/{d['product_id']}?rpc={JEWEL_RPC}", "", "Nice kan? Dapatkan segera dekat link di atas."]
     return "\n".join(lines)
 
 
@@ -111,5 +107,5 @@ def mall_text(it):
     lines = ["🛒 Item PG Mall (Hotday Sale)", "", f"Item: {it['name']}", "", f"Harga: {rm(it['price'], 2)}"]
     if it["old"]:
         lines.append(f"Harga asal: {rm(it['old'], 2)}" + (f" (-{it['disc']}%)" if it["disc"] else ""))
-    lines += ["", f"Link: {it['link']}", "", "Nice kan? Dapatkan segera dekat link di atas."]
+    lines += ["", f"Link: {it['link']}?rpc={MALL_RPC}", "", "Nice kan? Dapatkan segera dekat link di atas."]
     return "\n".join(lines)

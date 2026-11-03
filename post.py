@@ -1,7 +1,7 @@
 """Bot Channel Emas - jana post & hantar ke Telegram (mod separa-auto).
 
 Guna:  python post.py <mod>
-Mod:   gap | jewel | alert | ilmu | item | item-jewel | item-mall
+Mod:   gap | jewel | alert | ilmu | item   (item-jewel / item-mall = ujian paksa)
 Env:   TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID   (DRY_RUN=1 -> simpan dalam out/ sahaja)
        ALERT_THRESHOLD (RM, lalai 3)
 """
@@ -15,7 +15,7 @@ TZ = ZoneInfo("Asia/Kuala_Lumpur")
 STATE = "data/state.json"
 OUT = "out"
 SITE = "shukriee.com"
-BELI_LINK = "https://shukriee.com/beliemas"
+CLOSING = "Klik shukriee.com sekarang untuk simpan emas!"
 BULAN = ["Jan", "Feb", "Mac", "Apr", "Mei", "Jun", "Jul", "Ogos", "Sep", "Okt", "Nov", "Dis"]
 
 
@@ -47,6 +47,7 @@ def save(path, data):
 
 # ---------- Telegram ----------
 def send(text, image=None, label="post"):
+    text = f"{text.rstrip()}\n\n{CLOSING}"
     os.makedirs(OUT, exist_ok=True)
     stamp = now_my().strftime("%Y%m%d-%H%M%S")
     open(f"{OUT}/{stamp}-{label}.txt", "w", encoding="utf-8").write(text)
@@ -55,12 +56,11 @@ def send(text, image=None, label="post"):
         print(f"--- [{label}] (DRY RUN) ---\n{text}\n[imej: {image}]\n")
         return
     base = f"https://api.telegram.org/bot{token}"
-    tag = f"📋 Post untuk Channel ({label})\n\n"
     if image:
         with open(image, "rb") as f:
             r = requests.post(f"{base}/sendPhoto", data={"chat_id": chat}, files={"photo": f}, timeout=60)
         r.raise_for_status()
-    r = requests.post(f"{base}/sendMessage", data={"chat_id": chat, "text": tag + text}, timeout=60)
+    r = requests.post(f"{base}/sendMessage", data={"chat_id": chat, "text": text}, timeout=60)
     r.raise_for_status()
 
 
@@ -159,8 +159,7 @@ def mode_alert(p, st):
         text = (
             "🚨🚨🚨 Price Alert 🚨🚨🚨\n\n"
             f"Harga emas menjunam! Turun RM{abs(diff):,.0f} daripada RM{base:,.0f} kepada RM{price:,.0f} sekarang.\n\n"
-            "Peluang untuk tambah tabung simpanan emas sekarang.\n"
-            f"Panduan simpan emas: {BELI_LINK}"
+            "Peluang untuk tambah tabung simpanan emas sekarang."
         )
     send(text, None, "price-alert")
     g["last_alert"] = price
@@ -202,11 +201,16 @@ def mode_ilmu(p, st):
         print("data/ilmu.json kosong")
         return
     t = rotate(st, "ilmu_idx", items)
-    send(f"{t['tajuk']}\n\n{t['isi']}\n\n➡️ {SITE}", None, "ilmu-emas")
+    send(f"{t['tajuk']}\n\n{t['isi']}", None, "ilmu-emas")
+
+
+USE_MALL = False  # PG Mall menyekat GitHub (403). Tukar kepada True jika akses PG Mall sudah ada.
 
 
 def source_for(dt):
-    """Siang (sebelum 6 petang) & malam bertukar ganti setiap hari: PG Jewel <-> PG Mall."""
+    """Sumber item. Kini PG Jewel sahaja; jika USE_MALL=True, siang & malam bertukar ganti setiap hari."""
+    if not USE_MALL:
+        return "jewel"
     siang = dt.hour < 18
     genap = dt.toordinal() % 2 == 0
     return "jewel" if (genap != siang) else "mall"
@@ -227,7 +231,14 @@ def _download_jpg(url, dest):
 
 def mode_item(p, st, source=None):
     source = source or source_for(now_my())
-    text, img_url = (items.jewel_item if source == "jewel" else items.mall_item)(st)
+    try:
+        text, img_url = (items.jewel_item if source == "jewel" else items.mall_item)(st)
+    except Exception as e:
+        if source != "mall":
+            raise
+        print(f"PG Mall tidak dapat dicapai ({e}); guna item PG Jewel sebagai ganti")
+        source = "jewel"
+        text, img_url = items.jewel_item(st)
     os.makedirs(OUT, exist_ok=True)
     img = _download_jpg(img_url, f"{OUT}/item.jpg") if img_url else None
     send(text, img, f"item-{source}")

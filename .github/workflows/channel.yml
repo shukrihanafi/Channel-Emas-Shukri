@@ -11,7 +11,7 @@ on:
   workflow_dispatch:
     inputs:
       mode:
-        description: "Mod (gap / jewel / alert / ilmu / item)"
+        description: "Mod (gap / jewel / alert / ilmu / item / wa-channels)"
         required: true
         default: "gap"
 
@@ -53,6 +53,12 @@ jobs:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           ALERT_THRESHOLD: "3"
+          WHAPI_TOKEN: ${{ secrets.WHAPI_TOKEN }}
+          WA_CHANNEL_ID: ${{ secrets.WA_CHANNEL_ID }}
+          # Suis WhatsApp auto: tukar "0" kepada "1" bila sudah bersedia. Tukar kembali "0" untuk berhenti.
+          WA_ENABLED: "0"
+          # Mod yang dihantar auto ke WhatsApp Channel. "ilmu" dibiar manual (Telegram sahaja).
+          WA_AUTO_MODES: "gap,jewel,alert,item"
         run: python post.py ${{ steps.m.outputs.mode }}
       - name: Simpan state
         run: |

@@ -9,7 +9,7 @@ import json, os, sys
 from datetime import datetime
 from zoneinfo import ZoneInfo
 import requests
-import pgfetch, card, items, whapi
+import pgfetch, pgitems, card, items, whapi
 
 TZ = ZoneInfo("Asia/Kuala_Lumpur")
 STATE = "data/state.json"
@@ -157,17 +157,22 @@ def mode_gap(p, st):
 
 
 def mode_jewel(p, st):
-    j, ts = p["jewel"], fmt_dt(now_my())
+    j, nonpg, ts = p["jewel"], p.get("nonpg") or {}, fmt_dt(now_my())
     text = (
-        "💎 Harga Emas PG Jewel (Barang Kemas)\n\n"
+        "💎 Harga Emas PG Jewel (Barang Kemas) & Non-PG Gold Buyback\n\n"
         f"PG Jewel (Sell)\nEmas 999 = RM {j['999']['sell']:,.0f}\nEmas 916 = RM {j['916']['sell']:,.0f}\n\n"
         f"PG Jewel (Buy)\nEmas 999 = RM {j['999']['buy']:,.0f}\nEmas 916 = RM {j['916']['buy']:,.0f}\n\n"
-        f"Dikemaskini: {ts}"
     )
+    if nonpg:
+        text += (
+            f"Non-PG Gold Buyback\nEmas 999 = RM {nonpg.get('999', 0):,.0f}\nEmas 916 = RM {nonpg.get('916', 0):,.0f}\n\n"
+            "Nota: Non-PG Gold Buyback ialah harga yang Public Gold tawarkan untuk membeli emas jenama lain.\n\n"
+        )
+    text += f"Dikemaskini: {ts}"
     os.makedirs(OUT, exist_ok=True)
     img = f"{OUT}/jewel.png"
     try:
-        card.jewel_card(img, j, ts)
+        card.jewel_card(img, j, ts, nonpg)
     except Exception as e:
         print("Imej gagal:", e)
         img = None
@@ -283,6 +288,31 @@ def mode_item(p, st, source=None):
     send(text, img, f"item-{source}")
 
 
+def mode_pgitem(p, st):
+    """Item Gold Bar / Dinar / Perak daripada website Public Gold (putar kategori, elak ulang)."""
+    ts = fmt_dt(now_my())
+    catalog = pgitems.fetch_catalog()
+    it = pgitems.pick(st, catalog)
+    text = pgitems.pg_text(it, ts)
+    os.makedirs(OUT, exist_ok=True)
+    img = None
+    try:
+        from io import BytesIO
+        from PIL import Image
+        r = requests.get(it["img"], headers=pgitems.UA, timeout=30)
+        r.raise_for_status()
+        pimg = f"{OUT}/pgitem_src.png"
+        Image.open(BytesIO(r.content)).convert("RGBA").save(pimg)
+        weight, purity = pgitems.specs(it["name"])
+        img = f"{OUT}/pgitem.png"
+        card.item_card(img, pimg, {"bar": "GOLD BAR PUBLIC GOLD", "dinar": "DINAR EMAS PUBLIC GOLD",
+                                   "silver": "PERAK PUBLIC GOLD"}[it["kind"]], it["name"], it["price"], weight, purity, ts)
+    except Exception as e:
+        print("Imej item gagal:", e)
+        img = None
+    send(text, img, f"item-{it['kind']}")
+
+
 def mode_wa_channels(p, st):
     """Papar senarai Channel WhatsApp (untuk salin ID Channel) ke Telegram."""
     rows = whapi.list_channels()
@@ -292,7 +322,7 @@ def mode_wa_channels(p, st):
     tg_plain("Senarai Channel WhatsApp:\n\n" + "\n\n".join(f"{n}\nID: {i}\nPeranan: {r}" for i, n, r in rows))
 
 
-MODES = {"wa-channels": mode_wa_channels, "gap": mode_gap, "jewel": mode_jewel, "alert": mode_alert, "ilmu": mode_ilmu, "item": mode_item,
+MODES = {"wa-channels": mode_wa_channels, "gap": mode_gap, "jewel": mode_jewel, "alert": mode_alert, "ilmu": mode_ilmu, "item": mode_item, "pgitem": mode_pgitem,
          "item-jewel": lambda p, st: mode_item(p, st, "jewel"),
          "item-mall": lambda p, st: mode_item(p, st, "mall")}
 

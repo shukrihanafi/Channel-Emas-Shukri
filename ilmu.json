@@ -1,20 +1,1462 @@
 [
-  {"tajuk": "💡 Ilmu Emas #1: Kenapa simpan emas?",
-   "isi": "Nilai wang kertas boleh susut bila harga barang naik (inflasi). Emas pula sudah dipegang manusia sebagai simpanan nilai selama ribuan tahun.\n\nSimpan sedikit-sedikit, konsisten. Itu lebih penting daripada menunggu masa 'sempurna'."},
-  {"tajuk": "💡 Ilmu Emas #2: Mula dengan RM100 pun boleh",
-   "isi": "Tak perlu tunggu ada modal besar. Dengan akaun simpanan emas, awak boleh beli mengikut ringgit, bukan hanya mengikut gram.\n\nYang penting bukan jumlah pertama, tetapi kebiasaan menabung setiap bulan."},
-  {"tajuk": "💡 Ilmu Emas #3: Dollar Cost Averaging (DCA)",
-   "isi": "Beli emas dengan jumlah tetap setiap bulan. Bila harga rendah, dapat lebih gram. Bila harga tinggi, dapat kurang gram.\n\nPurata kos jadi lebih stabil dan awak tak perlu risau meneka harga."},
-  {"tajuk": "💡 Ilmu Emas #4: Emas 999 vs 916",
-   "isi": "999 = 24K, emas paling tulen, sesuai untuk simpanan.\n916 = 22K, dicampur logam lain supaya lebih keras, biasa untuk perhiasan.\n\nUntuk simpanan, pilih yang tulen. Untuk dipakai, 916."},
-  {"tajuk": "💡 Ilmu Emas #5: Beza harga jual dan beli",
-   "isi": "Setiap emas ada harga jual dan harga beli semula. Sebab itu emas lebih sesuai untuk simpanan jangka sederhana hingga panjang, bukan untuk jual beli harian.\n\nFaham ini dulu supaya jangkaan awak realistik."},
-  {"tajuk": "💡 Ilmu Emas #6: Simpan emas atau emas simpanan sahaja?",
-   "isi": "Sebelum mula, tanya diri: ini untuk apa? Dana kecemasan, nikah, pendidikan anak, atau persaraan?\n\nBila ada tujuan, mudah untuk kekal konsisten."},
-  {"tajuk": "💡 Ilmu Emas #7: Jangan simpan semua dalam satu tempat",
-   "isi": "Pelbagaikan simpanan: tunai untuk kecemasan, sebahagian dalam emas, selebihnya mengikut pelan kewangan awak.\n\nEmas ialah salah satu bahagian, bukan segala-galanya."},
-  {"tajuk": "💡 Ilmu Emas #8: Harga emas naik turun, itu biasa",
-   "isi": "Harga emas bergerak setiap hari mengikut pasaran dunia. Turun sehari dua tidak bermakna salah.\n\nLihat gambar besar dan simpan dengan tenang."},
-  {"tajuk": "💡 Ilmu Emas #9: Tabiat kecil, hasil besar",
-   "isi": "RM10 sehari = RM300 sebulan. Kalau disimpan dalam emas secara konsisten, hujung tahun nanti awak ada simpanan yang nyata.\n\nMula hari ini, bukan 'nanti'."}
+ {
+  "tajuk": "Apa itu emas?",
+  "isi": "Emas ialah logam berharga yang dihargai manusia sejak ribuan tahun. Ia tidak berkarat, tidak mereput dan dikenali di seluruh dunia."
+ },
+ {
+  "tajuk": "Kenapa emas dianggap simpanan nilai?",
+  "isi": "Emas diterima di hampir semua negara dan nilainya tidak bergantung kepada satu syarikat atau bank. Itu sebab ramai menyimpannya untuk jangka panjang."
+ },
+ {
+  "tajuk": "Emas dan inflasi",
+  "isi": "Bila harga barang naik, nilai wang tunai boleh susut. Emas sering digunakan untuk membantu mengekalkan kuasa beli jangka panjang, walaupun harganya turut naik turun."
+ },
+ {
+  "tajuk": "1 ons troy = berapa gram?",
+  "isi": "Harga emas dunia dikira dalam ons troy. 1 ons troy bersamaan 31.1035 gram, bukan 28 gram seperti ons biasa."
+ },
+ {
+  "tajuk": "Gram: unit paling biasa di Malaysia",
+  "isi": "Di Malaysia kita lazimnya beli dan jual emas ikut gram. Kenal pasti harga per gram dahulu sebelum membuat keputusan."
+ },
+ {
+  "tajuk": "Emas tidak berkarat",
+  "isi": "Emas tulen tidak berkarat dan tidak hilang kilauannya walaupun bertahun-tahun. Sebab itu emas lama masih berkilau apabila dijumpai semula."
+ },
+ {
+  "tajuk": "Emas sangat padat",
+  "isi": "Emas sangat berat untuk saiznya. Jongkong kecil pun sudah terasa berat di tapak tangan."
+ },
+ {
+  "tajuk": "Satu gram boleh jadi lembaran luas",
+  "isi": "Emas sangat mulur. Satu gram boleh ditempa menjadi kepingan nipis yang meliputi kira-kira satu meter persegi."
+ },
+ {
+  "tajuk": "Emas bukan hanya untuk perhiasan",
+  "isi": "Emas juga digunakan dalam elektronik kerana mengalirkan elektrik dengan baik dan tidak mudah berkarat."
+ },
+ {
+  "tajuk": "Bank pusat pun simpan emas",
+  "isi": "Bukan hanya individu. Banyak bank pusat di dunia turut menyimpan emas dalam rizab mereka."
+ },
+ {
+  "tajuk": "Harga emas dunia dalam USD",
+  "isi": "Harga emas global dinyatakan dalam dolar Amerika. Kadar tukaran ringgit turut mempengaruhi harga dalam RM."
+ },
+ {
+  "tajuk": "Kenapa harga emas berubah setiap hari?",
+  "isi": "Harga bergerak mengikut permintaan dan penawaran dunia, kadar faedah, nilai dolar dan keadaan ekonomi. Perubahan harian itu biasa."
+ },
+ {
+  "tajuk": "Emas bukan jalan cepat kaya",
+  "isi": "Emas sesuai sebagai simpanan jangka sederhana hingga panjang. Ia bukan jalan pintas untuk untung besar dalam masa singkat."
+ },
+ {
+  "tajuk": "Emas ada pelbagai bentuk",
+  "isi": "Ada jongkong, syiling atau wafer, barang kemas dan akaun simpanan emas. Setiap satu ada kelebihan dan kegunaan berbeza."
+ },
+ {
+  "tajuk": "Nombor atom emas",
+  "isi": "Emas ialah unsur nombor 79 dalam jadual berkala, bersimbol Au daripada perkataan Latin aurum."
+ },
+ {
+  "tajuk": "Mula dengan jumlah kecil",
+  "isi": "Anda tidak perlu menunggu modal besar. Mula dengan jumlah yang selesa, kemudian tambah mengikut kemampuan."
+ },
+ {
+  "tajuk": "Tetapkan tujuan sebelum mula",
+  "isi": "Simpan untuk apa? Dana kecemasan, nikah, haji, pendidikan atau persaraan. Bila ada tujuan, lebih mudah untuk kekal konsisten."
+ },
+ {
+  "tajuk": "Guna wang yang tidak diperlukan segera",
+  "isi": "Simpan emas daripada wang lebihan, bukan wang untuk bayar bil bulan ini. Dengan begitu anda tidak terpaksa menjual ketika harga kurang baik."
+ },
+ {
+  "tajuk": "Langkah 1: kenal harga hari ini",
+  "isi": "Semak harga jual dan harga beli semula. Faham perbezaannya supaya jangkaan anda realistik sejak awal."
+ },
+ {
+  "tajuk": "Langkah 2: pilih cara simpanan",
+  "isi": "Akaun simpanan sesuai untuk membeli ikut ringgit, manakala jongkong atau wafer sesuai untuk yang mahu memegang emas fizikal."
+ },
+ {
+  "tajuk": "Langkah 3: tetapkan jumlah bulanan",
+  "isi": "Pilih jumlah tetap yang tidak menekan belanja bulanan. Contohnya RM100, RM200 atau lebih mengikut kemampuan."
+ },
+ {
+  "tajuk": "Langkah 4: jadikan ia tabiat",
+  "isi": "Letakkan peringatan pada hari gaji. Simpan dahulu, baru berbelanja."
+ },
+ {
+  "tajuk": "Langkah 5: semak berkala, bukan setiap jam",
+  "isi": "Cukup semak simpanan sebulan sekali. Terlalu kerap melihat harga boleh membuat anda cemas tanpa sebab."
+ },
+ {
+  "tajuk": "Jangan berhutang untuk beli emas",
+  "isi": "Simpanan sepatutnya menenangkan, bukan menambah beban. Elakkan pinjaman semata-mata untuk membeli emas."
+ },
+ {
+  "tajuk": "Dana kecemasan dahulu",
+  "isi": "Pastikan ada tunai untuk kecemasan 3 hingga 6 bulan perbelanjaan. Selepas itu barulah menambah simpanan emas dengan lebih selesa."
+ },
+ {
+  "tajuk": "Mula hari ini, jangan tunggu harga turun",
+  "isi": "Tiada siapa dapat meneka harga dengan tepat. Menyimpan secara konsisten lebih mudah daripada cuba memilih masa sempurna."
+ },
+ {
+  "tajuk": "Ilmu perlu disertai tindakan",
+  "isi": "Pengetahuan penting, tetapi tindakan kecil yang berulang lebih menentukan hasil."
+ },
+ {
+  "tajuk": "Tak perlu faham semua istilah hari pertama",
+  "isi": "Kenal beberapa asas dahulu: gram, ketulenan, harga jual dan beli. Selebihnya boleh dipelajari sambil menyimpan."
+ },
+ {
+  "tajuk": "Bincang dengan pasangan atau keluarga",
+  "isi": "Simpanan lebih mudah dikekalkan bila semua orang faham tujuannya."
+ },
+ {
+  "tajuk": "Catat simpanan anda",
+  "isi": "Tulis jumlah gram dan tarikh beli. Rekod mudah membantu anda melihat kemajuan."
+ },
+ {
+  "tajuk": "Apa itu Dollar Cost Averaging?",
+  "isi": "Beli dengan jumlah tetap secara berkala. Bila harga rendah anda dapat lebih gram, bila tinggi anda dapat kurang. Kos purata jadi lebih stabil."
+ },
+ {
+  "tajuk": "DCA: contoh mudah",
+  "isi": "Simpan RM200 setiap bulan. Bulan harga rendah, gram lebih banyak. Bulan harga tinggi, gram lebih sedikit. Anda tak perlu meneka masa."
+ },
+ {
+  "tajuk": "Kekal konsisten walaupun harga turun",
+  "isi": "Harga turun bukan tanda berhenti. Bagi penyimpan berkala, ia peluang mendapat lebih gram dengan jumlah yang sama."
+ },
+ {
+  "tajuk": "Jangan terpengaruh dengan FOMO",
+  "isi": "Takut ketinggalan sering membuat orang membeli ikut emosi. Pelan bulanan yang tetap melindungi anda daripada keputusan terburu-buru."
+ },
+ {
+  "tajuk": "Kuasa tabiat kecil",
+  "isi": "RM10 sehari ialah kira-kira RM300 sebulan. Jika konsisten, simpanan setahun menjadi nyata."
+ },
+ {
+  "tajuk": "Naikkan jumlah bila gaji naik",
+  "isi": "Setiap kali pendapatan meningkat, tambah sedikit simpanan emas sebelum gaya hidup ikut naik."
+ },
+ {
+  "tajuk": "Simpan sebahagian bonus dan duit raya",
+  "isi": "Asingkan sebahagian rezeki tambahan untuk emas. Walaupun sedikit, ia membina simpanan."
+ },
+ {
+  "tajuk": "Cabaran 30 hari",
+  "isi": "Cuba simpan jumlah kecil setiap minggu selama 30 hari. Tabiat biasanya terbentuk jika dimulakan."
+ },
+ {
+  "tajuk": "Pecahkan matlamat besar kepada langkah kecil",
+  "isi": "Mahu simpan 100 gram? Kira berapa gram sebulan yang perlu. Matlamat jelas lebih mudah dicapai."
+ },
+ {
+  "tajuk": "Sabar ialah kemahiran simpanan",
+  "isi": "Emas paling sesuai untuk tempoh panjang. Beri masa untuk simpanan anda berkembang."
+ },
+ {
+  "tajuk": "Elak keputusan ketika emosi",
+  "isi": "Jangan membeli kerana teruja atau menjual kerana panik. Rujuk pelan anda dahulu."
+ },
+ {
+  "tajuk": "Jadikan simpanan emas rutin",
+  "isi": "Seperti membayar bil, jadikan ia keutamaan setiap bulan."
+ },
+ {
+  "tajuk": "Tabiat baik lebih baik daripada pelan rumit",
+  "isi": "Pelan mudah yang anda ikut lebih berguna daripada pelan sempurna yang ditinggalkan."
+ },
+ {
+  "tajuk": "Tambah simpanan bila ada lebihan tidak dijangka",
+  "isi": "Pulangan cukai, hadiah atau lebihan bulanan boleh ditambah sedikit ke dalam emas."
+ },
+ {
+  "tajuk": "Kemajuan lebih penting daripada kesempurnaan",
+  "isi": "Tidak mengapa jika satu bulan jumlahnya kecil. Yang penting, teruskan."
+ },
+ {
+  "tajuk": "999 ialah emas 24K",
+  "isi": "Emas 999 bermaksud kira-kira 99.9% tulen, juga dipanggil 24K. Ia biasa digunakan untuk simpanan seperti jongkong."
+ },
+ {
+  "tajuk": "916 ialah emas 22K",
+  "isi": "Emas 916 mengandungi kira-kira 91.6% emas, dicampur logam lain supaya lebih keras. Ia lazim untuk barang kemas."
+ },
+ {
+  "tajuk": "Kenapa 916 lebih keras?",
+  "isi": "Emas tulen agak lembut. Campuran logam menjadikan perhiasan lebih tahan lasak semasa dipakai."
+ },
+ {
+  "tajuk": "18K = berapa peratus?",
+  "isi": "Emas 18K ialah kira-kira 75% emas. Ia lebih keras dan biasa pada rekaan tertentu."
+ },
+ {
+  "tajuk": "Karat dan peratusan",
+  "isi": "24K kira-kira 99.9%, 22K kira-kira 91.6%, 18K kira-kira 75%. Semakin tinggi karat, semakin tinggi kandungan emas."
+ },
+ {
+  "tajuk": "Pilih 999 untuk simpanan",
+  "isi": "Jika tujuan utama menyimpan nilai, emas 999 lazimnya pilihan kerana tulen dan harga per gramnya jelas."
+ },
+ {
+  "tajuk": "Pilih 916 untuk dipakai",
+  "isi": "Jika mahu perhiasan yang tahan dipakai harian, 916 pilihan popular."
+ },
+ {
+  "tajuk": "Kenapa harga per gram 999 lebih tinggi?",
+  "isi": "Kerana kandungan emasnya lebih tinggi. Bandingkan harga bersama ketulenan, bukan hanya angka per gram."
+ },
+ {
+  "tajuk": "Periksa tanda ketulenan",
+  "isi": "Barang kemas dan jongkong yang baik biasanya ada tanda ketulenan. Pastikan anda tahu apa yang tertera."
+ },
+ {
+  "tajuk": "Beli daripada sumber dipercayai",
+  "isi": "Pastikan penjual jelas, ada rekod dan menyediakan resit. Elakkan tawaran terlalu murah tanpa sebab."
+ },
+ {
+  "tajuk": "Simpan resit dan sijil",
+  "isi": "Resit dan dokumen produk membantu semasa menjual semula atau membuat tuntutan."
+ },
+ {
+  "tajuk": "Berat dan ketulenan itu berbeza",
+  "isi": "Berat ialah gram, ketulenan ialah peratusan emas. Kedua-duanya menentukan nilai."
+ },
+ {
+  "tajuk": "Emas dicampur dengan apa?",
+  "isi": "Perhiasan biasanya dicampur perak atau tembaga untuk kekerasan dan warna."
+ },
+ {
+  "tajuk": "Warna emas boleh berbeza",
+  "isi": "Emas kuning, putih atau rose bergantung kepada campuran logam, bukan jenis emas yang berbeza."
+ },
+ {
+  "tajuk": "Tanya sebelum beli",
+  "isi": "Soal ketulenan, berat, kos upah dan harga beli semula. Pembeli yang bertanya lebih terlindung."
+ },
+ {
+  "tajuk": "Apa mempengaruhi harga emas?",
+  "isi": "Antaranya permintaan dunia, nilai dolar, kadar faedah, ketegangan geopolitik dan sentimen pelabur."
+ },
+ {
+  "tajuk": "Dolar dan emas",
+  "isi": "Dolar yang kukuh sering memberi tekanan kepada harga emas dalam USD, tetapi hubungannya tidak sentiasa sama."
+ },
+ {
+  "tajuk": "Kadar faedah dan emas",
+  "isi": "Emas tidak memberi faedah. Bila kadar faedah tinggi, sebahagian pelabur beralih kepada instrumen berfaedah, dan sebaliknya."
+ },
+ {
+  "tajuk": "Ketidaktentuan dunia dan emas",
+  "isi": "Bila pasaran bimbang, ramai mencari tempat simpanan yang dianggap lebih stabil, termasuk emas."
+ },
+ {
+  "tajuk": "Kadar tukaran ringgit",
+  "isi": "Walaupun harga dunia tetap, ringgit yang lemah boleh menjadikan harga dalam RM lebih tinggi."
+ },
+ {
+  "tajuk": "Harga emas tidak naik setiap hari",
+  "isi": "Naik turun harian ialah normal. Fokus kepada tempoh yang panjang."
+ },
+ {
+  "tajuk": "Cara baca graf harga",
+  "isi": "Lihat trend beberapa minggu atau bulan, bukan satu hari. Satu hari tidak menceritakan keseluruhan."
+ },
+ {
+  "tajuk": "Harga tertinggi dan terendah",
+  "isi": "Rekod tertinggi dan terendah membantu anda melihat julat harga, tetapi tidak meramal masa depan."
+ },
+ {
+  "tajuk": "Jangan cuba meneka harga",
+  "isi": "Pakar pun sukar meneka dengan tepat. Pelan berkala lebih praktikal."
+ },
+ {
+  "tajuk": "Apa maksud harga menjunam?",
+  "isi": "Ia penurunan agak ketara dalam masa singkat. Bagi penyimpan berkala, itu mungkin peluang menambah gram."
+ },
+ {
+  "tajuk": "Apa maksud harga melonjak?",
+  "isi": "Kenaikan ketara dalam masa singkat. Jangan terburu-buru, kekal dengan pelan anda."
+ },
+ {
+  "tajuk": "Semak harga daripada sumber rasmi",
+  "isi": "Pastikan anda melihat harga daripada penjual atau platform yang dipercayai."
+ },
+ {
+  "tajuk": "Waktu harga dikemaskini",
+  "isi": "Harga simpanan seperti GAP dikemaskini pada waktu tertentu. Semak masa kemas kini sebelum membuat keputusan."
+ },
+ {
+  "tajuk": "Harga beli dan harga jual berbeza",
+  "isi": "Harga yang anda bayar semasa membeli berbeza daripada harga apabila menjual semula. Itu perkara normal."
+ },
+ {
+  "tajuk": "Kenapa ada premium?",
+  "isi": "Harga emas fizikal boleh termasuk kos pembuatan, pengendalian dan margin penjual."
+ },
+ {
+  "tajuk": "Apa itu harga spot?",
+  "isi": "Harga spot ialah harga semasa pasaran dunia untuk emas. Harga yang anda beli biasanya termasuk kos lain."
+ },
+ {
+  "tajuk": "Pasaran emas dibuka hampir 24 jam",
+  "isi": "Emas didagangkan di pelbagai zon waktu, sebab itu harganya sentiasa bergerak."
+ },
+ {
+  "tajuk": "Berita ekonomi boleh menggerakkan harga",
+  "isi": "Data inflasi, keputusan bank pusat dan laporan pekerjaan antara yang diikuti pelabur."
+ },
+ {
+  "tajuk": "Harga lalu bukan jaminan",
+  "isi": "Prestasi lalu tidak menjamin hasil masa depan. Rancang dengan sikap sederhana."
+ },
+ {
+  "tajuk": "Fokus kepada gram",
+  "isi": "Bila harga turun, jumlah gram yang anda kumpul lebih penting untuk dilihat berbanding nilai harian."
+ },
+ {
+  "tajuk": "Harga jual dan harga beli semula",
+  "isi": "Anda membeli pada harga jual dan menjual semula pada harga beli. Bezanya dipanggil spread."
+ },
+ {
+  "tajuk": "Apa itu spread?",
+  "isi": "Spread ialah beza antara harga beli dan harga jual. Faham spread membantu anda menetapkan jangkaan simpanan."
+ },
+ {
+  "tajuk": "Emas sesuai untuk jangka sederhana hingga panjang",
+  "isi": "Kerana ada spread, jual beli harian kurang sesuai. Simpan dengan sabar."
+ },
+ {
+  "tajuk": "Bila patut jual emas?",
+  "isi": "Apabila anda memerlukan wang, mencapai matlamat atau mengubah pelan kewangan. Tetapkan sebab yang jelas."
+ },
+ {
+  "tajuk": "Jangan jual kerana panik",
+  "isi": "Harga turun beberapa hari tidak semestinya tanda untuk menjual. Rujuk matlamat anda."
+ },
+ {
+  "tajuk": "Jual sebahagian, bukan semua",
+  "isi": "Jika perlukan wang, pertimbangkan menjual sebahagian supaya simpanan lain terus berkembang."
+ },
+ {
+  "tajuk": "Tahu harga beli semula sebelum membeli",
+  "isi": "Mengetahui harga beli semula awal mengelakkan rasa terkejut kemudian."
+ },
+ {
+  "tajuk": "Jongkong mudah dinilai semula",
+  "isi": "Produk piawai seperti jongkong biasanya lebih mudah dinilai berbanding barang kemas berukir."
+ },
+ {
+  "tajuk": "Barang kemas dan nilai semula",
+  "isi": "Kos upah pembuatan biasanya tidak dikembalikan sepenuhnya apabila menjual semula."
+ },
+ {
+  "tajuk": "Jaga keadaan emas",
+  "isi": "Jongkong yang tidak calar dan dokumen yang lengkap memudahkan proses penjualan."
+ },
+ {
+  "tajuk": "Bawa dokumen pengenalan semasa menjual",
+  "isi": "Penjual yang sah biasanya memerlukan pengesahan identiti. Ia melindungi anda juga."
+ },
+ {
+  "tajuk": "Bandingkan beberapa sumber",
+  "isi": "Sebelum menjual, bandingkan harga beli daripada beberapa sumber yang sah."
+ },
+ {
+  "tajuk": "Emas lama boleh dijual semula",
+  "isi": "Emas dengan ketulenan yang jelas boleh dinilai berdasarkan berat dan ketulenannya."
+ },
+ {
+  "tajuk": "Harga beli semula berbeza antara sumber",
+  "isi": "Harga beli semula emas boleh berbeza antara penjual. Tanya dahulu."
+ },
+ {
+  "tajuk": "Rancang pengeluaran",
+  "isi": "Jika perlu mengeluarkan simpanan, kekalkan tabiat menyimpan walaupun jumlahnya lebih kecil."
+ },
+ {
+  "tajuk": "Apa itu program simpanan emas (GAP)?",
+  "isi": "GAP ialah Gold Accumulation Program Public Gold. Anda menyimpan emas mengikut jumlah ringgit dan jumlah gram direkodkan dalam akaun."
+ },
+ {
+  "tajuk": "RM100 dapat berapa gram?",
+  "isi": "Bahagikan RM100 dengan harga per gram. Contohnya jika harga RM561 per gram, RM100 bersamaan kira-kira 0.1783 gram."
+ },
+ {
+  "tajuk": "Beli ikut ringgit, bukan ikut gram",
+  "isi": "Simpanan seperti GAP membolehkan anda tetapkan jumlah RM dahulu. Jumlah gram mengikut harga semasa."
+ },
+ {
+  "tajuk": "Semak harga GAP terkini",
+  "isi": "Harga dikemaskini berkala. Semak harga terkini dalam saluran ini sebelum menambah simpanan."
+ },
+ {
+  "tajuk": "Simpan sedikit, tapi kerap",
+  "isi": "Menyimpan kerap-kerap dengan jumlah kecil lebih mudah dikekalkan daripada sekali besar yang jarang."
+ },
+ {
+  "tajuk": "Tambah simpanan bila harga rendah",
+  "isi": "Bagi akaun simpanan, harga rendah bermakna lebih gram untuk jumlah ringgit yang sama."
+ },
+ {
+  "tajuk": "Semak baki gram anda",
+  "isi": "Rekod gram dalam akaun lebih penting dipantau berbanding nilai harian."
+ },
+ {
+  "tajuk": "Kumpul gram, bukan sekadar nombor RM",
+  "isi": "Nilai RM berubah setiap hari, tetapi gram yang anda kumpul kekal."
+ },
+ {
+  "tajuk": "Fahami syarat program",
+  "isi": "Setiap program ada syarat dan yuran tertentu. Baca dan fahami sebelum menambah simpanan."
+ },
+ {
+  "tajuk": "Bincang matlamat bersama pasangan",
+  "isi": "Satu matlamat yang dikongsi membuat simpanan lebih mudah dikekalkan."
+ },
+ {
+  "tajuk": "Tetapkan tarikh tambah simpanan",
+  "isi": "Pilih tarikh tetap setiap bulan supaya ia menjadi rutin."
+ },
+ {
+  "tajuk": "Asingkan simpanan daripada belanja harian",
+  "isi": "Anggap simpanan emas sebagai wang berasingan dengan tujuan yang jelas."
+ },
+ {
+  "tajuk": "Semak rekod simpanan berkala",
+  "isi": "Pastikan rekod anda sepadan dengan apa yang anda ingat."
+ },
+ {
+  "tajuk": "Jaga maklumat akaun",
+  "isi": "Jangan kongsi kata laluan atau maklumat peribadi dengan sesiapa."
+ },
+ {
+  "tajuk": "Waspada penipuan atas nama emas",
+  "isi": "Jika tawaran terlalu manis atau menjanjikan untung pasti, berhati-hati dan sahkan sumbernya."
+ },
+ {
+  "tajuk": "Tiada simpanan yang menjamin untung",
+  "isi": "Semua simpanan ada risiko. Faham sebelum menyimpan."
+ },
+ {
+  "tajuk": "Simpan selepas gaji masuk",
+  "isi": "Menyimpan sebelum berbelanja lebih berkesan."
+ },
+ {
+  "tajuk": "Guna peringatan di telefon",
+  "isi": "Tetapkan peringatan bulanan supaya tidak terlepas."
+ },
+ {
+  "tajuk": "Laraskan, jangan berhenti",
+  "isi": "Jika keadaan kewangan berubah, laraskan jumlah tetapi jangan berhenti sepenuhnya."
+ },
+ {
+  "tajuk": "Tanya jika tidak faham",
+  "isi": "Jangan malu bertanya tentang proses, yuran atau syarat sebelum menyimpan."
+ },
+ {
+  "tajuk": "Apa itu jongkong emas?",
+  "isi": "Jongkong ialah emas dalam bentuk kepingan atau bar bertanda berat dan ketulenan, biasanya 999 untuk simpanan."
+ },
+ {
+  "tajuk": "Saiz jongkong biasa",
+  "isi": "Ada pelbagai saiz seperti 5 gram, 10 gram, 50 gram dan lebih besar. Pilih mengikut bajet dan tujuan."
+ },
+ {
+  "tajuk": "Kelebihan jongkong kecil",
+  "isi": "Lebih mudah dimiliki dan lebih mudah dijual sebahagian apabila perlu."
+ },
+ {
+  "tajuk": "Kelebihan jongkong besar",
+  "isi": "Biasanya kos per gram lebih rendah, sesuai bagi yang sudah ada modal lebih besar."
+ },
+ {
+  "tajuk": "Apa itu dinar emas?",
+  "isi": "Dinar emas ialah syiling atau wafer emas yang biasa dikaitkan dengan simpanan mengikut syariah. Satu dinar biasanya kira-kira 4.25 gram."
+ },
+ {
+  "tajuk": "Wafer emas",
+  "isi": "Wafer ialah kepingan emas nipis dan padat, sesuai untuk simpanan kecil dan hadiah."
+ },
+ {
+  "tajuk": "Emas kecil sesuai untuk hadiah",
+  "isi": "Wafer atau syiling kecil menjadi hadiah bermakna untuk nikah, kelahiran atau hari lahir."
+ },
+ {
+  "tajuk": "Simpan dalam pembungkus asal",
+  "isi": "Banyak jongkong dibungkus bersama sijil. Jangan buka melainkan perlu."
+ },
+ {
+  "tajuk": "Jangan sentuh permukaan emas",
+  "isi": "Pegang di bahagian tepi atau guna sarung tangan supaya tiada calar atau kesan jari."
+ },
+ {
+  "tajuk": "Calar boleh menjejaskan penilaian",
+  "isi": "Jongkong dalam keadaan baik lebih mudah dijual semula."
+ },
+ {
+  "tajuk": "Kenali tanda pada jongkong",
+  "isi": "Jenama, berat dan ketulenan lazimnya tertera. Pastikan padan dengan sijil."
+ },
+ {
+  "tajuk": "Fizikal atau akaun?",
+  "isi": "Fizikal boleh dipegang tetapi perlu disimpan dengan selamat. Akaun lebih mudah ditambah dengan jumlah kecil."
+ },
+ {
+  "tajuk": "Gabungkan kedua-duanya",
+  "isi": "Ramai memiliki gabungan akaun simpanan dan sedikit emas fizikal."
+ },
+ {
+  "tajuk": "Beli ikut keperluan",
+  "isi": "Pilih bentuk emas yang sesuai dengan matlamat, bukan yang paling popular."
+ },
+ {
+  "tajuk": "Tanya tentang pembungkusan dan sijil",
+  "isi": "Pastikan ada resit dan dokumen apabila membeli produk fizikal."
+ },
+ {
+  "tajuk": "Barang kemas boleh jadi simpanan",
+  "isi": "Perhiasan boleh dipakai dan juga menyimpan nilai, tetapi nilainya termasuk kos upah."
+ },
+ {
+  "tajuk": "Apa itu kos upah?",
+  "isi": "Kos upah ialah bayaran membuat dan mereka bentuk perhiasan. Ia biasanya tidak dikembalikan sepenuhnya semasa jual semula."
+ },
+ {
+  "tajuk": "Rekaan ringkas, upah lebih rendah",
+  "isi": "Rekaan rumit biasanya upah lebih tinggi. Pilih mengikut keutamaan anda."
+ },
+ {
+  "tajuk": "Semak berat, panjang dan lebar",
+  "isi": "Pastikan butiran produk sesuai dengan anda sebelum membeli."
+ },
+ {
+  "tajuk": "Cara ukur saiz gelang tangan",
+  "isi": "Ukur lilitan pergelangan tangan dengan pita, kemudian tambah sedikit ruang supaya selesa."
+ },
+ {
+  "tajuk": "Cara ukur saiz cincin",
+  "isi": "Ukur diameter dalam cincin sedia ada, atau minta bantuan di kedai."
+ },
+ {
+  "tajuk": "Rantai: panjang yang sesuai",
+  "isi": "Panjang berbeza memberi rupa berbeza. Cuba beberapa panjang jika boleh."
+ },
+ {
+  "tajuk": "Jaga perhiasan emas",
+  "isi": "Elak bahan kimia kuat seperti pemutih. Lap perlahan dengan kain lembut."
+ },
+ {
+  "tajuk": "Simpan perhiasan berasingan",
+  "isi": "Letakkan dalam kotak atau kantung supaya tidak bergesel dan tercalar."
+ },
+ {
+  "tajuk": "Tanggalkan semasa mandi atau bersukan",
+  "isi": "Peluh, sabun dan hentakan boleh menjejaskan perhiasan."
+ },
+ {
+  "tajuk": "Periksa pengunci berkala",
+  "isi": "Pastikan pengunci kemas supaya perhiasan tidak tercicir."
+ },
+ {
+  "tajuk": "Bersihkan dengan air suam dan sabun lembut",
+  "isi": "Guna berus lembut dan keringkan dengan kain bersih."
+ },
+ {
+  "tajuk": "Perhiasan lama masih ada nilai",
+  "isi": "Berat dan ketulenan menentukan nilai asas apabila dijual semula."
+ },
+ {
+  "tajuk": "Emas, hadiah yang bermakna",
+  "isi": "Emas ialah hadiah yang dihargai dan tahan lama."
+ },
+ {
+  "tajuk": "Pilih rekaan yang tidak lapuk",
+  "isi": "Rekaan klasik kekal digemari dan mudah dipadankan."
+ },
+ {
+  "tajuk": "Semak ada di cawangan mana",
+  "isi": "Produk tertentu hanya ada di cawangan tertentu. Semak sebelum ke kedai."
+ },
+ {
+  "tajuk": "Tanya stok dan tempahan",
+  "isi": "Jika tiada saiz yang sesuai, tanya kemungkinan tempahan atau stok lain."
+ },
+ {
+  "tajuk": "999 atau 916 untuk perhiasan?",
+  "isi": "999 lebih tulen tetapi lebih lembut. 916 lebih tahan dipakai harian."
+ },
+ {
+  "tajuk": "Lihat jumlah akhir, bukan upah sahaja",
+  "isi": "Bandingkan berat, ketulenan dan upah sekali gus."
+ },
+ {
+  "tajuk": "Simpan resit perhiasan",
+  "isi": "Penting untuk jualan semula, tukaran atau jaminan."
+ },
+ {
+  "tajuk": "Zakat emas: nisab 85 gram",
+  "isi": "Zakat emas biasanya wajib apabila emas mencapai nisab sekitar 85 gram dan cukup setahun (haul). Semak pusat zakat negeri anda."
+ },
+ {
+  "tajuk": "Kadar zakat emas 2.5%",
+  "isi": "Jika cukup syarat, kadarnya 2.5% daripada nilai emas yang dizakatkan."
+ },
+ {
+  "tajuk": "Apa itu haul?",
+  "isi": "Haul bermaksud tempoh pemilikan genap setahun hijrah."
+ },
+ {
+  "tajuk": "Emas simpanan dan zakat",
+  "isi": "Emas yang disimpan sebagai pelaburan biasanya tertakluk kepada zakat jika cukup syarat."
+ },
+ {
+  "tajuk": "Perhiasan yang dipakai",
+  "isi": "Pendapat dan ketetapan boleh berbeza mengikut negeri. Rujuk pusat zakat untuk panduan."
+ },
+ {
+  "tajuk": "Kira nilai guna harga semasa",
+  "isi": "Pusat zakat biasanya menetapkan cara kiraan. Semak panduan rasmi."
+ },
+ {
+  "tajuk": "Bayar zakat melalui pusat zakat negeri",
+  "isi": "Mudah dan sah. Anda boleh bayar dalam talian atau di kaunter."
+ },
+ {
+  "tajuk": "Zakat membersihkan harta",
+  "isi": "Zakat bukan beban. Ia keberkatan dan membantu mereka yang memerlukan."
+ },
+ {
+  "tajuk": "Catat tarikh mula memiliki emas",
+  "isi": "Rekod tarikh membantu anda mengira haul dengan tepat."
+ },
+ {
+  "tajuk": "Tanya pusat zakat jika ragu",
+  "isi": "Hukum dan kaedah boleh ada perincian. Rujuk pihak berautoriti."
+ },
+ {
+  "tajuk": "Emas dan syariah",
+  "isi": "Jual beli emas ada syarat tertentu dalam syariah. Pilih penyedia yang jelas pematuhan syariahnya dan rujuk pihak berautoriti jika ragu."
+ },
+ {
+  "tajuk": "Pilih penyedia yang jelas pematuhan syariah",
+  "isi": "Semak maklumat dan tanya jika perlu sebelum menyimpan."
+ },
+ {
+  "tajuk": "Zakat perniagaan emas berbeza",
+  "isi": "Jika berniaga emas, kiraan boleh berbeza. Rujuk pusat zakat."
+ },
+ {
+  "tajuk": "Simpan dengan niat yang baik",
+  "isi": "Niat menyimpan untuk keperluan masa depan keluarga ialah niat yang baik."
+ },
+ {
+  "tajuk": "Sedekah daripada rezeki",
+  "isi": "Sedikit sedekah daripada rezeki membawa berkat."
+ },
+ {
+  "tajuk": "Peraturan 50/30/20",
+  "isi": "Satu kaedah: 50% keperluan, 30% kehendak dan 20% simpanan. Laraskan mengikut keadaan anda."
+ },
+ {
+  "tajuk": "Bayar diri sendiri dahulu",
+  "isi": "Asingkan simpanan sebaik gaji masuk sebelum berbelanja."
+ },
+ {
+  "tajuk": "Dana kecemasan: berapa banyak?",
+  "isi": "Cadangan lazim 3 hingga 6 bulan perbelanjaan, atau lebih jika pendapatan tidak tetap."
+ },
+ {
+  "tajuk": "Langsaikan hutang berkadar tinggi dahulu",
+  "isi": "Hutang kad kredit biasanya lebih membebankan daripada keuntungan simpanan."
+ },
+ {
+  "tajuk": "Bezakan keperluan dan kehendak",
+  "isi": "Tanya diri: perlukah saya ini, atau sekadar mahu?"
+ },
+ {
+  "tajuk": "Catat perbelanjaan sebulan",
+  "isi": "Tahu ke mana wang pergi ialah langkah pertama untuk mengawalnya."
+ },
+ {
+  "tajuk": "Satu akaun khas untuk simpanan",
+  "isi": "Asingkan daripada wang harian supaya tidak terbelanja."
+ },
+ {
+  "tajuk": "Insurans melindungi simpanan",
+  "isi": "Perlindungan asas membantu mengelakkan simpanan terpaksa dikeluarkan ketika kecemasan."
+ },
+ {
+  "tajuk": "Pelbagaikan simpanan",
+  "isi": "Jangan letak semua telur dalam satu bakul. Emas ialah salah satu bahagian."
+ },
+ {
+  "tajuk": "Berapa peratus untuk emas?",
+  "isi": "Tiada angka tetap. Ramai memilih sebahagian kecil hingga sederhana daripada keseluruhan simpanan mengikut keselesaan."
+ },
+ {
+  "tajuk": "Mulakan dengan selesa",
+  "isi": "Jumlah yang menekan sukar dikekalkan."
+ },
+ {
+  "tajuk": "Faham risiko sebelum memilih",
+  "isi": "Setiap instrumen ada risiko dan ganjarannya. Pilih yang anda faham."
+ },
+ {
+  "tajuk": "Jangan ikut kawan tanpa menyemak",
+  "isi": "Keadaan kewangan setiap orang berbeza."
+ },
+ {
+  "tajuk": "Elak tawaran untung pasti",
+  "isi": "Tiada pulangan yang pasti tanpa risiko. Berhati-hati dengan janji manis."
+ },
+ {
+  "tajuk": "Belajar sedikit setiap minggu",
+  "isi": "Membaca atau menonton satu topik kewangan seminggu menambah pengetahuan."
+ },
+ {
+  "tajuk": "Sasaran jangka pendek, sederhana, panjang",
+  "isi": "Asingkan matlamat mengikut tempoh supaya anda tahu instrumen yang sesuai."
+ },
+ {
+  "tajuk": "Semak pelan setiap suku tahun",
+  "isi": "Laraskan mengikut perubahan gaji, perbelanjaan atau matlamat."
+ },
+ {
+  "tajuk": "Kurangkan langganan yang tidak digunakan",
+  "isi": "Wang kecil yang bocor setiap bulan boleh disimpan sebagai emas."
+ },
+ {
+  "tajuk": "Penjimatan kecil boleh jadi gram emas",
+  "isi": "Bawa bekal sekali seminggu dan simpan bezanya."
+ },
+ {
+  "tajuk": "Hadiah dan duit raya: simpan sebahagian",
+  "isi": "Sebahagian kecil sudah memadai."
+ },
+ {
+  "tajuk": "Jangan bandingkan diri dengan media sosial",
+  "isi": "Tumpukan kepada pelan anda sendiri."
+ },
+ {
+  "tajuk": "Fikir sebelum beli gajet baru",
+  "isi": "Tanya sama ada ia perlu, atau boleh ditangguh."
+ },
+ {
+  "tajuk": "Pendapatan sampingan kecil",
+  "isi": "Hasil sampingan boleh terus ditambah ke dalam simpanan."
+ },
+ {
+  "tajuk": "Kad kredit bukan pendapatan",
+  "isi": "Gunakan dengan bijak dan langsaikan penuh jika boleh."
+ },
+ {
+  "tajuk": "Rancang persaraan seawal mungkin",
+  "isi": "Masa ialah rakan terbaik simpanan jangka panjang."
+ },
+ {
+  "tajuk": "Mitos: emas hanya untuk orang kaya",
+  "isi": "Fakta: anda boleh mula dengan jumlah kecil secara berkala."
+ },
+ {
+  "tajuk": "Mitos: emas tidak pernah turun",
+  "isi": "Fakta: harga emas naik dan turun. Ia lebih sesuai untuk jangka panjang."
+ },
+ {
+  "tajuk": "Mitos: perlu tunggu harga turun",
+  "isi": "Fakta: tiada siapa dapat meneka dengan tepat. Simpanan berkala mengurangkan tekanan memilih masa."
+ },
+ {
+  "tajuk": "Mitos: emas fizikal sahaja yang sah",
+  "isi": "Fakta: ada pelbagai cara menyimpan emas termasuk akaun simpanan. Pilih yang sesuai dengan anda."
+ },
+ {
+  "tajuk": "Mitos: semua emas sama",
+  "isi": "Fakta: ketulenan dan kos upah berbeza antara produk."
+ },
+ {
+  "tajuk": "Mitos: barang kemas simpanan terbaik",
+  "isi": "Fakta: kos upah mengurangkan nilai semula. Jongkong sering lebih cekap untuk simpanan."
+ },
+ {
+  "tajuk": "Mitos: simpan emas tak perlu dirancang",
+  "isi": "Fakta: tujuan dan jumlah yang jelas membantu anda kekal konsisten."
+ },
+ {
+  "tajuk": "Mitos: emas menjamin untung",
+  "isi": "Fakta: tiada simpanan yang menjamin untung."
+ },
+ {
+  "tajuk": "Mitos: simpanan kecil tak bermakna",
+  "isi": "Fakta: simpanan kecil yang konsisten boleh bertambah."
+ },
+ {
+  "tajuk": "Mitos: lebih kerap semak harga lebih baik",
+  "isi": "Fakta: semakan terlalu kerap boleh mencetuskan keputusan emosi."
+ },
+ {
+  "tajuk": "Mitos: emas hanya untuk waktu krisis",
+  "isi": "Fakta: ramai menyimpan sepanjang masa sebagai sebahagian pelan."
+ },
+ {
+  "tajuk": "Mitos: emas boleh gantikan semua simpanan",
+  "isi": "Fakta: gabungkan dengan dana kecemasan dan instrumen lain."
+ },
+ {
+  "tajuk": "Mitos: perlu pandai baca carta",
+  "isi": "Fakta: simpanan berkala tidak memerlukan analisis rumit."
+ },
+ {
+  "tajuk": "Mitos: jual beli kerap cepat untung",
+  "isi": "Fakta: spread menjadikan jual beli kerap kurang menguntungkan."
+ },
+ {
+  "tajuk": "Mitos: emas selamat tanpa dijaga",
+  "isi": "Fakta: emas fizikal perlu disimpan dengan selamat."
+ },
+ {
+  "tajuk": "Mitos: emas lama tiada nilai",
+  "isi": "Fakta: nilai berdasarkan berat dan ketulenan."
+ },
+ {
+  "tajuk": "Mitos: emas 916 tidak boleh dijual semula",
+  "isi": "Fakta: boleh, tetapi harga beli semula berbeza daripada 999 dan kos upah tidak dikembalikan sepenuhnya."
+ },
+ {
+  "tajuk": "Mitos: zakat emas hanya untuk perhiasan",
+  "isi": "Fakta: simpanan emas juga boleh tertakluk kepada zakat jika cukup syarat. Semak pusat zakat."
+ },
+ {
+  "tajuk": "Mitos: menyimpan emas susah dimulakan",
+  "isi": "Fakta: prosesnya boleh mudah. Hubungi saya dan saya bantu."
+ },
+ {
+  "tajuk": "Mitos: emas rumit untuk difahami",
+  "isi": "Fakta: mulakan dengan gram, ketulenan dan harga. Selebihnya dipelajari perlahan-lahan."
+ },
+ {
+  "tajuk": "Di mana simpan emas fizikal?",
+  "isi": "Pilih tempat selamat seperti peti keselamatan di rumah atau peti simpanan bank. Jangan beritahu ramai."
+ },
+ {
+  "tajuk": "Jangan tunjuk simpanan di media sosial",
+  "isi": "Privasi melindungi anda daripada risiko."
+ },
+ {
+  "tajuk": "Pelbagaikan lokasi simpanan",
+  "isi": "Jangan letak semua emas fizikal di satu tempat."
+ },
+ {
+  "tajuk": "Simpan salinan dokumen",
+  "isi": "Simpan salinan resit dan sijil di tempat berasingan, termasuk gambar di telefon."
+ },
+ {
+  "tajuk": "Pertimbangkan insurans rumah",
+  "isi": "Semak sama ada ia meliputi barang berharga."
+ },
+ {
+  "tajuk": "Hati-hati penipuan dalam talian",
+  "isi": "Jangan klik pautan mencurigakan atau kongsi kod OTP."
+ },
+ {
+  "tajuk": "Sahkan identiti penjual",
+  "isi": "Pastikan anda berurusan dengan pihak yang sah."
+ },
+ {
+  "tajuk": "Jangan serah wang kepada orang yang tidak dikenali",
+  "isi": "Gunakan saluran rasmi."
+ },
+ {
+  "tajuk": "Waspada tawaran terlalu murah",
+  "isi": "Harga jauh di bawah pasaran patut dicurigai."
+ },
+ {
+  "tajuk": "Simpan kata laluan dengan selamat",
+  "isi": "Guna kata laluan yang unik dan sulit."
+ },
+ {
+  "tajuk": "Aktifkan pengesahan dua langkah",
+  "isi": "Lapisan tambahan menjadikan akaun lebih selamat."
+ },
+ {
+  "tajuk": "Semak pautan sebelum klik",
+  "isi": "Pastikan nama laman tepat sebelum memasukkan maklumat."
+ },
+ {
+  "tajuk": "Beritahu waris tentang simpanan",
+  "isi": "Pastikan keluarga tahu di mana dokumen penting disimpan."
+ },
+ {
+  "tajuk": "Sediakan pelan pusaka",
+  "isi": "Perancangan awal memudahkan keluarga kemudian."
+ },
+ {
+  "tajuk": "Semak rekod simpanan setiap suku tahun",
+  "isi": "Pastikan semuanya sepadan dengan rekod anda."
+ },
+ {
+  "tajuk": "Simpan emas untuk perkahwinan",
+  "isi": "Mahar, hantaran dan majlis memerlukan perancangan. Menyimpan emas berkala membantu."
+ },
+ {
+  "tajuk": "Simpan untuk haji atau umrah",
+  "isi": "Rancang kos dan simpan bulanan."
+ },
+ {
+  "tajuk": "Simpan untuk pendidikan anak",
+  "isi": "Yuran dan keperluan sekolah meningkat. Mulakan awal."
+ },
+ {
+  "tajuk": "Simpan untuk persaraan",
+  "isi": "Tabiat kecil sekarang membantu masa depan."
+ },
+ {
+  "tajuk": "Simpan untuk deposit rumah",
+  "isi": "Bahagian deposit boleh dirancang dengan simpanan berkala."
+ },
+ {
+  "tajuk": "Simpan untuk kenderaan",
+  "isi": "Asingkan matlamat supaya tidak bercampur."
+ },
+ {
+  "tajuk": "Sebahagian dana kecemasan dalam emas",
+  "isi": "Sebahagian kecil boleh dalam emas, selebihnya tunai."
+ },
+ {
+  "tajuk": "Simpan untuk hadiah ibu bapa",
+  "isi": "Sedikit demi sedikit untuk hadiah yang bermakna."
+ },
+ {
+  "tajuk": "Kira berapa gram yang anda perlukan",
+  "isi": "Tukar matlamat RM kepada gram untuk perancangan."
+ },
+ {
+  "tajuk": "Matlamat 10 gram dahulu",
+  "isi": "Mulakan dengan sasaran kecil dan raikan pencapaian."
+ },
+ {
+  "tajuk": "Matlamat 50 gram",
+  "isi": "Sasaran sederhana yang boleh dicapai dengan simpanan berkala."
+ },
+ {
+  "tajuk": "Matlamat 100 gram",
+  "isi": "Sasaran besar. Pecahkan kepada langkah bulanan."
+ },
+ {
+  "tajuk": "Tulis matlamat di tempat yang nampak",
+  "isi": "Peringatan visual meningkatkan komitmen."
+ },
+ {
+  "tajuk": "Raikan setiap pencapaian",
+  "isi": "Hargai setiap langkah kecil."
+ },
+ {
+  "tajuk": "Semak matlamat setiap awal tahun",
+  "isi": "Tetapkan sasaran baharu setiap tahun."
+ },
+ {
+  "tajuk": "Bahagikan simpanan mengikut matlamat",
+  "isi": "Tahu setiap gram untuk apa."
+ },
+ {
+  "tajuk": "Kongsi matlamat dengan keluarga",
+  "isi": "Sokongan membantu anda konsisten."
+ },
+ {
+  "tajuk": "Sasaran bulanan dalam gram",
+  "isi": "Contohnya 1 gram sebulan. Jelas dan mudah diukur."
+ },
+ {
+  "tajuk": "Sasaran mingguan kecil",
+  "isi": "Lebih mudah bagi sesetengah orang."
+ },
+ {
+  "tajuk": "Matlamat tanpa tarikh hanyalah impian",
+  "isi": "Tetapkan tarikh sasaran."
+ },
+ {
+  "tajuk": "Sabar itu kuasa",
+  "isi": "Simpanan jangka panjang memerlukan kesabaran."
+ },
+ {
+  "tajuk": "Konsisten mengalahkan bakat",
+  "isi": "Pelan sederhana yang diikuti lebih berkesan."
+ },
+ {
+  "tajuk": "Jangan tunggu sempurna, mulakan",
+  "isi": "Tindakan kecil hari ini membina masa depan."
+ },
+ {
+  "tajuk": "Mulakan di mana anda berada",
+  "isi": "Dengan apa yang anda ada."
+ },
+ {
+  "tajuk": "Setiap gram membawa anda lebih dekat",
+  "isi": "Fokus kepada kemajuan."
+ },
+ {
+  "tajuk": "Kewangan ialah perjalanan",
+  "isi": "Ia bukan perlumbaan."
+ },
+ {
+  "tajuk": "Belajar daripada kesilapan",
+  "isi": "Setiap orang pernah tersilap. Teruskan memperbaiki."
+ },
+ {
+  "tajuk": "Jangan bandingkan perjalanan anda",
+  "isi": "Perjalanan setiap orang berbeza."
+ },
+ {
+  "tajuk": "Tenang ketika pasaran bergolak",
+  "isi": "Rujuk semula pelan anda."
+ },
+ {
+  "tajuk": "Simpanan sepatutnya menenangkan",
+  "isi": "Pilih jumlah yang tidak memberi tekanan."
+ },
+ {
+  "tajuk": "Disiplin ialah kebebasan",
+  "isi": "Disiplin hari ini memberi pilihan pada masa depan."
+ },
+ {
+  "tajuk": "Kecil hari ini, besar kemudian",
+  "isi": "Sedikit demi sedikit menjadi bukit."
+ },
+ {
+  "tajuk": "Fokus kepada yang boleh dikawal",
+  "isi": "Kawal jumlah simpanan dan tabiat, bukan harga pasaran."
+ },
+ {
+  "tajuk": "Rezeki perlu dirancang",
+  "isi": "Berdoa dan berusaha, kemudian rancang."
+ },
+ {
+  "tajuk": "Syukur dan berjimat",
+  "isi": "Cukupkan dengan apa yang ada, simpan sebahagian."
+ },
+ {
+  "tajuk": "Jangan malu bermula kecil",
+  "isi": "Semua orang bermula dari bawah."
+ },
+ {
+  "tajuk": "Beri diri anda masa",
+  "isi": "Hasil simpanan jangka panjang tidak berlaku semalam."
+ },
+ {
+  "tajuk": "Fikir sebelum bertindak",
+  "isi": "Kualiti keputusan lebih penting daripada kelajuan."
+ },
+ {
+  "tajuk": "Tabiat pagi: ingat matlamat",
+  "isi": "Satu minit setiap pagi untuk mengingatkan matlamat anda."
+ },
+ {
+  "tajuk": "Bersyukur dengan kemajuan",
+  "isi": "Lihat berapa gram yang sudah terkumpul."
+ },
+ {
+  "tajuk": "Elak menangguh",
+  "isi": "Esok tidak menjanjikan apa-apa. Mulakan hari ini."
+ },
+ {
+  "tajuk": "Kuasa komitmen",
+  "isi": "Berjanji pada diri sendiri dan tepatinya."
+ },
+ {
+  "tajuk": "Rancang dan bersabar",
+  "isi": "Gabungan perancangan dan kesabaran membina simpanan."
+ },
+ {
+  "tajuk": "Kekal rendah hati",
+  "isi": "Pasaran sentiasa boleh mengejutkan."
+ },
+ {
+  "tajuk": "Belajar daripada mentor",
+  "isi": "Cari orang yang lebih berpengalaman."
+ },
+ {
+  "tajuk": "Emas sebagai wang sejak zaman purba",
+  "isi": "Manusia menggunakan emas sebagai wang dan perhiasan sejak ribuan tahun lalu."
+ },
+ {
+  "tajuk": "Dinar emas dalam sejarah Islam",
+  "isi": "Dinar emas digunakan sebagai mata wang pada zaman Islam awal."
+ },
+ {
+  "tajuk": "Emas dan tamadun Mesir purba",
+  "isi": "Perhiasan emas sering dikaitkan dengan tamadun Mesir purba."
+ },
+ {
+  "tajuk": "Standard emas",
+  "isi": "Satu masa dahulu, nilai mata wang beberapa negara dikaitkan dengan emas. Sistem itu telah lama ditinggalkan."
+ },
+ {
+  "tajuk": "Bank pusat dan emas",
+  "isi": "Banyak bank pusat menyimpan emas sebagai sebahagian rizab."
+ },
+ {
+  "tajuk": "Emas dilombong di pelbagai negara",
+  "isi": "Banyak negara mengeluarkan emas, termasuk China, Australia dan Rusia."
+ },
+ {
+  "tajuk": "Emas boleh dikitar semula",
+  "isi": "Emas boleh dilebur dan digunakan semula tanpa hilang kualiti."
+ },
+ {
+  "tajuk": "Emas tahan lama",
+  "isi": "Emas tidak mereput dan tidak berkarat."
+ },
+ {
+  "tajuk": "Ketumpatan emas",
+  "isi": "Emas sangat padat, kira-kira 19.3 gram bagi setiap sentimeter padu."
+ },
+ {
+  "tajuk": "Daun emas yang sangat nipis",
+  "isi": "Emas boleh ditempa menjadi daun yang sangat nipis."
+ },
+ {
+  "tajuk": "Pingat emas Olimpik",
+  "isi": "Pingat emas Olimpik kebanyakannya perak yang disalut emas."
+ },
+ {
+  "tajuk": "Emas dalam telefon pintar",
+  "isi": "Jumlah kecil emas digunakan dalam komponen elektronik."
+ },
+ {
+  "tajuk": "Visor angkasawan",
+  "isi": "Visor topi angkasawan disalut lapisan nipis emas untuk melindungi daripada sinaran."
+ },
+ {
+  "tajuk": "Emas dalam perubatan",
+  "isi": "Emas digunakan dalam sesetengah bidang pergigian dan peralatan perubatan."
+ },
+ {
+  "tajuk": "Kenapa emas berkilau kuning?",
+  "isi": "Sifat atomnya menyerap cahaya biru dan memantulkan warna kuning."
+ },
+ {
+  "tajuk": "Pusat dagangan emas dunia",
+  "isi": "London dan New York antara pusat dagangan emas utama."
+ },
+ {
+  "tajuk": "Emas dalam adat perkahwinan Melayu",
+  "isi": "Emas sering menjadi sebahagian hantaran dan perhiasan pengantin dalam banyak adat."
+ },
+ {
+  "tajuk": "Gelang emas sebagai tradisi",
+  "isi": "Perhiasan emas sering diwarisi turun-temurun."
+ },
+ {
+  "tajuk": "Emas warisan keluarga",
+  "isi": "Perhiasan yang diwarisi sering mempunyai nilai sentimental."
+ },
+ {
+  "tajuk": "Bekalan emas terhad",
+  "isi": "Emas yang dilombong terhad dan memerlukan kos besar untuk diperoleh."
+ },
+ {
+  "tajuk": "Kos melombong emas",
+  "isi": "Melombong emas memerlukan kos dan tenaga besar, dan itu mempengaruhi bekalan."
+ },
+ {
+  "tajuk": "Emas dan simbol kejayaan",
+  "isi": "Pingat dan anugerah emas melambangkan kejayaan tertinggi."
+ },
+ {
+  "tajuk": "Seluruh emas yang pernah dilombong",
+  "isi": "Dikatakan seluruh emas yang pernah dilombong boleh muat dalam kiub sepanjang kira-kira 21 meter."
+ },
+ {
+  "tajuk": "Kenapa emas dipanggil logam mulia?",
+  "isi": "Kerana jarang, tahan lama dan sukar dihasilkan semula."
+ },
+ {
+  "tajuk": "Syiling emas bersejarah",
+  "isi": "Syiling emas lama dikumpul kerana nilai sejarah dan kandungan emasnya."
+ },
+ {
+  "tajuk": "Soalan: berapa modal minimum?",
+  "isi": "Ia bergantung kepada program atau produk yang dipilih. Hubungi saya untuk maklumat terkini."
+ },
+ {
+  "tajuk": "Soalan: boleh mula dengan jumlah kecil?",
+  "isi": "Ya, bergantung kepada syarat program. Hubungi saya untuk perincian."
+ },
+ {
+  "tajuk": "Soalan: emas atau saham?",
+  "isi": "Setiap satu ada risiko dan ciri berbeza. Ramai menggabungkan beberapa jenis simpanan."
+ },
+ {
+  "tajuk": "Soalan: beli sekali gus atau berkala?",
+  "isi": "Berkala mengurangkan tekanan memilih masa."
+ },
+ {
+  "tajuk": "Soalan: bila waktu terbaik membeli?",
+  "isi": "Sukar diramal. Simpanan berkala lebih praktikal."
+ },
+ {
+  "tajuk": "Soalan: boleh jual bila-bila masa?",
+  "isi": "Biasanya boleh mengikut syarat produk. Faham harga beli semula."
+ },
+ {
+  "tajuk": "Soalan: beza jongkong dan perhiasan?",
+  "isi": "Jongkong fokus pada simpanan, perhiasan termasuk kos upah dan rekaan."
+ },
+ {
+  "tajuk": "Soalan: kena bayar zakat?",
+  "isi": "Jika cukup nisab dan haul, ya. Semak pusat zakat negeri anda."
+ },
+ {
+  "tajuk": "Soalan: selamatkah simpanan emas?",
+  "isi": "Tiada simpanan tanpa risiko. Pilih penyedia yang dipercayai dan simpan dokumen."
+ },
+ {
+  "tajuk": "Soalan: boleh simpan untuk anak?",
+  "isi": "Ramai ibu bapa menyimpan untuk anak. Tanya cara pengurusan dan syaratnya."
+ },
+ {
+  "tajuk": "Soalan: perlu buka akaun khas?",
+  "isi": "Bergantung kepada program. Tanya prosesnya."
+ },
+ {
+  "tajuk": "Soalan: apa itu harga GAP?",
+  "isi": "Harga yang digunakan untuk simpanan emas dalam program GAP, dikemaskini berkala."
+ },
+ {
+  "tajuk": "Soalan: kenapa harga jual dan beli berbeza?",
+  "isi": "Kerana spread dan kos pengendalian."
+ },
+ {
+  "tajuk": "Soalan: berapa lama patut simpan?",
+  "isi": "Emas biasanya sesuai untuk tempoh sederhana hingga panjang."
+ },
+ {
+  "tajuk": "Soalan: emas boleh diwariskan?",
+  "isi": "Ya, emas fizikal boleh diwariskan. Rancang dan beritahu waris."
+ },
+ {
+  "tajuk": "Soalan: boleh gadai emas?",
+  "isi": "Ada pilihan seperti pajak gadai, tetapi faham kos dan syarat sebelum menggunakannya."
+ },
+ {
+  "tajuk": "Soalan: emas lama boleh ditukar?",
+  "isi": "Bergantung kepada polisi penjual. Tanya dahulu."
+ },
+ {
+  "tajuk": "Soalan: bagaimana tahu emas tulen?",
+  "isi": "Rujuk tanda ketulenan dan beli daripada sumber dipercayai. Ujian profesional juga boleh dibuat."
+ },
+ {
+  "tajuk": "Soalan: ada kos tersembunyi?",
+  "isi": "Tanya semua kos seperti upah, pengendalian dan yuran. Pastikan jelas."
+ },
+ {
+  "tajuk": "Soalan: boleh beli dalam talian?",
+  "isi": "Boleh melalui platform yang sah. Sahkan sumbernya dahulu."
+ },
+ {
+  "tajuk": "Kesilapan 1: tiada tujuan",
+  "isi": "Menyimpan tanpa matlamat mudah berhenti di tengah jalan. Tetapkan sebab yang jelas."
+ },
+ {
+  "tajuk": "Kesilapan 2: membeli ikut emosi",
+  "isi": "Keputusan ketika teruja atau takut jarang tepat. Ikut pelan."
+ },
+ {
+  "tajuk": "Kesilapan 3: berhutang untuk membeli",
+  "isi": "Hutang menambah beban. Simpan daripada wang lebihan."
+ },
+ {
+  "tajuk": "Kesilapan 4: tidak faham spread",
+  "isi": "Beza harga beli dan jual menentukan jangkaan anda. Fahami dahulu."
+ },
+ {
+  "tajuk": "Kesilapan 5: tidak simpan dokumen",
+  "isi": "Resit dan sijil penting untuk jualan semula."
+ },
+ {
+  "tajuk": "Kesilapan 6: terlalu kerap jual beli",
+  "isi": "Spread dan kos mengurangkan hasil. Emas lebih sesuai untuk jangka panjang."
+ },
+ {
+  "tajuk": "Kesilapan 7: tiada dana kecemasan",
+  "isi": "Tanpa tunai kecemasan, anda terpaksa menjual emas ketika tidak sesuai."
+ },
+ {
+  "tajuk": "Kesilapan 8: percaya untung pasti",
+  "isi": "Tiada simpanan yang menjamin untung."
+ },
+ {
+  "tajuk": "Kesilapan 9: emas fizikal tanpa keselamatan",
+  "isi": "Pilih tempat simpanan yang selamat."
+ },
+ {
+  "tajuk": "Kesilapan 10: tidak semak harga beli semula",
+  "isi": "Tahu awal, supaya tidak terkejut kemudian."
+ },
+ {
+  "tajuk": "Kesilapan 11: menangguh terlalu lama",
+  "isi": "Setiap bulan yang ditangguh ialah satu peluang simpanan yang terlepas."
+ },
+ {
+  "tajuk": "Kesilapan 12: semua dalam satu bentuk",
+  "isi": "Pertimbangkan gabungan akaun, jongkong dan simpanan lain."
+ },
+ {
+  "tajuk": "Kesilapan 13: abaikan kos upah perhiasan",
+  "isi": "Upah mengurangkan nilai semula. Kira dahulu."
+ },
+ {
+  "tajuk": "Kesilapan 14: tidak beritahu waris",
+  "isi": "Keluarga perlu tahu di mana simpanan dan dokumen anda."
+ },
+ {
+  "tajuk": "Kesilapan 15: ikut desas-desus",
+  "isi": "Semak maklumat daripada sumber yang dipercayai."
+ },
+ {
+  "tajuk": "Kesilapan 16: tidak menyemak penjual",
+  "isi": "Pastikan penjual sah dan jelas."
+ },
+ {
+  "tajuk": "Kesilapan 17: berhenti selepas harga turun",
+  "isi": "Penyimpan berkala boleh mendapat lebih gram semasa harga rendah."
+ },
+ {
+  "tajuk": "Kesilapan 18: tiada rekod",
+  "isi": "Catat gram, tarikh dan harga."
+ },
+ {
+  "tajuk": "Kesilapan 19: lupa zakat",
+  "isi": "Semak nisab dan haul setiap tahun."
+ },
+ {
+  "tajuk": "Kesilapan 20: tidak bertanya",
+  "isi": "Soalan yang ditanya awal mengelakkan masalah kemudian."
+ },
+ {
+  "tajuk": "Cabaran: semak perbelanjaan 7 hari",
+  "isi": "Catat setiap perbelanjaan selama seminggu dan lihat di mana boleh dijimatkan."
+ },
+ {
+  "tajuk": "Cabaran: kurangkan satu pembelian mahal seminggu",
+  "isi": "Simpan bezanya sebagai emas."
+ },
+ {
+  "tajuk": "Cabaran: simpan RM5 sehari",
+  "isi": "Kira-kira RM150 sebulan dan RM1,800 setahun."
+ },
+ {
+  "tajuk": "Cabaran: kumpul duit syiling",
+  "isi": "Pada hujung bulan, jadikan baki syiling sebagai simpanan."
+ },
+ {
+  "tajuk": "Cabaran: tetapkan sasaran gram bulan ini",
+  "isi": "Tulis jumlah gram yang anda mahu capai."
+ },
+ {
+  "tajuk": "Cabaran: tulis 3 sebab anda simpan emas",
+  "isi": "Sebab yang jelas menguatkan komitmen."
+ },
+ {
+  "tajuk": "Cabaran: bincang dengan pasangan",
+  "isi": "Kongsi matlamat simpanan anda."
+ },
+ {
+  "tajuk": "Cabaran: semak langganan",
+  "isi": "Batalkan yang tidak digunakan dan simpan bezanya."
+ },
+ {
+  "tajuk": "Cabaran: langkah pertama dana kecemasan",
+  "isi": "Letakkan sejumlah kecil ke dalam akaun khas."
+ },
+ {
+  "tajuk": "Cabaran: simpan 10% daripada bonus",
+  "isi": "Mudah dan kurang terasa."
+ },
+ {
+  "tajuk": "Cabaran: tunggu 24 jam sebelum beli",
+  "isi": "Elakkan perbelanjaan impulsif."
+ },
+ {
+  "tajuk": "Cabaran: belajar satu istilah baharu",
+  "isi": "Contohnya spread, haul atau karat."
+ },
+ {
+  "tajuk": "Cabaran: semak harga sekali seminggu sahaja",
+  "isi": "Kurangkan stres, fokus kepada pelan."
+ },
+ {
+  "tajuk": "Cabaran: ajar seorang kawan",
+  "isi": "Mengajar membantu anda faham lebih baik."
+ },
+ {
+  "tajuk": "Cabaran: buat rekod simpanan",
+  "isi": "Tulis jumlah gram setakat ini."
+ },
+ {
+  "tajuk": "Cabaran: tambah RM10 bulan ini",
+  "isi": "Naikkan sedikit simpanan bulanan anda."
+ },
+ {
+  "tajuk": "Cabaran: buat pelan setahun",
+  "isi": "Tulis sasaran gram bagi setiap suku tahun."
+ },
+ {
+  "tajuk": "Cabaran: sediakan dokumen penting",
+  "isi": "Kumpulkan resit, sijil dan maklumat akaun di satu tempat."
+ },
+ {
+  "tajuk": "Cabaran: hargai kemajuan",
+  "isi": "Lihat berapa jauh anda sudah melangkah."
+ },
+ {
+  "tajuk": "Cabaran: mula hari ini",
+  "isi": "Pilih jumlah kecil dan buat sekarang."
+ },
+ {
+  "tajuk": "Ajar anak menabung",
+  "isi": "Tabiat menabung bermula sejak kecil. Mulakan dengan tabung kecil."
+ },
+ {
+  "tajuk": "Hadiah emas untuk anak",
+  "isi": "Wafer atau syiling kecil ialah hadiah yang tahan lama."
+ },
+ {
+  "tajuk": "Terangkan nilai wang kepada anak",
+  "isi": "Anak yang faham nilai wang lebih bijak berbelanja."
+ },
+ {
+  "tajuk": "Simpanan untuk masa depan anak",
+  "isi": "Mulakan awal walaupun jumlahnya kecil."
+ },
+ {
+  "tajuk": "Libatkan keluarga",
+  "isi": "Simpanan yang dikongsi lebih mudah dikekalkan."
+ },
+ {
+  "tajuk": "Wariskan ilmu, bukan sekadar harta",
+  "isi": "Ajar tabiat baik bersama simpanan."
+ },
+ {
+  "tajuk": "Ibu bapa dan persaraan",
+  "isi": "Sediakan simpanan supaya tidak membebankan anak kemudian."
+ },
+ {
+  "tajuk": "Tradisi emas dalam keluarga",
+  "isi": "Hargai perhiasan yang diwarisi dan jaga dengan baik."
+ },
+ {
+  "tajuk": "Pelan keluarga yang sederhana",
+  "isi": "Satu matlamat, satu jumlah bulanan dan satu rekod."
+ },
+ {
+  "tajuk": "Terima kasih kerana belajar bersama",
+  "isi": "Teruskan menyimpan secara konsisten, satu gram demi satu gram."
+ }
 ]

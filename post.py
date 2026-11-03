@@ -15,7 +15,7 @@ TZ = ZoneInfo("Asia/Kuala_Lumpur")
 STATE = "data/state.json"
 OUT = "out"
 SITE = "shukriee.com"
-CLOSING = "Klik shukriee.com sekarang untuk simpan emas!"
+CLOSING = "Whatsapp saya di shukriee.com sekarang untuk simpan atau jual emas!"
 BULAN = ["Jan", "Feb", "Mac", "Apr", "Mei", "Jun", "Jul", "Ogos", "Sep", "Okt", "Nov", "Dis"]
 
 
@@ -226,8 +226,10 @@ def mode_ilmu(p, st):
     if not items:
         print("data/ilmu.json kosong")
         return
-    t = rotate(st, "ilmu_idx", items)
-    send(f"{t['tajuk']}\n\n{t['isi']}", None, "ilmu-emas")
+    n = int(st.get("ilmu_n", 0)) + 1          # nombor siaran: 1,2,...365,366,...
+    t = items[(n - 1) % len(items)]            # lepas 365 pusing balik ke entri 1
+    st["ilmu_n"] = n
+    send(f"💡 Ilmu Emas #{n}: {t['tajuk']}\n\n{t['isi']}", None, "ilmu-emas")
 
 
 USE_MALL = False  # PG Mall menyekat GitHub (403). Tukar kepada True jika akses PG Mall sudah ada.

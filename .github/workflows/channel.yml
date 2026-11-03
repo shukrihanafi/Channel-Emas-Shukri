@@ -7,7 +7,7 @@ on:
     - cron: "9 2 * * *"       # 10:09 pagi -> Item Gold Bar / Dinar / Perak
     - cron: "9 5 * * *"       # 1:09 petang -> Harga PG Jewel + Non-PG Buyback
     - cron: "9 10 * * *"      # 6:09 petang -> Item PG Jewel
-    - cron: "9 12 * * *"      # 8:09 malam -> Harga GAP
+    - cron: "9 13 * * *"      # 9:09 malam -> Harga GAP
     - cron: "9 14 * * *"      # 10:09 malam -> Ilmu Emas
     - cron: "39 14 * * *"     # 10:39 malam -> Item Gold Bar / Dinar / Perak
     - cron: "24,54 0-13 * * *" # setiap 30 min, 8:24 pagi - 9:54 malam -> semak Price Alert
@@ -44,7 +44,7 @@ jobs:
             echo "mode=${{ github.event.inputs.mode }}" >> $GITHUB_OUTPUT
           else
             case "${{ github.event.schedule }}" in
-              "9 0 * * *"|"9 12 * * *") echo "mode=gap" >> $GITHUB_OUTPUT ;;
+              "9 0 * * *"|"9 13 * * *") echo "mode=gap" >> $GITHUB_OUTPUT ;;
               "9 2 * * *"|"39 14 * * *") echo "mode=pgitem" >> $GITHUB_OUTPUT ;;
               "9 5 * * *") echo "mode=jewel" >> $GITHUB_OUTPUT ;;
               "9 10 * * *") echo "mode=item" >> $GITHUB_OUTPUT ;;

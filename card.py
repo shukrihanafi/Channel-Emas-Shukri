@@ -4,11 +4,27 @@ from PIL import Image, ImageDraw, ImageFont
 W = H = 1080
 RED_DARK, RED = (92, 8, 16), (150, 18, 28)
 GOLD, GOLD_L, WHITE = (230, 184, 72), (255, 226, 140), (255, 255, 255)
-BOLD, REG = "fonts/Poppins-Bold.ttf", "fonts/Poppins-Regular.ttf"
+import os
+_SYS = ["/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"]
+
+
+def _find(name, fallback):
+    """Cari fon dalam repositori (mana-mana folder); kalau tiada, guna fon sistem."""
+    for root, _, files in os.walk("."):
+        if name in files:
+            return os.path.join(root, name)
+    return fallback
+
+
+BOLD = _find("Poppins-Bold.ttf", _SYS[0])
+REG = _find("Poppins-Regular.ttf", _SYS[1])
 
 
 def _f(path, size):
-    return ImageFont.truetype(path, size)
+    try:
+        return ImageFont.truetype(path, size)
+    except OSError:
+        return ImageFont.load_default(size)
 
 
 def _bg():

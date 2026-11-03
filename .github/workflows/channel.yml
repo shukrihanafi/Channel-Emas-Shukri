@@ -7,7 +7,8 @@ on:
     - cron: "9 2 * * *"       # 10:09 pagi -> Item Gold Bar / Dinar / Perak
     - cron: "9 5 * * *"       # 1:09 petang -> Harga PG Jewel + Non-PG Buyback
     - cron: "9 10 * * *"      # 6:09 petang -> Item PG Jewel
-    - cron: "9 13 * * *"      # 9:09 malam -> Harga GAP
+    - cron: "9 12 * * *"      # 8:09 malam -> Harga GAP
+    - cron: "9 13 * * *"      # 9:09 malam -> UJIAN sekali sahaja (3 Nov 2026), selepas itu dilangkau
     - cron: "9 14 * * *"      # 10:09 malam -> Ilmu Emas
     - cron: "39 14 * * *"     # 10:39 malam -> Item Gold Bar / Dinar / Perak
     - cron: "24,54 0-13 * * *" # setiap 30 min, 8:24 pagi - 9:54 malam -> semak Price Alert
@@ -44,7 +45,8 @@ jobs:
             echo "mode=${{ github.event.inputs.mode }}" >> $GITHUB_OUTPUT
           else
             case "${{ github.event.schedule }}" in
-              "9 0 * * *"|"9 13 * * *") echo "mode=gap" >> $GITHUB_OUTPUT ;;
+              "9 0 * * *"|"9 12 * * *") echo "mode=gap" >> $GITHUB_OUTPUT ;;
+              "9 13 * * *") if [ "$(TZ=Asia/Kuala_Lumpur date +%F)" = "2026-11-03" ]; then echo "mode=gap" >> $GITHUB_OUTPUT; else echo "mode=skip" >> $GITHUB_OUTPUT; fi ;;
               "9 2 * * *"|"39 14 * * *") echo "mode=pgitem" >> $GITHUB_OUTPUT ;;
               "9 5 * * *") echo "mode=jewel" >> $GITHUB_OUTPUT ;;
               "9 10 * * *") echo "mode=item" >> $GITHUB_OUTPUT ;;
@@ -53,6 +55,7 @@ jobs:
             esac
           fi
       - name: Jalankan bot
+        if: steps.m.outputs.mode != 'skip'
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
@@ -67,6 +70,7 @@ jobs:
           WA_AUTO_MODES: "gap,jewel,alert,item,pgitem,ilmu"
         run: python post.py ${{ steps.m.outputs.mode }}
       - name: Simpan state
+        if: steps.m.outputs.mode != 'skip'
         run: |
           git config user.name "channel-bot"
           git config user.email "bot@users.noreply.github.com"

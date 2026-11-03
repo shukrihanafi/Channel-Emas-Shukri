@@ -15,7 +15,7 @@ TZ = ZoneInfo("Asia/Kuala_Lumpur")
 STATE = "data/state.json"
 OUT = "out"
 SITE = "shukriee.com"
-CLOSING = "Whatsapp saya di shukriee.com sekarang untuk simpan atau jual emas!"
+CLOSING = "Nak simpan atau jual emas?\nWhatsApp saya di shukriee.com"
 BULAN = ["Jan", "Feb", "Mac", "Apr", "Mei", "Jun", "Jul", "Ogos", "Sep", "Okt", "Nov", "Dis"]
 
 

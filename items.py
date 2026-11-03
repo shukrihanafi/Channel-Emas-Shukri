@@ -54,14 +54,15 @@ def jewel_text(d):
     lo, hi = float(d["min_price"]), float(d["max_price"])
     price = rm(lo) if lo == hi else f"{rm(lo)} - {rm(hi)}"
     lines = ["💎 Item PG Jewel", "", f"Item: {d['name']}", "", f"Harga: {price}"]
-    locs = []
+    ws = []
     for s in skus:
-        for l in (s.get("locations") or [{"name": s.get("location")}]):
-            n = (l.get("name") or "").strip()
-            if n and n not in locs:
-                locs.append(n)
-    if locs:
-        lines += ["", "Available At:"] + [f"• {n}" for n in locs[:6]]
+        m = re.match(r"\s*([\d.]+)\s*g", str(s.get("option_value_name") or ""), re.I)
+        if m:
+            ws.append(float(m.group(1)))
+    if ws:
+        fw = lambda x: f"{x:g}g"
+        wt = fw(min(ws)) if min(ws) == max(ws) else f"{fw(min(ws))} - {fw(max(ws))}"
+        lines = lines[:3] + ["", f"Berat: {wt}"] + lines[3:]
     lines += ["", f"Link: {JEWEL_SITE}/{d['product_id']}?rpc={JEWEL_RPC}", "", "Nice kan? Dapatkan segera dekat link di atas."]
     return "\n".join(lines)
 

@@ -46,6 +46,14 @@ def parse(text: str) -> dict:
         raise ValueError("Harga PG Jewel tidak lengkap")
     d["jewel"] = jewel
 
+    # Non-PG Gold Buyback (harga PG beli emas jenama lain, RM/g)
+    nonpg = {}
+    n = re.search(r"NON-PG GOLD BUYBACK.*?(?=SMALL BAR|$)", text, re.I)
+    if n:
+        for p, buy in re.findall(r"\b(999|916)\s+([\d,.]+)", n.group(0)):
+            nonpg[p] = _num(buy)
+    d["nonpg"] = nonpg
+
     bars = {}
     b = re.search(r"GOLD BAR \(24K\).*?(?=GOLD WAFER)", text, re.I)
     if b:

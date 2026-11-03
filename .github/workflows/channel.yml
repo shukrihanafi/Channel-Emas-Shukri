@@ -1,17 +1,7 @@
 name: Channel Emas
 
 on:
-  schedule:
-    # Waktu MYT = UTC + 8 jam
-    - cron: "9 0 * * *"       # 8:09 pagi  -> Harga GAP
-    - cron: "9 2 * * *"       # 10:09 pagi -> Item Gold Bar / Dinar / Perak
-    - cron: "9 5 * * *"       # 1:09 petang -> Harga PG Jewel + Non-PG Buyback
-    - cron: "9 10 * * *"      # 6:09 petang -> Item PG Jewel
-    - cron: "9 12 * * *"      # 8:09 malam -> Harga GAP
-    - cron: "9 13 * * *"      # 9:09 malam -> UJIAN sekali sahaja (3 Nov 2026), selepas itu dilangkau
-    - cron: "9 14 * * *"      # 10:09 malam -> Ilmu Emas
-    - cron: "39 14 * * *"     # 10:39 malam -> Item Gold Bar / Dinar / Perak
-    - cron: "24,54 0-13 * * *" # setiap 30 min, 8:24 pagi - 9:54 malam -> semak Price Alert
+  # Jadual dikendalikan oleh cron-job.org (POST ke workflow_dispatch)
   workflow_dispatch:
     inputs:
       mode:

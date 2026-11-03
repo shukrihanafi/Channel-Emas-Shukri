@@ -2,16 +2,19 @@ name: Channel Emas
 
 on:
   schedule:
-    - cron: "0 1 * * *"       # 9:00 pagi MYT  -> Harga GAP
-    - cron: "30 4 * * *"      # 12:30 tengah hari MYT -> Harga PG Jewel
-    - cron: "0 7 * * *"       # 3:00 petang MYT -> Item (siang)
-    - cron: "0 12 * * *"      # 8:00 malam MYT -> Ilmu Emas
-    - cron: "0 13 * * *"      # 9:00 malam MYT -> Item (malam)
-    - cron: "*/30 1-13 * * *" # setiap 30 min, 9 pagi - 10 malam MYT -> semak Price Alert
+    # Waktu MYT = UTC + 8 jam
+    - cron: "9 0 * * *"       # 8:09 pagi  -> Harga GAP
+    - cron: "9 2 * * *"       # 10:09 pagi -> Item Gold Bar / Dinar / Perak
+    - cron: "9 5 * * *"       # 1:09 petang -> Harga PG Jewel + Non-PG Buyback
+    - cron: "9 10 * * *"      # 6:09 petang -> Item PG Jewel
+    - cron: "9 12 * * *"      # 8:09 malam -> Harga GAP
+    - cron: "9 14 * * *"      # 10:09 malam -> Ilmu Emas
+    - cron: "39 14 * * *"     # 10:39 malam -> Item Gold Bar / Dinar / Perak
+    - cron: "24,54 0-13 * * *" # setiap 30 min, 8:24 pagi - 9:54 malam -> semak Price Alert
   workflow_dispatch:
     inputs:
       mode:
-        description: "Mod (gap / jewel / alert / ilmu / item / wa-channels)"
+        description: "Mod (gap / jewel / alert / ilmu / item / pgitem / wa-channels)"
         required: true
         default: "gap"
 
@@ -41,10 +44,11 @@ jobs:
             echo "mode=${{ github.event.inputs.mode }}" >> $GITHUB_OUTPUT
           else
             case "${{ github.event.schedule }}" in
-              "0 1 * * *") echo "mode=gap" >> $GITHUB_OUTPUT ;;
-              "30 4 * * *") echo "mode=jewel" >> $GITHUB_OUTPUT ;;
-              "0 12 * * *") echo "mode=ilmu" >> $GITHUB_OUTPUT ;;
-              "0 7 * * *"|"0 13 * * *") echo "mode=item" >> $GITHUB_OUTPUT ;;
+              "9 0 * * *"|"9 12 * * *") echo "mode=gap" >> $GITHUB_OUTPUT ;;
+              "9 2 * * *"|"39 14 * * *") echo "mode=pgitem" >> $GITHUB_OUTPUT ;;
+              "9 5 * * *") echo "mode=jewel" >> $GITHUB_OUTPUT ;;
+              "9 10 * * *") echo "mode=item" >> $GITHUB_OUTPUT ;;
+              "9 14 * * *") echo "mode=ilmu" >> $GITHUB_OUTPUT ;;
               *) echo "mode=alert" >> $GITHUB_OUTPUT ;;
             esac
           fi
@@ -59,8 +63,8 @@ jobs:
           WA_CHANNEL_ID: ${{ secrets.WA_CHANNEL_ID }}
           # Suis WhatsApp auto: tukar "0" kepada "1" bila sudah bersedia. Tukar kembali "0" untuk berhenti.
           WA_ENABLED: "1"
-          # Mod yang dihantar auto ke WhatsApp Channel. "ilmu" dibiar manual (Telegram sahaja).
-          WA_AUTO_MODES: "gap,jewel,alert,item,ilmu"
+          # Mod yang dihantar auto ke WhatsApp Channel.
+          WA_AUTO_MODES: "gap,jewel,alert,item,pgitem,ilmu"
         run: python post.py ${{ steps.m.outputs.mode }}
       - name: Simpan state
         run: |

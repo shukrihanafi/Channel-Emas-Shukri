@@ -1,7 +1,7 @@
 """Bot Channel Emas - jana post & hantar ke Telegram (mod separa-auto).
 
 Guna:  python post.py <mod>
-Mod:   gap | jewel | alert | ilmu | item
+Mod:   gap | jewel | alert | ilmu | item | item-jewel | item-mall
 Env:   TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID   (DRY_RUN=1 -> simpan dalam out/ sahaja)
        ALERT_THRESHOLD (RM, lalai 3)
 """
@@ -9,12 +9,13 @@ import json, os, sys
 from datetime import datetime
 from zoneinfo import ZoneInfo
 import requests
-import pgfetch, card
+import pgfetch, card, items
 
 TZ = ZoneInfo("Asia/Kuala_Lumpur")
 STATE = "data/state.json"
 OUT = "out"
 SITE = "shukriee.com"
+BELI_LINK = "https://shukriee.com/beliemas"
 BULAN = ["Jan", "Feb", "Mac", "Apr", "Mei", "Jun", "Jul", "Ogos", "Sep", "Okt", "Nov", "Dis"]
 
 
@@ -89,7 +90,13 @@ def mode_gap(p, st):
     g, dt = st["gap"], now_my()
     price = p["gap_rm_per_gram"]
     update_range(st, price, dt.strftime("%Y-%m-%d"))
-    diff = price - g["last_post"] if g.get("last_post") else 0
+    g.setdefault("history", {})[dt.strftime("%Y-%m-%d")] = price
+    seed_history(st)
+    prev = g.get("last_post")
+    if prev is None:  # guna harga semalam daripada sejarah
+        ks = sorted(k for k in g["history"] if k < dt.strftime("%Y-%m-%d"))
+        prev = g["history"][ks[-1]] if ks else price
+    diff = price - prev
     ts = fmt_dt(dt)
     text = (
         f"Public Gold GAP\n"
@@ -104,7 +111,7 @@ def mode_gap(p, st):
     img = f"{OUT}/gap.png"
     try:
         card.gap_card(img, price, p["gap_gram_per_rm100"], trend_text(diff),
-                      f"{g['low']['price']:,.0f}", f"{g['high']['price']:,.0f}", ts)
+                      f"{g['low']['price']:,.0f}", f"{g['high']['price']:,.0f}", ts, series_30(st))
     except Exception as e:  # imej gagal -> teks tetap dihantar
         print("Imej gagal:", e)
         img = None
@@ -115,8 +122,8 @@ def mode_gap(p, st):
 def mode_jewel(p, st):
     j, ts = p["jewel"], fmt_dt(now_my())
     text = (
-        "💎 Harga Emas PG Jewel\n\n"
-        "Harga barang kemas PG Jewel baru sahaja dikemaskini.\n\n"
+        "💎 Harga Emas PG Jewel (Barang Kemas)\n\n"
+        "Harga emas PG Jewel (barang kemas) baru sahaja dikemaskini.\n\n"
         f"PG Jewel (Sell)\nEmas 999 = RM {j['999']['sell']:,.0f}\nEmas 916 = RM {j['916']['sell']:,.0f}\n\n"
         f"PG Jewel (Buy)\nEmas 999 = RM {j['999']['buy']:,.0f}\nEmas 916 = RM {j['916']['buy']:,.0f}\n\n"
         f"Dikemaskini: {ts}"
@@ -153,10 +160,34 @@ def mode_alert(p, st):
             "🚨🚨🚨 Price Alert 🚨🚨🚨\n\n"
             f"Harga emas menjunam! Turun RM{abs(diff):,.0f} daripada RM{base:,.0f} kepada RM{price:,.0f} sekarang.\n\n"
             "Peluang untuk tambah tabung simpanan emas sekarang.\n"
-            f"Panduan simpan emas: {SITE}"
+            f"Panduan simpan emas: {BELI_LINK}"
         )
     send(text, None, "price-alert")
     g["last_alert"] = price
+
+
+SEED = {  # graf 30 hari GAP (05/10 - 03/11/2026) daripada graf rujukan Shukri
+    "2026-10-05": 589, "2026-10-06": 594, "2026-10-07": 581, "2026-10-08": 589, "2026-10-09": 596,
+    "2026-10-10": 597, "2026-10-11": 597, "2026-10-12": 592, "2026-10-13": 594, "2026-10-14": 583,
+    "2026-10-15": 588, "2026-10-16": 597, "2026-10-17": 594, "2026-10-18": 592, "2026-10-19": 592,
+    "2026-10-20": 588, "2026-10-21": 587, "2026-10-22": 577, "2026-10-23": 571, "2026-10-24": 570,
+    "2026-10-25": 569, "2026-10-26": 569, "2026-10-27": 577, "2026-10-28": 573, "2026-10-29": 569,
+    "2026-10-30": 552, "2026-10-31": 551, "2026-11-01": 548, "2026-11-02": 560, "2026-11-03": 561,
+}
+
+
+def seed_history(st):
+    h = st["gap"].setdefault("history", {})
+    for k, v in SEED.items():
+        h.setdefault(k, v)
+    for k, v in sorted(h.items()):  # betulkan terendah/tertinggi jika sejarah lebih ekstrem
+        update_range(st, v, k)
+
+
+def series_30(st):
+    h = st["gap"]["history"]
+    ks = sorted(h)[-30:]
+    return [(k, h[k]) for k in ks]
 
 
 def rotate(st, key, items):
@@ -174,19 +205,37 @@ def mode_ilmu(p, st):
     send(f"{t['tajuk']}\n\n{t['isi']}\n\n➡️ {SITE}", None, "ilmu-emas")
 
 
-def mode_item(p, st):
-    items = load(dpath("items.json"), [])
-    if not items:
-        print("data/items.json kosong - tambah item PG Mall/PG Jewel dahulu")
-        return
-    it = rotate(st, "item_idx", items)
-    text = (f"Item {it.get('kedai', 'PG Mall')}\n\nItem: {it['nama']}\n\nHarga: RM {it['harga']}\n\n"
-            f"Link: {it['link']}\n\nNice kan? Dapatkan segera dekat link di atas.")
-    img = it.get("imej")
-    send(text, img if img and os.path.exists(img) else None, "item")
+def source_for(dt):
+    """Siang (sebelum 6 petang) & malam bertukar ganti setiap hari: PG Jewel <-> PG Mall."""
+    siang = dt.hour < 18
+    genap = dt.toordinal() % 2 == 0
+    return "jewel" if (genap != siang) else "mall"
 
 
-MODES = {"gap": mode_gap, "jewel": mode_jewel, "alert": mode_alert, "ilmu": mode_ilmu, "item": mode_item}
+def _download_jpg(url, dest):
+    try:
+        from io import BytesIO
+        from PIL import Image
+        r = requests.get(url, headers=items.UA, timeout=30)
+        r.raise_for_status()
+        Image.open(BytesIO(r.content)).convert("RGB").save(dest, "JPEG", quality=92)
+        return dest
+    except Exception as e:
+        print("Gambar item gagal dimuat turun:", e)
+        return None
+
+
+def mode_item(p, st, source=None):
+    source = source or source_for(now_my())
+    text, img_url = (items.jewel_item if source == "jewel" else items.mall_item)(st)
+    os.makedirs(OUT, exist_ok=True)
+    img = _download_jpg(img_url, f"{OUT}/item.jpg") if img_url else None
+    send(text, img, f"item-{source}")
+
+
+MODES = {"gap": mode_gap, "jewel": mode_jewel, "alert": mode_alert, "ilmu": mode_ilmu, "item": mode_item,
+         "item-jewel": lambda p, st: mode_item(p, st, "jewel"),
+         "item-mall": lambda p, st: mode_item(p, st, "mall")}
 
 if __name__ == "__main__":
     mode = sys.argv[1] if len(sys.argv) > 1 else ""
@@ -194,8 +243,9 @@ if __name__ == "__main__":
         sys.exit(f"Mod mesti salah satu: {', '.join(MODES)}")
     st = load(STATE, {})
     st.setdefault("gap", {"last_post": None, "last_alert": None,
-                          "low": {"price": 561, "date": "2026-06-30"},
+                          "low": {"price": 548, "date": "2026-11-01"},
                           "high": {"price": 764, "date": "2026-01-29"}})
+    seed_history(st)
     prices = pgfetch.get_prices() if mode in ("gap", "jewel", "alert") else {}
     MODES[mode](prices, st)
     save(STATE, st)

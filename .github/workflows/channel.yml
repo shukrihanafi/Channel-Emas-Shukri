@@ -52,6 +52,8 @@ jobs:
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          TELEGRAM_CHANNEL: "@kenaliemas"
+          TG_CHANNEL_ENABLED: "1"
           ALERT_THRESHOLD: "3"
           WHAPI_TOKEN: ${{ secrets.WHAPI_TOKEN }}
           WA_CHANNEL_ID: ${{ secrets.WA_CHANNEL_ID }}

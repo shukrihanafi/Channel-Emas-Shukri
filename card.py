@@ -94,7 +94,7 @@ def _chart(path, series, size=(1840, 690)):
     ax.tick_params(axis="x", labelsize=13)
     ax.tick_params(axis="y", labelsize=15)
     ax.set_xticks(x)
-    ax.set_xticklabels([d[8:10] + "/" + d[5:7] for d in dates])
+    ax.set_xticklabels([d[8:10] + "/" + d[5:7] if len(d) == 10 and d[4] == "-" else d for d in dates])
     ax.yaxis.set_major_locator(plt.MaxNLocator(5, integer=True))
 
     grad = np.linspace(0, 1, 256).reshape(-1, 1)

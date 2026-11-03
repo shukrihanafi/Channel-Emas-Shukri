@@ -27,6 +27,11 @@ def fmt_dt(dt):
     return f"{dt.day:02d} {BULAN[dt.month-1]} {dt.year} @ {h}:{dt.minute:02d} {'am' if dt.hour < 12 else 'pm'}"
 
 
+def dpath(name):
+    """data/<name> jika ada, kalau tidak <name> di akar repositori."""
+    return f"data/{name}" if os.path.exists(f"data/{name}") or not os.path.exists(name) else name
+
+
 def load(path, default):
     try:
         return json.load(open(path, encoding="utf-8"))
@@ -35,6 +40,7 @@ def load(path, default):
 
 
 def save(path, data):
+    os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
     json.dump(data, open(path, "w", encoding="utf-8"), indent=2, ensure_ascii=False)
 
 
@@ -96,8 +102,12 @@ def mode_gap(p, st):
     )
     os.makedirs(OUT, exist_ok=True)
     img = f"{OUT}/gap.png"
-    card.gap_card(img, price, p["gap_gram_per_rm100"], trend_text(diff),
-                  f"{g['low']['price']:,.0f}", f"{g['high']['price']:,.0f}", ts)
+    try:
+        card.gap_card(img, price, p["gap_gram_per_rm100"], trend_text(diff),
+                      f"{g['low']['price']:,.0f}", f"{g['high']['price']:,.0f}", ts)
+    except Exception as e:  # imej gagal -> teks tetap dihantar
+        print("Imej gagal:", e)
+        img = None
     send(text, img, "harga-GAP")
     g["last_post"] = price
 
@@ -113,7 +123,11 @@ def mode_jewel(p, st):
     )
     os.makedirs(OUT, exist_ok=True)
     img = f"{OUT}/jewel.png"
-    card.jewel_card(img, j, ts)
+    try:
+        card.jewel_card(img, j, ts)
+    except Exception as e:
+        print("Imej gagal:", e)
+        img = None
     send(text, img, "harga-PG-Jewel")
 
 
@@ -152,7 +166,7 @@ def rotate(st, key, items):
 
 
 def mode_ilmu(p, st):
-    items = load("data/ilmu.json", [])
+    items = load(dpath("ilmu.json"), [])
     if not items:
         print("data/ilmu.json kosong")
         return
@@ -161,7 +175,7 @@ def mode_ilmu(p, st):
 
 
 def mode_item(p, st):
-    items = load("data/items.json", [])
+    items = load(dpath("items.json"), [])
     if not items:
         print("data/items.json kosong - tambah item PG Mall/PG Jewel dahulu")
         return

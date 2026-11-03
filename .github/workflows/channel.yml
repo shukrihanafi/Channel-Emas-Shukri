@@ -1,0 +1,57 @@
+name: Channel Emas
+
+on:
+  schedule:
+    - cron: "0 1 * * *"       # 9:00 pagi MYT  -> Harga GAP
+    - cron: "30 4 * * *"      # 12:30 tengah hari MYT -> Harga PG Jewel
+    - cron: "0 12 * * *"      # 8:00 malam MYT -> Ilmu Emas
+    - cron: "*/30 1-13 * * *" # setiap 30 min, 9 pagi - 10 malam MYT -> semak Price Alert
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "Mod (gap / jewel / alert / ilmu / item)"
+        required: true
+        default: "gap"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: channel-emas
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - name: Tentukan mod
+        id: m
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "mode=${{ github.event.inputs.mode }}" >> $GITHUB_OUTPUT
+          else
+            case "${{ github.event.schedule }}" in
+              "0 1 * * *") echo "mode=gap" >> $GITHUB_OUTPUT ;;
+              "30 4 * * *") echo "mode=jewel" >> $GITHUB_OUTPUT ;;
+              "0 12 * * *") echo "mode=ilmu" >> $GITHUB_OUTPUT ;;
+              *) echo "mode=alert" >> $GITHUB_OUTPUT ;;
+            esac
+          fi
+      - name: Jalankan bot
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          ALERT_THRESHOLD: "3"
+        run: python post.py ${{ steps.m.outputs.mode }}
+      - name: Simpan state
+        run: |
+          git config user.name "channel-bot"
+          git config user.email "bot@users.noreply.github.com"
+          git add data/state.json
+          git diff --staged --quiet || (git commit -m "kemas kini state" && git push)

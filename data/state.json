@@ -43,5 +43,9 @@
       "2026-11-03": 556.0
     }
   },
-  "ilmu_idx": 2
+  "ilmu_idx": 2,
+  "jewel_cat_idx": 1,
+  "recent_items": [
+    "J90760"
+  ]
 }

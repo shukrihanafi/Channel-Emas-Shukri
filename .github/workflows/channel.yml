@@ -4,12 +4,14 @@ on:
   schedule:
     - cron: "0 1 * * *"       # 9:00 pagi MYT  -> Harga GAP
     - cron: "30 4 * * *"      # 12:30 tengah hari MYT -> Harga PG Jewel
+    - cron: "0 7 * * *"       # 3:00 petang MYT -> Item (siang)
     - cron: "0 12 * * *"      # 8:00 malam MYT -> Ilmu Emas
+    - cron: "0 13 * * *"      # 9:00 malam MYT -> Item (malam)
     - cron: "*/30 1-13 * * *" # setiap 30 min, 9 pagi - 10 malam MYT -> semak Price Alert
   workflow_dispatch:
     inputs:
       mode:
-        description: "Mod (gap / jewel / alert / ilmu / item)"
+        description: "Mod (gap / jewel / alert / ilmu / item / item-jewel / item-mall)"
         required: true
         default: "gap"
 
@@ -25,6 +27,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: main
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -40,6 +44,7 @@ jobs:
               "0 1 * * *") echo "mode=gap" >> $GITHUB_OUTPUT ;;
               "30 4 * * *") echo "mode=jewel" >> $GITHUB_OUTPUT ;;
               "0 12 * * *") echo "mode=ilmu" >> $GITHUB_OUTPUT ;;
+              "0 7 * * *"|"0 13 * * *") echo "mode=item" >> $GITHUB_OUTPUT ;;
               *) echo "mode=alert" >> $GITHUB_OUTPUT ;;
             esac
           fi

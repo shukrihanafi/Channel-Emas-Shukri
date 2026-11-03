@@ -11,7 +11,7 @@ on:
   workflow_dispatch:
     inputs:
       mode:
-        description: "Mod (gap / jewel / alert / ilmu / item / item-jewel / item-mall)"
+        description: "Mod (gap / jewel / alert / ilmu / item)"
         required: true
         default: "gap"
 

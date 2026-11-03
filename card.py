@@ -184,20 +184,66 @@ def gap_card(path, per_gram, per100, trend, low, high, date_text, series):
     im.save(path)
 
 
-def jewel_card(path, j, date_text):
+def jewel_card(path, j, date_text, nonpg=None):
+    """Kad PG Jewel + Non-PG Gold Buyback (1080x1080)."""
+    nonpg = nonpg or {}
     im, d = _bg()
-    _center(d, 80, "HARGA EMAS PG JEWEL", _f(BOLD, 66), GOLD)
-    _center(d, 165, "(BARANG KEMAS)", _f(BOLD, 52), GOLD_L)
-    _center(d, 235, "Harga per gram", _f(REG, 36), WHITE)
-    # header jadual
-    xs = [130, 400, 720]
-    for x, t in zip(xs, ["Emas", "Jual", "Beli"]):
-        d.text((x, 310), t, font=_f(BOLD, 48), fill=GOLD)
-    d.line([(100, 375), (W - 100, 375)], fill=GOLD, width=3)
+    _center(d, 62, "HARGA EMAS PG JEWEL", _f(BOLD, 62), GOLD)
+    _center(d, 140, "& NON-PG GOLD BUYBACK", _f(BOLD, 50), GOLD_L)
+    _center(d, 210, "Harga per gram (RM)", _f(REG, 32), WHITE)
+    cols = [(70, 215, "Emas"), (285, 250, "PG Jual"), (535, 230, "PG Beli"), (765, 250, "Non-PG")]
+    for x, w, t in cols:
+        _center_in(d, x, w, 275, t, _f(BOLD, 40), GOLD)
+    _center_in(d, 765, 250, 322, "(jenama lain)", _f(REG, 24), GOLD_L)
+    d.line([(80, 365), (W - 80, 365)], fill=GOLD, width=3)
     for n, p in enumerate(["999", "916"]):
-        y = 420 + n * 210
-        d.text((xs[0], y), p, font=_f(BOLD, 80), fill=WHITE)
-        d.text((xs[1], y), f"RM {j[p]['sell']:.0f}", font=_f(BOLD, 62), fill=GOLD_L)
-        d.text((xs[2], y), f"RM {j[p]['buy']:.0f}", font=_f(BOLD, 62), fill=WHITE)
+        y = 405 + n * 190
+        _center_in(d, cols[0][0], cols[0][1], y + 6, p, _f(BOLD, 72), WHITE)
+        _center_in(d, cols[1][0], cols[1][1], y + 14, f"{j[p]['sell']:.0f}", _f(BOLD, 58), GOLD_L)
+        _center_in(d, cols[2][0], cols[2][1], y + 14, f"{j[p]['buy']:.0f}", _f(BOLD, 58), WHITE)
+        v = nonpg.get(p)
+        _center_in(d, cols[3][0], cols[3][1], y + 14, f"{v:.0f}" if v else "-", _f(BOLD, 58), (255, 170, 120))
+    d.line([(80, 790), (W - 80, 790)], fill=GOLD, width=2)
+    _center(d, 815, "Non-PG Gold Buyback = harga Public Gold beli emas jenama lain", _f(REG, 25), WHITE)
     _footer(d, date_text)
+    im.save(path)
+
+
+def item_card(path, product_img, title, name, price, weight, purity, date_text):
+    """Kad item Gold Bar / Dinar / Perak (1080x1080) dengan gambar produk."""
+    im, d = _bg()
+    _center(d, 55, title, _f(BOLD, 62), GOLD)
+    box = 470
+    if product_img:
+        try:
+            pi = Image.open(product_img).convert("RGBA")
+            pi.thumbnail((box, box))
+            cx, cy = (W - pi.width) // 2, 150 + (box - pi.height) // 2
+            d.rounded_rectangle([W // 2 - 270, 135, W // 2 + 270, 135 + box + 30], 30, fill=(255, 255, 255))
+            im.paste(pi, (cx, cy), pi)
+        except Exception as e:
+            print("Gambar produk gagal:", e)
+    # nama (dua baris jika panjang)
+    f = _f(BOLD, 40)
+    words, lines, cur = name.split(), [], ""
+    for w in words:
+        t = (cur + " " + w).strip()
+        if d.textlength(t, font=f) > W - 160 and cur:
+            lines.append(cur); cur = w
+        else:
+            cur = t
+    lines.append(cur)
+    y = 650
+    for ln in lines[:2]:
+        _center(d, y, ln, f, WHITE)
+        y += 52
+    _center(d, 765, f"RM {price:,.0f}", _f(BOLD, 96), GOLD_L)
+    info = "   |   ".join(x for x in [f"Berat {weight}" if weight else "", f"Ketulenan {purity}" if purity else ""] if x)
+    if info:
+        _center(d, 880, info, _f(REG, 34), WHITE)
+    _center(d, 930, f"Dikemaskini: {date_text}", _f(REG, 28), GOLD_L)
+    w, h = 330, 56
+    x0 = (W - w) / 2
+    d.rounded_rectangle([x0, 985, x0 + w, 985 + h], 28, fill=(0, 0, 0), outline=GOLD, width=3)
+    _center(d, 994, "shukriee.com", _f(BOLD, 32), WHITE)
     im.save(path)

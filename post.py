@@ -80,12 +80,23 @@ def send(text, image=None, label="post"):
             wa_note = "✅ Sudah dihantar ke WhatsApp Channel (auto)."
         except Exception as e:  # WhatsApp gagal -> Telegram tetap ada untuk hantar manual
             wa_note = f"⚠️ Gagal hantar ke WhatsApp Channel: {e}\nSila hantar manual."
-    if image:
-        with open(image, "rb") as f:
-            r = requests.post(f"{base}/sendPhoto", data={"chat_id": chat}, files={"photo": f}, timeout=60)
+    def push(target):
+        if image:
+            with open(image, "rb") as f:
+                r = requests.post(f"{base}/sendPhoto", data={"chat_id": target}, files={"photo": f}, timeout=60)
+            r.raise_for_status()
+        r = requests.post(f"{base}/sendMessage", data={"chat_id": target, "text": text}, timeout=60)
         r.raise_for_status()
-    r = requests.post(f"{base}/sendMessage", data={"chat_id": chat, "text": text}, timeout=60)
-    r.raise_for_status()
+
+    push(chat)  # salinan semakan untuk Shukri (chat peribadi dengan bot)
+    # Telegram Channel awam (auto) - bot mesti admin channel
+    tg_channel = os.getenv("TELEGRAM_CHANNEL", "").strip()
+    if tg_channel and os.getenv("TG_CHANNEL_ENABLED", "1") == "1":
+        try:
+            push(tg_channel)
+            wa_note = (wa_note + "\n" if wa_note else "") + f"✅ Sudah dihantar ke Telegram Channel {tg_channel} (auto)."
+        except Exception as e:
+            wa_note = (wa_note + "\n" if wa_note else "") + f"⚠️ Gagal hantar ke Telegram Channel {tg_channel}: {e}"
     if wa_note:
         tg_plain(wa_note)
 

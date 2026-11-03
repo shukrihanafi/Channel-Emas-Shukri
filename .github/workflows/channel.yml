@@ -56,9 +56,9 @@ jobs:
           WHAPI_TOKEN: ${{ secrets.WHAPI_TOKEN }}
           WA_CHANNEL_ID: ${{ secrets.WA_CHANNEL_ID }}
           # Suis WhatsApp auto: tukar "0" kepada "1" bila sudah bersedia. Tukar kembali "0" untuk berhenti.
-          WA_ENABLED: "1"
+          WA_ENABLED: "0"
           # Mod yang dihantar auto ke WhatsApp Channel. "ilmu" dibiar manual (Telegram sahaja).
-          WA_AUTO_MODES: "gap,jewel,alert,item"
+          WA_AUTO_MODES: "gap,jewel,alert,item,ilmu"
         run: python post.py ${{ steps.m.outputs.mode }}
       - name: Simpan state
         run: |

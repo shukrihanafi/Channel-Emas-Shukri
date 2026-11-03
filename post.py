@@ -1,7 +1,7 @@
 """Bot Channel Emas - jana post & hantar ke Telegram (mod separa-auto).
 
 Guna:  python post.py <mod>
-Mod:   gap | jewel | alert | ilmu | item   (item-jewel / item-mall = ujian paksa)
+Mod:   gap | jewel | alert | ilmu | item | wa-channels   (item-jewel / item-mall = ujian paksa)
 Env:   TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID   (DRY_RUN=1 -> simpan dalam out/ sahaja)
        ALERT_THRESHOLD (RM, lalai 3)
 """
@@ -9,7 +9,7 @@ import json, os, sys
 from datetime import datetime
 from zoneinfo import ZoneInfo
 import requests
-import pgfetch, card, items
+import pgfetch, card, items, whapi
 
 TZ = ZoneInfo("Asia/Kuala_Lumpur")
 STATE = "data/state.json"
@@ -46,6 +46,23 @@ def save(path, data):
 
 
 # ---------- Telegram ----------
+CURRENT_MODE = ""
+
+
+def tg_plain(msg):
+    """Mesej ringkas ke Telegram (tanpa penutup & tanpa WhatsApp)."""
+    token, chat = os.getenv("TELEGRAM_BOT_TOKEN"), os.getenv("TELEGRAM_CHAT_ID")
+    if os.getenv("DRY_RUN") or not (token and chat):
+        print(msg)
+        return
+    requests.post(f"https://api.telegram.org/bot{token}/sendMessage", data={"chat_id": chat, "text": msg}, timeout=60)
+
+
+def wa_auto_for(mode):
+    modes = [m.strip() for m in os.getenv("WA_AUTO_MODES", "").split(",") if m.strip()]
+    return os.getenv("WA_ENABLED") == "1" and whapi.enabled() and mode.split("-")[0] in modes
+
+
 def send(text, image=None, label="post"):
     text = f"{text.rstrip()}\n\n{CLOSING}"
     os.makedirs(OUT, exist_ok=True)
@@ -56,12 +73,21 @@ def send(text, image=None, label="post"):
         print(f"--- [{label}] (DRY RUN) ---\n{text}\n[imej: {image}]\n")
         return
     base = f"https://api.telegram.org/bot{token}"
+    wa_note = ""
+    if wa_auto_for(CURRENT_MODE):
+        try:
+            whapi.post_channel(text, image)
+            wa_note = "✅ Sudah dihantar ke WhatsApp Channel (auto)."
+        except Exception as e:  # WhatsApp gagal -> Telegram tetap ada untuk hantar manual
+            wa_note = f"⚠️ Gagal hantar ke WhatsApp Channel: {e}\nSila hantar manual."
     if image:
         with open(image, "rb") as f:
             r = requests.post(f"{base}/sendPhoto", data={"chat_id": chat}, files={"photo": f}, timeout=60)
         r.raise_for_status()
     r = requests.post(f"{base}/sendMessage", data={"chat_id": chat, "text": text}, timeout=60)
     r.raise_for_status()
+    if wa_note:
+        tg_plain(wa_note)
 
 
 # ---------- Mod ----------
@@ -244,7 +270,16 @@ def mode_item(p, st, source=None):
     send(text, img, f"item-{source}")
 
 
-MODES = {"gap": mode_gap, "jewel": mode_jewel, "alert": mode_alert, "ilmu": mode_ilmu, "item": mode_item,
+def mode_wa_channels(p, st):
+    """Papar senarai Channel WhatsApp (untuk salin ID Channel) ke Telegram."""
+    rows = whapi.list_channels()
+    if not rows:
+        tg_plain("Tiada Channel ditemui. Pastikan nombor bot sudah jadi admin Channel dan sudah dipautkan di Whapi.")
+        return
+    tg_plain("Senarai Channel WhatsApp:\n\n" + "\n\n".join(f"{n}\nID: {i}\nPeranan: {r}" for i, n, r in rows))
+
+
+MODES = {"wa-channels": mode_wa_channels, "gap": mode_gap, "jewel": mode_jewel, "alert": mode_alert, "ilmu": mode_ilmu, "item": mode_item,
          "item-jewel": lambda p, st: mode_item(p, st, "jewel"),
          "item-mall": lambda p, st: mode_item(p, st, "mall")}
 
@@ -257,6 +292,7 @@ if __name__ == "__main__":
                           "low": {"price": 548, "date": "2026-11-01"},
                           "high": {"price": 764, "date": "2026-01-29"}})
     seed_history(st)
+    CURRENT_MODE = mode
     prices = pgfetch.get_prices() if mode in ("gap", "jewel", "alert") else {}
     MODES[mode](prices, st)
     save(STATE, st)

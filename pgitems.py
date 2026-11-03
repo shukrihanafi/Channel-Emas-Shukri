@@ -79,7 +79,7 @@ TITLES = {"bar": "🥇 GOLD BAR PUBLIC GOLD", "dinar": "🪙 DINAR EMAS PUBLIC G
 
 def pg_text(it, ts):
     weight, purity = specs(it["name"])
-    lines = [TITLES[it["kind"]], "", f"Item: {it['name']}"]
+    lines = [TITLES[it["kind"]], "", f"Produk : {it['name']}"]
     if weight:
         lines += ["", f"Berat: {weight}"]
     if purity:

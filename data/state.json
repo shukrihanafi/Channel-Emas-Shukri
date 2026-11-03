@@ -1,0 +1,14 @@
+{
+  "gap": {
+    "last_post": 561.0,
+    "last_alert": null,
+    "low": {
+      "price": 561,
+      "date": "2026-06-30"
+    },
+    "high": {
+      "price": 764,
+      "date": "2026-01-29"
+    }
+  }
+}

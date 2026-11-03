@@ -15,7 +15,7 @@ TZ = ZoneInfo("Asia/Kuala_Lumpur")
 STATE = "data/state.json"
 OUT = "out"
 SITE = "shukriee.com"
-CLOSING = "Nak simpan atau jual emas?\nWhatsApp saya di shukriee.com"
+CLOSING = ""  # tiada ayat penutup lalai; setiap skrip ada ajakan sendiri
 BULAN = ["Jan", "Feb", "Mac", "Apr", "Mei", "Jun", "Jul", "Ogos", "Sep", "Okt", "Nov", "Dis"]
 
 
@@ -64,7 +64,7 @@ def wa_auto_for(mode):
 
 
 def send(text, image=None, label="post", closing=True):
-    text = f"{text.rstrip()}\n\n{CLOSING}" if closing else text.rstrip()
+    text = f"{text.rstrip()}\n\n{CLOSING}" if (closing and CLOSING) else text.rstrip()
     os.makedirs(OUT, exist_ok=True)
     stamp = now_my().strftime("%Y%m%d-%H%M%S")
     open(f"{OUT}/{stamp}-{label}.txt", "w", encoding="utf-8").write(text)
@@ -123,7 +123,7 @@ def d_my(iso):  # 2026-06-30 -> 30 Jun 2026
     return f"{int(d)} {BULAN[int(m)-1]} {y}"
 
 
-def gap_text_and_card(p, st, diff, ts):
+def gap_text_and_card(p, st, diff, ts, base=None):
     """Teks kad GAP + imej kad (kongsi antara mode gap dan alert)."""
     g, price = st["gap"], p["gap_rm_per_gram"]
     text = (
@@ -133,13 +133,14 @@ def gap_text_and_card(p, st, diff, ts):
         f"Harga GAP {'🔄 Tidak Berubah' if diff == 0 else ('📈 Naik RM%d' % diff if diff > 0 else '📉 Turun RM%d' % abs(diff))}\n\n"
         f"Terendah: RM {g['low']['price']:,.0f} ({d_my(g['low']['date'])})\n"
         f"Tertinggi: RM {g['high']['price']:,.0f} ({d_my(g['high']['date'])})\n\n"
+        f"Jom simpan emas sekarang!\nWhatsApp saya di shukriee.com\n\n"
         f"Dikemaskini: {ts}"
     )
     os.makedirs(OUT, exist_ok=True)
     img = f"{OUT}/gap.png"
     try:
         card.gap_card(img, price, p["gap_gram_per_rm100"], trend_text(diff),
-                      f"{g['low']['price']:,.0f}", f"{g['high']['price']:,.0f}", ts, series_30(st))
+                      f"{g['low']['price']:,.0f}", f"{g['high']['price']:,.0f}", ts, series_30(st, base, price))
     except Exception as e:  # imej gagal -> teks tetap dihantar
         print("Imej gagal:", e)
         img = None
@@ -157,7 +158,7 @@ def mode_gap(p, st):
         ks = sorted(k for k in g["history"] if k < dt.strftime("%Y-%m-%d"))
         prev = g["history"][ks[-1]] if ks else price
     diff = price - prev
-    text, img = gap_text_and_card(p, st, diff, fmt_dt(dt))
+    text, img = gap_text_and_card(p, st, diff, fmt_dt(dt), base=prev)
     send(text, img, "harga-GAP")
     g["last_post"] = price
     g["last_alert"] = price     # asas Price Alert sentiasa harga terakhir yang diumumkan
@@ -166,16 +167,22 @@ def mode_gap(p, st):
 def mode_jewel(p, st):
     j, nonpg, ts = p["jewel"], p.get("nonpg") or {}, fmt_dt(now_my())
     text = (
-        "💎 Harga Emas PG Jewel (Barang Kemas) & Non-PG Gold Buyback\n\n"
-        f"PG Jewel (Sell)\nEmas 999 = RM {j['999']['sell']:,.0f}\nEmas 916 = RM {j['916']['sell']:,.0f}\n\n"
-        f"PG Jewel (Buy)\nEmas 999 = RM {j['999']['buy']:,.0f}\nEmas 916 = RM {j['916']['buy']:,.0f}\n\n"
+        "Harga barang kemas PG Jewel & Non-PG Gold Buyback\n\n"
+        f"🟡 HARGA PG JUAL\nEmas 999 = RM {j['999']['sell']:,.0f}\nEmas 916 = RM {j['916']['sell']:,.0f}\n\n"
+        f"🟡 HARGA PG BELI\nEmas 999 = RM {j['999']['buy']:,.0f}\nEmas 916 = RM {j['916']['buy']:,.0f}\n\n"
     )
     if nonpg:
         text += (
-            f"Non-PG Gold Buyback\nEmas 999 = RM {nonpg.get('999', 0):,.0f}\nEmas 916 = RM {nonpg.get('916', 0):,.0f}\n\n"
+            f"🟡 NON-PG GOLD BUYBACK\nEmas 999 = RM {nonpg.get('999', 0):,.0f}\nEmas 916 = RM {nonpg.get('916', 0):,.0f}\n\n"
             "Nota: Non-PG Gold Buyback ialah harga yang Public Gold tawarkan untuk membeli emas jenama lain.\n\n"
         )
-    text += f"Dikemaskini: {ts}"
+    text += (
+        "Anda nak BELI barang kemas dengan harga murah? atau...\n"
+        "Anda nak JUAL barang kemas lama/rosak/patah dengan harga tinggi?\n\n"
+        "Semua nya ada di PG Jewel!\n\n"
+        "WhatsApp saya sekarang di https://shukriee.com/pgjewel\n\n"
+        f"Dikemaskini: {ts}"
+    )
     os.makedirs(OUT, exist_ok=True)
     img = f"{OUT}/jewel.png"
     try:
@@ -243,7 +250,7 @@ def mode_alert(p, st):
     text = pool[n % len(pool)].format(d=f"{abs(diff):,.0f}", b=f"{base:,.0f}", p=f"{price:,.0f}")
     g.setdefault("history", {})[dt.strftime("%Y-%m-%d")] = price
     seed_history(st)
-    _, img = gap_text_and_card(p, st, diff, fmt_dt(dt))
+    _, img = gap_text_and_card(p, st, diff, fmt_dt(dt), base=base)
     send(text, img, "price-alert", closing=False)
     g["last_alert"] = price
     g["last_post"] = price
@@ -267,10 +274,18 @@ def seed_history(st):
         update_range(st, v, k)
 
 
-def series_30(st):
+def series_30(st, base=None, price=None):
+    """Siri graf 30 titik. Hari ini diganti dengan 'Tadi' (harga diumumkan terakhir) -> 'Kini'
+    supaya arah hujung graf SELARI dengan teks Naik/Turun."""
     h = st["gap"]["history"]
-    ks = sorted(h)[-30:]
-    return [(k, h[k]) for k in ks]
+    today = now_my().strftime("%Y-%m-%d")
+    if base is None or price is None:
+        return [(k, h[k]) for k in sorted(h)[-30:]]
+    pts = [(k, h[k]) for k in sorted(h) if k < today][-28:]
+    if not pts or pts[-1][1] != base:
+        pts.append(("Tadi", base))
+    pts.append(("Kini", price))
+    return pts
 
 
 def rotate(st, key, items):

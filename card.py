@@ -185,26 +185,38 @@ def gap_card(path, per_gram, per100, trend, low, high, date_text, series):
 
 
 def jewel_card(path, j, date_text, nonpg=None):
-    """Kad PG Jewel + Non-PG Gold Buyback (1080x1080)."""
+    """Kad HARGA BARANG KEMAS ikut jadual rujukan (1080x1080)."""
     nonpg = nonpg or {}
     im, d = _bg()
-    _center(d, 62, "HARGA EMAS PG JEWEL", _f(BOLD, 62), GOLD)
-    _center(d, 140, "& NON-PG GOLD BUYBACK", _f(BOLD, 50), GOLD_L)
-    _center(d, 210, "Harga per gram (RM)", _f(REG, 32), WHITE)
-    cols = [(70, 215, "Emas"), (285, 250, "PG Jual"), (535, 230, "PG Beli"), (765, 250, "Non-PG")]
-    for x, w, t in cols:
-        _center_in(d, x, w, 275, t, _f(BOLD, 40), GOLD)
-    _center_in(d, 765, 250, 322, "(jenama lain)", _f(REG, 24), GOLD_L)
-    d.line([(80, 365), (W - 80, 365)], fill=GOLD, width=3)
+    _center(d, 70, "HARGA BARANG KEMAS", _f(BOLD, 68), GOLD)
+    _center(d, 160, "Public Gold  |  PG Jewel", _f(REG, 32), WHITE)
+    xs = [60, 270, 480, 690, 1020]
+    y0, y1, y2, y3, y4 = 240, 360, 440, 590, 740
+    d.rectangle([xs[0], y0, xs[4], y4], outline=GOLD, width=4)
+    d.line([(xs[1], y0), (xs[1], y4)], fill=GOLD, width=3)
+    d.line([(xs[3], y0), (xs[3], y4)], fill=GOLD, width=3)
+    d.line([(xs[2], y1), (xs[2], y4)], fill=GOLD, width=3)
+    for y in (y1, y2, y3):
+        d.line([(xs[0], y), (xs[4], y)], fill=GOLD, width=3)
+    _center_in(d, xs[0], xs[1] - xs[0], y0 + 40, "EMAS", _f(BOLD, 32), WHITE)
+    _center_in(d, xs[0], xs[1] - xs[0], y0 + 74, "JENAMA", _f(BOLD, 32), WHITE)
+    _center_in(d, xs[1], xs[3] - xs[1], y0 + 38, "PUBLIC GOLD", _f(BOLD, 44), GOLD_L)
+    _center_in(d, xs[3], xs[4] - xs[3], y0 + 24, "BUKAN PUBLIC GOLD", _f(BOLD, 28), (255, 170, 120))
+    _center_in(d, xs[3], xs[4] - xs[3], y0 + 66, "(*NON-PG BUYBACK)", _f(BOLD, 28), (255, 170, 120))
+    _center_in(d, xs[0], xs[1] - xs[0], y1 + 22, "KETULENAN", _f(BOLD, 28), WHITE)
+    _center_in(d, xs[1], xs[2] - xs[1], y1 + 20, "PG JUAL", _f(BOLD, 34), GOLD)
+    _center_in(d, xs[2], xs[3] - xs[2], y1 + 20, "PG BELI", _f(BOLD, 34), GOLD)
+    _center_in(d, xs[3], xs[4] - xs[3], y1 + 20, "PG BELI", _f(BOLD, 34), GOLD)
     for n, p in enumerate(["999", "916"]):
-        y = 405 + n * 190
-        _center_in(d, cols[0][0], cols[0][1], y + 6, p, _f(BOLD, 72), WHITE)
-        _center_in(d, cols[1][0], cols[1][1], y + 14, f"{j[p]['sell']:.0f}", _f(BOLD, 58), GOLD_L)
-        _center_in(d, cols[2][0], cols[2][1], y + 14, f"{j[p]['buy']:.0f}", _f(BOLD, 58), WHITE)
+        yy = (y2 if n == 0 else y3) + 38
+        _center_in(d, xs[0], xs[1] - xs[0], yy - 4, p, _f(BOLD, 64), WHITE)
+        _center_in(d, xs[1], xs[2] - xs[1], yy + 4, f"RM {j[p]['sell']:.0f}", _f(BOLD, 46), GOLD_L)
+        _center_in(d, xs[2], xs[3] - xs[2], yy + 4, f"RM {j[p]['buy']:.0f}", _f(BOLD, 46), WHITE)
         v = nonpg.get(p)
-        _center_in(d, cols[3][0], cols[3][1], y + 14, f"{v:.0f}" if v else "-", _f(BOLD, 58), (255, 170, 120))
-    d.line([(80, 790), (W - 80, 790)], fill=GOLD, width=2)
-    _center(d, 815, "Non-PG Gold Buyback = harga Public Gold beli emas jenama lain", _f(REG, 25), WHITE)
+        _center_in(d, xs[3], xs[4] - xs[3], yy + 4, f"RM {v:.0f}" if v else "-", _f(BOLD, 50), (255, 170, 120))
+    _center(d, 775, "*Nota : Non-PG Buyback ialah harga Public Gold", _f(REG, 28), WHITE)
+    _center(d, 813, "tawarkan untuk membeli emas jenama lain.", _f(REG, 28), WHITE)
+    _center(d, 868, "Harga per gram", _f(REG, 26), GOLD_L)
     _footer(d, date_text)
     im.save(path)
 

@@ -74,7 +74,7 @@ def specs(name):
     return weight, (p.group(1) if p else None)
 
 
-TITLES = {"bar": "🥇 Gold Bar Public Gold", "dinar": "🪙 Dinar Emas Public Gold", "silver": "🥈 Perak Public Gold"}
+TITLES = {"bar": "🥇 GOLD BAR PUBLIC GOLD", "dinar": "🪙 DINAR EMAS PUBLIC GOLD", "silver": "🥈 PERAK PUBLIC GOLD"}
 
 
 def pg_text(it, ts):
@@ -84,7 +84,7 @@ def pg_text(it, ts):
         lines += ["", f"Berat: {weight}"]
     if purity:
         lines += ["", f"Ketulenan: {purity}"]
-    lines += ["", f"Harga: RM {it['price']:,.0f}", "", f"Dikemaskini: {ts}"]
+    lines += ["", f"Harga : RM {it['price']:,.0f}", "", "Anda berminat nak dapat kan nya?", "WhatsApp saya di shukriee.com", "", f"Dikemaskini: {ts}"]
     return "\n".join(lines)
 
 

@@ -3,7 +3,7 @@
 Guna:  python post.py <mod>
 Mod:   gap | jewel | alert | ilmu | item | wa-channels   (item-jewel / item-mall = ujian paksa)
 Env:   TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID   (DRY_RUN=1 -> simpan dalam out/ sahaja)
-       ALERT_THRESHOLD (RM, lalai 3)
+       ALERT_THRESHOLD (RM, lalai 3) - alert + kad GAP apabila harga berubah sekurang-kurangnya nilai ini
 """
 import json, os, sys
 from datetime import datetime
@@ -123,18 +123,9 @@ def d_my(iso):  # 2026-06-30 -> 30 Jun 2026
     return f"{int(d)} {BULAN[int(m)-1]} {y}"
 
 
-def mode_gap(p, st):
-    g, dt = st["gap"], now_my()
-    price = p["gap_rm_per_gram"]
-    update_range(st, price, dt.strftime("%Y-%m-%d"))
-    g.setdefault("history", {})[dt.strftime("%Y-%m-%d")] = price
-    seed_history(st)
-    prev = g.get("last_post")
-    if prev is None:  # guna harga semalam daripada sejarah
-        ks = sorted(k for k in g["history"] if k < dt.strftime("%Y-%m-%d"))
-        prev = g["history"][ks[-1]] if ks else price
-    diff = price - prev
-    ts = fmt_dt(dt)
+def gap_text_and_card(p, st, diff, ts):
+    """Teks kad GAP + imej kad (kongsi antara mode gap dan alert)."""
+    g, price = st["gap"], p["gap_rm_per_gram"]
     text = (
         f"Public Gold GAP\n"
         f"RM 100 = {p['gap_gram_per_rm100']} gram\n"
@@ -152,8 +143,24 @@ def mode_gap(p, st):
     except Exception as e:  # imej gagal -> teks tetap dihantar
         print("Imej gagal:", e)
         img = None
+    return text, img
+
+
+def mode_gap(p, st):
+    g, dt = st["gap"], now_my()
+    price = p["gap_rm_per_gram"]
+    update_range(st, price, dt.strftime("%Y-%m-%d"))
+    g.setdefault("history", {})[dt.strftime("%Y-%m-%d")] = price
+    seed_history(st)
+    prev = g.get("last_post")
+    if prev is None:  # guna harga semalam daripada sejarah
+        ks = sorted(k for k in g["history"] if k < dt.strftime("%Y-%m-%d"))
+        prev = g["history"][ks[-1]] if ks else price
+    diff = price - prev
+    text, img = gap_text_and_card(p, st, diff, fmt_dt(dt))
     send(text, img, "harga-GAP")
     g["last_post"] = price
+    g["last_alert"] = price     # asas Price Alert sentiasa harga terakhir yang diumumkan
 
 
 def mode_jewel(p, st):
@@ -179,31 +186,67 @@ def mode_jewel(p, st):
     send(text, img, "harga-PG-Jewel")
 
 
+ALERT_UP = [
+    "🔴‼️HARGA GAP NAIK! ‼️🔴\n\n"
+    "Harga GAP sekarang RM{p} segram. Sebelum ini RM{b}, naik sebanyak RM{d}.\n\n"
+    "Sentiasa ON notification channel ini untuk pantau harga emas terkini.\n\n"
+    "Klik link di bawah panduan simpan emas\n"
+    "https://shukriee.com/beliemas",
+    "🔴‼️ UPDATE TERKINI HARGA GAP ‼️🔴\n\n"
+    "Harga GAP naik RM{d} segram. Daripada RM{b} kepada RM{p}.\n\n"
+    "Tahniah kepada anda yang menyimpan emas kerana nilai simpanan anda kini turut meningkat mengikut harga emas semasa.\n\n"
+    "Nak konsisten simpan emas? Klik link di bawah\n"
+    "https://shukriee.com/beliemas",
+    "🔴‼️ HARGA EMAS BERUBAH LAGI! 🔴‼️\n\n"
+    "Harga GAP kini RM{p} segram.\n\n"
+    "Ada kenaikan sebanyak RM{d} berbanding harga sebelum ini.\n\n"
+    "Kongsikan link channel ini kepada circle anda untuk mereka tahu harga emas terkini.\n\n"
+    "http://shukriee.com/channel",
+]
+ALERT_DOWN = [
+    "🟢✅ HARGA GAP TURUN! 🟢✅\n\n"
+    "Harga GAP sekarang RM{p} segram. Sebelum ini RM{b}, turun sebanyak RM{d}.\n\n"
+    "Ini lah peluang untuk anda topup simpanan emas!\n\n"
+    "Klik link di bawah panduan simpan emas\n"
+    "https://shukriee.com/beliemas",
+    "🟢✅ PELUANG TOPUP SIMPANAN EMAS 🟢✅\n\n"
+    "Harga GAP turun RM{d} segram. Daripada RM{b} kepada RM{p}.\n\n"
+    "Sekarang RM{p} segram, berbanding RM{b} sebelum ini.\n\n"
+    "Anda ada bajet lebih? Jom simpan emas sekarang!\n"
+    "Panduan nya di https://shukriee.com/beliemas",
+    "🟢✅ YEAY! HARGA EMAS TURUN! 🟢✅\n\n"
+    "Harga GAP kini RM{p} segram.\n\n"
+    "Ada penurunan sebanyak RM{d} berbanding harga sebelum ini.\n\n"
+    "Jom topup simpanan emas anda!\n\n"
+    "Klik link di bawah panduan simpan emas\n"
+    "https://shukriee.com/beliemas",
+]
+
+
 def mode_alert(p, st):
-    g = st["gap"]
+    """Jalan 24 jam (setiap 30 minit). Jika harga GAP berubah >= ALERT_THRESHOLD (lalai RM3)
+    daripada harga terakhir yang diumumkan -> hantar skrip alert + kad GAP sebagai satu hantaran.
+    Tiada ayat penutup tambahan (skrip alert ada pautan sendiri)."""
+    g, dt = st["gap"], now_my()
     price = p["gap_rm_per_gram"]
     thr = float(os.getenv("ALERT_THRESHOLD", "3"))
+    update_range(st, price, dt.strftime("%Y-%m-%d"))
     base = g.get("last_alert") or g.get("last_post") or price
     diff = price - base
-    update_range(st, price, now_my().strftime("%Y-%m-%d"))
     if abs(diff) < thr:
-        print(f"Tiada alert: GAP RM{price:.0f}, asas RM{base:.0f}, beza RM{diff:+.0f} (< RM{thr:.0f})")
         g["last_alert"] = base
+        print(f"Tiada hantaran: GAP RM{price:.0f}, harga diumumkan terakhir RM{base:.0f}, beza RM{diff:+.0f} (< RM{thr:.0f})")
         return
-    if diff > 0:
-        text = (
-            "🚨🚨🚨 Price Alert 🚨🚨🚨\n\n"
-            f"Harga emas tengah NAIK sebanyak RM{diff:,.0f} daripada RM{base:,.0f} kepada RM{price:,.0f} sekarang.\n\n"
-            "Make sure topup akaun emas GAP anda sebelum harga dikemaskini nanti."
-        )
-    else:
-        text = (
-            "🚨🚨🚨 Price Alert 🚨🚨🚨\n\n"
-            f"Harga emas menjunam! Turun RM{abs(diff):,.0f} daripada RM{base:,.0f} kepada RM{price:,.0f} sekarang.\n\n"
-            "Peluang untuk tambah tabung simpanan emas sekarang."
-        )
-    send(text, None, "price-alert")
+    n = int(st.get("alert_n", 0))
+    st["alert_n"] = n + 1
+    pool = ALERT_UP if diff > 0 else ALERT_DOWN
+    text = pool[n % len(pool)].format(d=f"{abs(diff):,.0f}", b=f"{base:,.0f}", p=f"{price:,.0f}")
+    g.setdefault("history", {})[dt.strftime("%Y-%m-%d")] = price
+    seed_history(st)
+    _, img = gap_text_and_card(p, st, diff, fmt_dt(dt))
+    send(text, img, "price-alert", closing=False)
     g["last_alert"] = price
+    g["last_post"] = price
 
 
 SEED = {  # graf 30 hari GAP (05/10 - 03/11/2026) daripada graf rujukan Shukri

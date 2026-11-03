@@ -27,8 +27,8 @@ def parse(text: str) -> dict:
             pass
     d["updated"] = max(stamps).isoformat() if stamps else None
 
-    i = text.find("GOLD ACCUMULATION PROGRAM (24K)")
-    seg = text[i:i + 400] if i >= 0 else ""
+    mi = re.search(r"GOLD ACCUMULATION PROGRAM \(24K\)", text, re.I)
+    seg = text[mi.start():mi.start() + 400] if mi else ""
     m = re.search(r"RM\s*100\s*=\s*([\d.]+)\s*gram", seg)
     g = re.search(r"RM\s*([\d,.]+)\s*=\s*1\.0000\s*gram", seg)
     if not (m and g):
@@ -36,7 +36,7 @@ def parse(text: str) -> dict:
     d["gap_gram_per_rm100"] = float(m.group(1))
     d["gap_rm_per_gram"] = _num(g.group(1))
 
-    j = re.search(r"PG JEWEL Purity.*?(?=NON-PG GOLD BUYBACK)", text)
+    j = re.search(r"PG JEWEL Purity.*?(?=NON-PG GOLD BUYBACK)", text, re.I)
     if not j:
         raise ValueError("Harga PG Jewel tidak ditemui")
     jewel = {}
@@ -47,7 +47,7 @@ def parse(text: str) -> dict:
     d["jewel"] = jewel
 
     bars = {}
-    b = re.search(r"GOLD BAR \(24K\).*?(?=GOLD WAFER)", text)
+    b = re.search(r"GOLD BAR \(24K\).*?(?=GOLD WAFER)", text, re.I)
     if b:
         for w, sell, buy in re.findall(r"\b(\d+) gram ([\d,]+) ([\d,]+)", b.group(0)):
             bars[w] = {"sell": _num(sell), "buy": _num(buy)}

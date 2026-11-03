@@ -127,7 +127,7 @@ def gap_text_and_card(p, st, diff, ts, base=None):
     """Teks kad GAP + imej kad (kongsi antara mode gap dan alert)."""
     g, price = st["gap"], p["gap_rm_per_gram"]
     text = (
-        f"Public Gold GAP\n"
+        f"HARGA GAP PUBLIC GOLD\n"
         f"RM 100 = {p['gap_gram_per_rm100']} gram\n"
         f"RM {price:,.0f} = 1.0000 gram\n\n"
         f"Harga GAP {'🔄 Tidak Berubah' if diff == 0 else ('📈 Naik RM%d' % diff if diff > 0 else '📉 Turun RM%d' % abs(diff))}\n\n"
@@ -167,7 +167,7 @@ def mode_gap(p, st):
 def mode_jewel(p, st):
     j, nonpg, ts = p["jewel"], p.get("nonpg") or {}, fmt_dt(now_my())
     text = (
-        "Harga barang kemas PG Jewel & Non-PG Gold Buyback\n\n"
+        "HARGA BARANG KEMAS PG JEWEL & NON-PG GOLD BUYBACK\n\n"
         f"🟡 HARGA PG JUAL\nEmas 999 = RM {j['999']['sell']:,.0f}\nEmas 916 = RM {j['916']['sell']:,.0f}\n\n"
         f"🟡 HARGA PG BELI\nEmas 999 = RM {j['999']['buy']:,.0f}\nEmas 916 = RM {j['916']['buy']:,.0f}\n\n"
     )
@@ -177,10 +177,11 @@ def mode_jewel(p, st):
             "Nota: Non-PG Gold Buyback ialah harga yang Public Gold tawarkan untuk membeli emas jenama lain.\n\n"
         )
     text += (
-        "Anda nak BELI barang kemas dengan harga murah? atau...\n"
+        "Anda nak BELI barang kemas dengan harga murah?\n\n"
+        "atau...\n\n"
         "Anda nak JUAL barang kemas lama/rosak/patah dengan harga tinggi?\n\n"
         "Semua nya ada di PG Jewel!\n\n"
-        "WhatsApp saya sekarang di https://shukriee.com/pgjewel\n\n"
+        "WhatsApp saya sekarang di\nhttps://shukriee.com/pgjewel\n\n"
         f"Dikemaskini: {ts}"
     )
     os.makedirs(OUT, exist_ok=True)
@@ -207,7 +208,7 @@ ALERT_UP = [
     "🔴‼️ HARGA EMAS BERUBAH LAGI! 🔴‼️\n\n"
     "Harga GAP kini RM{p} segram.\n\n"
     "Ada kenaikan sebanyak RM{d} berbanding harga sebelum ini.\n\n"
-    "Kongsikan link channel ini kepada circle anda untuk mereka tahu harga emas terkini.\n\n"
+    "Kongsikan link channel ini kepada circle anda untuk mereka tahu harga emas terkini.\n"
     "http://shukriee.com/channel",
 ]
 ALERT_DOWN = [
@@ -220,7 +221,7 @@ ALERT_DOWN = [
     "Harga GAP turun RM{d} segram. Daripada RM{b} kepada RM{p}.\n\n"
     "Sekarang RM{p} segram, berbanding RM{b} sebelum ini.\n\n"
     "Anda ada bajet lebih? Jom simpan emas sekarang!\n"
-    "Panduan nya di https://shukriee.com/beliemas",
+    "Panduan di https://shukriee.com/beliemas",
     "🟢✅ YEAY! HARGA EMAS TURUN! 🟢✅\n\n"
     "Harga GAP kini RM{p} segram.\n\n"
     "Ada penurunan sebanyak RM{d} berbanding harga sebelum ini.\n\n"

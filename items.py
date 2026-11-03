@@ -53,7 +53,7 @@ def jewel_text(d):
     skus = [s for s in d.get("sku", []) if int(s.get("quantity") or 0) > 0] or d.get("sku", [])
     lo, hi = float(d["min_price"]), float(d["max_price"])
     price = rm(lo) if lo == hi else f"{rm(lo)} - {rm(hi)}"
-    lines = ["💎 Item PG Jewel", "", f"Item: {d['name']}", "", f"Harga: {price}"]
+    lines = ["💎 BARANG KEMAS PG JEWEL", "", f"Produk : {d['name']}", "", f"Harga: {price}"]
     ws = []
     for s in skus:
         m = re.match(r"\s*([\d.]+)\s*g", str(s.get("option_value_name") or ""), re.I)

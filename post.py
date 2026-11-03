@@ -160,7 +160,6 @@ def mode_jewel(p, st):
     j, ts = p["jewel"], fmt_dt(now_my())
     text = (
         "💎 Harga Emas PG Jewel (Barang Kemas)\n\n"
-        "Harga emas PG Jewel (barang kemas) baru sahaja dikemaskini.\n\n"
         f"PG Jewel (Sell)\nEmas 999 = RM {j['999']['sell']:,.0f}\nEmas 916 = RM {j['916']['sell']:,.0f}\n\n"
         f"PG Jewel (Buy)\nEmas 999 = RM {j['999']['buy']:,.0f}\nEmas 916 = RM {j['916']['buy']:,.0f}\n\n"
         f"Dikemaskini: {ts}"

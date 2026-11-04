@@ -259,3 +259,36 @@ def item_card(path, product_img, title, name, price, weight, purity, date_text):
     d.rounded_rectangle([x0, 985, x0 + w, 985 + h], 28, fill=(0, 0, 0), outline=GOLD, width=3)
     _center(d, 994, "shukriee.com", _f(BOLD, 32), WHITE)
     im.save(path)
+
+
+def buy_card(path, j, nonpg, date_text):
+    """Kad HARGA PG BELI BARANG KEMAS (1080x1080): PUBLIC GOLD vs BUKAN PUBLIC GOLD (*NON-PG BUYBACK)."""
+    nonpg = nonpg or {}
+    im, d = _bg()
+    _center(d, 70, "HARGA PG BELI", _f(BOLD, 72), GOLD)
+    _center(d, 156, "BARANG KEMAS", _f(BOLD, 56), GOLD)
+    xs = [60, 340, 700, 1020]
+    y0, y1, y2, y3, y4 = 260, 400, 490, 640, 790
+    d.rectangle([xs[0], y0, xs[3], y4], outline=GOLD, width=4)
+    for x in (xs[1], xs[2]):
+        d.line([(x, y0), (x, y4)], fill=GOLD, width=3)
+    for y in (y1, y2, y3):
+        d.line([(xs[0], y), (xs[3], y)], fill=GOLD, width=3)
+    _center_in(d, xs[0], xs[1] - xs[0], y0 + 52, "EMAS JENAMA", _f(BOLD, 32), WHITE)
+    _center_in(d, xs[1], xs[2] - xs[1], y0 + 52, "PUBLIC GOLD", _f(BOLD, 40), GOLD_L)
+    _center_in(d, xs[2], xs[3] - xs[2], y0 + 26, "BUKAN PUBLIC GOLD", _f(BOLD, 28), (255, 170, 120))
+    _center_in(d, xs[2], xs[3] - xs[2], y0 + 66, "(*NON-PG BUYBACK)", _f(BOLD, 28), (255, 170, 120))
+    _center_in(d, xs[0], xs[1] - xs[0], y1 + 26, "KETULENAN", _f(BOLD, 28), WHITE)
+    _center_in(d, xs[1], xs[2] - xs[1], y1 + 22, "PG BELI", _f(BOLD, 36), GOLD)
+    _center_in(d, xs[2], xs[3] - xs[2], y1 + 22, "PG BELI", _f(BOLD, 36), GOLD)
+    for n, p in enumerate(["999", "916"]):
+        yy = (y2 if n == 0 else y3) + 42
+        _center_in(d, xs[0], xs[1] - xs[0], yy - 6, p, _f(BOLD, 64), WHITE)
+        _center_in(d, xs[1], xs[2] - xs[1], yy + 2, f"RM {j[p]['buy']:.0f}", _f(BOLD, 54), GOLD_L)
+        v = nonpg.get(p)
+        _center_in(d, xs[2], xs[3] - xs[2], yy + 2, f"RM {v:.0f}" if v else "-", _f(BOLD, 54), (255, 170, 120))
+    _center(d, 808, "*Nota : Non-PG Buyback ialah harga Public Gold", _f(REG, 28), WHITE)
+    _center(d, 846, "tawarkan untuk membeli emas jenama lain.", _f(REG, 28), WHITE)
+    _center(d, 884, "Harga per gram", _f(REG, 24), GOLD_L)
+    _footer(d, date_text)
+    im.save(path)

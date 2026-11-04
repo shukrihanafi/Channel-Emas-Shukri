@@ -63,7 +63,7 @@ def jewel_text(d):
         fw = lambda x: f"{x:g}g"
         wt = fw(min(ws)) if min(ws) == max(ws) else f"{fw(min(ws))} - {fw(max(ws))}"
         lines = lines[:3] + ["", f"Berat: {wt}"] + lines[3:]
-    lines += ["", f"Link: {JEWEL_SITE}/{d['product_id']}?rpc={JEWEL_RPC}", "", "Cantik kan? Klik link di atas atau", "", "WhatsApp saya sekarang di https://shukriee.com/pgjewel"]
+    lines += ["", f"Link: {JEWEL_SITE}/{d['product_id']}?rpc={JEWEL_RPC}", "", "Cantik kan? Klik link di atas atau", "", "WhatsApp saya sekarang di", "https://shukriee.com/pgjewel"]
     return "\n".join(lines)
 
 
@@ -108,5 +108,5 @@ def mall_text(it):
     lines = ["🛒 Item PG Mall (Hotday Sale)", "", f"Item: {it['name']}", "", f"Harga: {rm(it['price'], 2)}"]
     if it["old"]:
         lines.append(f"Harga asal: {rm(it['old'], 2)}" + (f" (-{it['disc']}%)" if it["disc"] else ""))
-    lines += ["", f"Link: {it['link']}?rpc={MALL_RPC}", "", "Cantik kan? Klik link di atas atau", "", "WhatsApp saya sekarang di https://shukriee.com/pgjewel"]
+    lines += ["", f"Link: {it['link']}?rpc={MALL_RPC}", "", "Cantik kan? Klik link di atas atau", "", "WhatsApp saya sekarang di", "https://shukriee.com/pgjewel"]
     return "\n".join(lines)

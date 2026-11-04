@@ -1,11 +1,11 @@
 """Bot Channel Emas - jana post & hantar ke Telegram (mod separa-auto).
 
 Guna:  python post.py <mod>
-Mod:   gap | jewel | alert | ilmu | item | wa-channels   (item-jewel / item-mall = ujian paksa)
+Mod:   gap | jewel | alert | ilmu | item | pgitem | berita | berita-test | wa-channels   (item-jewel / item-mall = ujian paksa)
 Env:   TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID   (DRY_RUN=1 -> simpan dalam out/ sahaja)
        ALERT_THRESHOLD (RM, lalai 3) - alert + kad GAP apabila harga berubah sekurang-kurangnya nilai ini
 """
-import json, os, sys
+import json, os, random, sys
 from datetime import datetime
 from zoneinfo import ZoneInfo
 import requests
@@ -74,13 +74,20 @@ def send(text, image=None, label="post", closing=True):
         return
     base = f"https://api.telegram.org/bot{token}"
     wa_note = ""
-    if wa_auto_for(CURRENT_MODE):
+    test_only = CURRENT_MODE.endswith("-test")  # mod ujian: hantar ke Telegram peribadi sahaja
+    if not test_only and wa_auto_for(CURRENT_MODE):
         try:
             whapi.post_channel(text, image)
             wa_note = "✅ Sudah dihantar ke WhatsApp Channel (auto)."
         except Exception as e:  # WhatsApp gagal -> Telegram tetap ada untuk hantar manual
             wa_note = f"⚠️ Gagal hantar ke WhatsApp Channel: {e}\nSila hantar manual."
     def push(target):
+        # Gambar + caption dalam SATU mesej (supaya IFTTT -> FB Page bawa ayat sekali). Had caption Telegram 1024 aksara.
+        if image and len(text) <= 1024:
+            with open(image, "rb") as f:
+                r = requests.post(f"{base}/sendPhoto", data={"chat_id": target, "caption": text}, files={"photo": f}, timeout=60)
+            r.raise_for_status()
+            return
         if image:
             with open(image, "rb") as f:
                 r = requests.post(f"{base}/sendPhoto", data={"chat_id": target}, files={"photo": f}, timeout=60)
@@ -91,7 +98,7 @@ def send(text, image=None, label="post", closing=True):
     push(chat)  # salinan semakan untuk Shukri (chat peribadi dengan bot)
     # Telegram Channel awam (auto) - bot mesti admin channel
     tg_channel = os.getenv("TELEGRAM_CHANNEL", "").strip()
-    if tg_channel and os.getenv("TG_CHANNEL_ENABLED", "1") == "1":
+    if tg_channel and os.getenv("TG_CHANNEL_ENABLED", "1") == "1" and not test_only:
         try:
             push(tg_channel)
             wa_note = (wa_note + "\n" if wa_note else "") + f"✅ Sudah dihantar ke Telegram Channel {tg_channel} (auto)."
@@ -127,10 +134,10 @@ def gap_text_and_card(p, st, diff, ts, base=None):
     """Teks kad GAP + imej kad (kongsi antara mode gap dan alert)."""
     g, price = st["gap"], p["gap_rm_per_gram"]
     text = (
+        f"Harga GAP {'🔄 Tidak Berubah' if diff == 0 else ('🔴 Naik RM%d' % diff if diff > 0 else '🟢 Turun RM%d' % abs(diff))}\n\n"
         f"HARGA GAP PUBLIC GOLD\n"
         f"RM 100 = {p['gap_gram_per_rm100']} gram\n"
         f"RM {price:,.0f} = 1.0000 gram\n\n"
-        f"Harga GAP {'🔄 Tidak Berubah' if diff == 0 else ('📈 Naik RM%d' % diff if diff > 0 else '📉 Turun RM%d' % abs(diff))}\n\n"
         f"Terendah: RM {g['low']['price']:,.0f} ({d_my(g['low']['date'])})\n"
         f"Tertinggi: RM {g['high']['price']:,.0f} ({d_my(g['high']['date'])})\n\n"
         f"Jom simpan emas sekarang!\nWhatsApp saya di shukriee.com\n\n"
@@ -231,6 +238,55 @@ ALERT_DOWN = [
 ]
 
 
+BB_COMMON = (
+    "Anda boleh KUNCI (LOCK) harga PG Buy terus melalui aplikasi Public Gold. Selepas lock harga, anda perlu hadir ke cawangan "
+    "Public Gold berdekatan dalam tempoh 24 jam untuk menyelesaikan urusan jualan.\n\n"
+    "🔴‼️PENTING 🔴‼️\n\n"
+)
+BB_LINKS = (
+    "📲 Whatsapp saya :\nhttps://shukriee.com/buyback\n\n"
+    "🏢 Lokasi cawangan Public Gold :\nhttps://publicgold.com.my/index.php?route=information/information&information_id=branch\n\n"
+    "Dikemaskini: {ts}"
+)
+BB_UP = [
+    "😍 PELUANG JUAL EMAS DENGAN HARGA TINGGI! \n\n"
+    "Harga emas naik kan? Ini peluang, anda jual emas di Public Gold dengan harga tinggi!\n\n"
+    + BB_COMMON +
+    "Jika gagal hadir dalam tempoh tersebut, nama anda akan disenarai hitam (blacklist) oleh Public Gold. Pastikan anda jual emas dengan MATLAMAT ok!\n\n"
+    + BB_LINKS,
+    "💰EMAS LAMA BOLEH JADI DUIT TUNAI! \n\n"
+    "Anda ada barang kemas 916 atau 999 yang dah lama tersimpan?\n\n"
+    "Jangan biarkan begitu sahaja. Jom jual emas dengan harga belian tinggi di Public Gold sekarang!\n\n"
+    + BB_COMMON +
+    "Jika gagal hadir dalam tempoh tersebut, nama anda akan disenarai hitam (blacklist) oleh Public Gold.\n\n"
+    "Pastikan anda benar-benar bersedia sebelum LOCK harga. Jangan lepaskan peluang untuk manfaatkan nilai emas anda!\n\n"
+    + BB_LINKS,
+    "🚀 HARGA JUAL EMAS NAIK..!\n\n"
+    "Tahu tak, emas yang anda beli beberapa tahun lalu mungkin mempunyai nilai yang jauh tinggi pada hari ini!\n\n"
+    "Kalau anda bercadang nak jual emas, boleh jual harga tinggi di Public Gold.\n\n"
+    + BB_COMMON +
+    "Jika gagal hadir dalam tempoh tersebut, nama anda akan disenarai hitam (blacklist) oleh Public Gold. Pastikan anda jual emas dengan MATLAMAT ok!\n\n"
+    + BB_LINKS,
+]
+
+
+def mode_buyback_alert(p, st, ts):
+    """Alert Harga PG BELI + NON-PG BUYBACK: dihantar bersama alert GAP NAIK sahaja. Skrip dipilih rawak (elak ulang yang sama)."""
+    j, nonpg = p["jewel"], p.get("nonpg") or {}
+    last = st.get("bb_last", -1)
+    i = random.choice([k for k in range(len(BB_UP)) if k != last] or list(range(len(BB_UP))))
+    st["bb_last"] = i
+    text = BB_UP[i].replace("{ts}", ts)
+    os.makedirs(OUT, exist_ok=True)
+    img = f"{OUT}/buyback.png"
+    try:
+        card.buy_card(img, j, nonpg, ts)
+    except Exception as e:
+        print("Imej gagal:", e)
+        img = None
+    send(text, img, "alert-buyback", closing=False)
+
+
 def mode_alert(p, st):
     """Jalan 24 jam (setiap 30 minit). Jika harga GAP berubah >= ALERT_THRESHOLD (lalai RM3)
     daripada harga terakhir yang diumumkan -> hantar skrip alert + kad GAP sebagai satu hantaran.
@@ -239,6 +295,9 @@ def mode_alert(p, st):
     price = p["gap_rm_per_gram"]
     thr = float(os.getenv("ALERT_THRESHOLD", "3"))
     update_range(st, price, dt.strftime("%Y-%m-%d"))
+    if dt.hour * 60 + dt.minute < 8 * 60 + 30:  # alert hanya 8:30 pagi - 12 malam
+        print(f"Di luar waktu alert ({dt:%H:%M}); harga GAP RM{price:.0f}")
+        return
     base = g.get("last_alert") or g.get("last_post") or price
     diff = price - base
     if abs(diff) < thr:
@@ -255,6 +314,11 @@ def mode_alert(p, st):
     send(text, img, "price-alert", closing=False)
     g["last_alert"] = price
     g["last_post"] = price
+    if diff > 0:  # GAP NAIK -> galak orang jual emas: alert PG Buy + Non-PG Buyback
+        try:
+            mode_buyback_alert(p, st, fmt_dt(dt))
+        except Exception as e:
+            print("Alert PG Buy/Non-PG gagal:", e)
 
 
 SEED = {  # graf 30 hari GAP (05/10 - 03/11/2026) daripada graf rujukan Shukri
@@ -381,7 +445,53 @@ def mode_wa_channels(p, st):
     tg_plain("Senarai Channel WhatsApp:\n\n" + "\n\n".join(f"{n}\nID: {i}\nPeranan: {r}" for i, n, r in rows))
 
 
-MODES = {"wa-channels": mode_wa_channels, "gap": mode_gap, "jewel": mode_jewel, "alert": mode_alert, "ilmu": mode_ilmu, "item": mode_item, "pgitem": mode_pgitem,
+def mode_berita(p, st):
+    import news
+    news.run(st, send, now_my())
+
+
+# Jadual tetap (waktu Malaysia). Alert 20-minit juga menjadi "pengawas": jika hantaran tertinggal (run tersekat di GitHub),
+# ia dijalankan semula sendiri dalam tempoh 150 minit selepas masa asal.
+SLOTS = [("08:09", "gap"), ("10:09", "pgitem"), ("13:09", "berita"), ("16:09", "jewel"),
+         ("18:09", "item"), ("20:09", "gap"), ("21:09", "ilmu"), ("22:39", "pgitem")]
+
+
+def _since(slot, dt):
+    h, m = map(int, slot.split(":"))
+    return dt.hour * 60 + dt.minute - (h * 60 + m)
+
+
+def mark_slot(st, mode, dt):
+    done = st.setdefault("slots", {})
+    today = dt.strftime("%Y-%m-%d")
+    for k in [k for k in done if not k.startswith(today)]:
+        del done[k]
+    for slot, m in SLOTS:
+        if m == mode and f"{today}|{slot}" not in done and 0 <= _since(slot, dt) <= 150:
+            done[f"{today}|{slot}"] = dt.strftime("%H:%M")
+            return
+
+
+def watchdog(p, st):
+    global CURRENT_MODE
+    dt = now_my()
+    done = st.setdefault("slots", {})
+    today = dt.strftime("%Y-%m-%d")
+    for slot, m in SLOTS:
+        if f"{today}|{slot}" in done or not (12 <= _since(slot, dt) <= 150):
+            continue
+        print(f"Pengawas: slot {slot} ({m}) belum dijalankan, jalankan sekarang")
+        done[f"{today}|{slot}"] = dt.strftime("%H:%M") + " (pengawas)"
+        CURRENT_MODE = m
+        try:
+            MODES[m](p, st)
+        except Exception as e:
+            print(f"Pengawas: {m} gagal: {e}")
+        finally:
+            CURRENT_MODE = "alert"
+
+
+MODES = {"wa-channels": mode_wa_channels, "berita": mode_berita, "berita-test": mode_berita, "gap": mode_gap, "jewel": mode_jewel, "alert": mode_alert, "ilmu": mode_ilmu, "item": mode_item, "pgitem": mode_pgitem,
          "item-jewel": lambda p, st: mode_item(p, st, "jewel"),
          "item-mall": lambda p, st: mode_item(p, st, "mall")}
 
@@ -397,4 +507,8 @@ if __name__ == "__main__":
     CURRENT_MODE = mode
     prices = pgfetch.get_prices() if mode in ("gap", "jewel", "alert") else {}
     MODES[mode](prices, st)
+    if mode == "alert":
+        watchdog(prices, st)
+    elif not mode.endswith("-test") and mode != "wa-channels":
+        mark_slot(st, mode, now_my())
     save(STATE, st)

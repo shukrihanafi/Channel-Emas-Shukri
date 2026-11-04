@@ -5,9 +5,13 @@ on:
   workflow_dispatch:
     inputs:
       mode:
-        description: "Mod (gap / jewel / alert / ilmu / item / pgitem / wa-channels)"
+        description: "Mod (gap / jewel / alert / ilmu / item / pgitem / berita / berita-test / wa-channels)"
         required: true
         default: "gap"
+      url:
+        description: "Pautan berita (pilihan, untuk mod berita / berita-test)"
+        required: false
+        default: ""
 
 permissions:
   contents: write
@@ -44,6 +48,11 @@ jobs:
               *) echo "mode=alert" >> $GITHUB_OUTPUT ;;
             esac
           fi
+      - name: Pasang pelayar (mod berita sahaja)
+        if: startsWith(steps.m.outputs.mode, 'berita')
+        run: |
+          pip install playwright
+          playwright install --with-deps chromium
       - name: Jalankan bot
         if: steps.m.outputs.mode != 'skip'
         env:
@@ -57,7 +66,9 @@ jobs:
           # Suis WhatsApp auto: tukar "0" kepada "1" bila sudah bersedia. Tukar kembali "0" untuk berhenti.
           WA_ENABLED: "1"
           # Mod yang dihantar auto ke WhatsApp Channel.
-          WA_AUTO_MODES: "gap,jewel,alert,item,pgitem,ilmu"
+          WA_AUTO_MODES: "gap,jewel,alert,item,pgitem,ilmu,berita"
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          NEWS_URL: ${{ github.event.inputs.url }}
         run: python post.py ${{ steps.m.outputs.mode }}
       - name: Simpan state
         if: steps.m.outputs.mode != 'skip'

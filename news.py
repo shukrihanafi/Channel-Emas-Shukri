@@ -180,14 +180,15 @@ def summarise(a):
         "Jangan reka fakta atau angka yang tiada dalam artikel. Jangan buat ramalan harga atau nasihat pelaburan.\n\n"
         'Balas JSON sahaja dengan 3 kunci:\n'
         '1) "tajuk": tajuk pendek dan jelas dalam HURUF BESAR (contoh: "HARGA EMAS TERUS MENINGKAT!"), maksimum 8 patah perkataan.\n'
-        '2) "ringkasan": laporan ringkas yang layman mudah faham, TIGA perenggan pendek dipisahkan baris kosong (guna \\n\\n), '
-        'kira-kira 50 hingga 70 patah perkataan semuanya, tidak panjang dan tidak pendek. Perenggan 1 = fakta utama; perenggan 2 = sebab atau konteks; '
-        'perenggan 3 = apa yang pasaran masih menunggu. Terangkan istilah teknikal dengan perkataan harian. Tanpa tajuk, tanpa emoji.\n'
+        '2) "ringkasan": ambil isi daripada PERENGGAN PERTAMA artikel (pembuka yang sama dipaparkan pada kad gambar) dan ringkaskan kepada DUA perenggan '
+        'sangat pendek dipisahkan baris kosong (guna \\n\\n), jumlah hanya 25 hingga 40 patah perkataan. Ayat pendek, padat, bahasa harian yang layman mudah faham. '
+        'Perenggan 1 = apa yang berlaku (harga naik/turun dan sebab utama); perenggan 2 = satu ayat tentang apa yang pasaran sedang tunggu. '
+        'Terangkan istilah teknikal dengan perkataan harian. Tanpa tajuk, tanpa emoji.\n'
         '3) "threads": satu posting Threads 50 hingga 100 patah perkataan. Gaya santai, natural, berkongsi pendapat, BUKAN gaya laporan berita atau artikel akhbar. '
         'Struktur: (a) hook atau persoalan menarik; (b) fakta utama daripada berita; (c) pandangan atau kesan berkaitan simpanan emas; '
         '(d) akhiri dengan satu soalan untuk menggalakkan perbincangan. Elakkan ayat terlalu formal dan terlalu menjual. '
         'Maksimum satu emoji jika benar-benar sesuai; tiada hashtag berlebihan (maksimum satu). Tiada pautan.\n\n'
-        f"TAJUK ASAL: {a['title']}\nARTIKEL:\n{a['text'] or a['desc']}"
+        f"TAJUK ASAL: {a['title']}\nPERENGGAN PERTAMA: {(a.get('paras') or [''])[0]}\nARTIKEL:\n{a['text'] or a['desc']}"
     )
     r = requests.post("https://api.anthropic.com/v1/messages", timeout=90,
                       headers={"x-api-key": key, "anthropic-version": "2023-06-01", "content-type": "application/json"},

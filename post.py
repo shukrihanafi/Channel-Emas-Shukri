@@ -297,6 +297,7 @@ def mode_alert(p, st):
     daripada harga terakhir yang diumumkan -> hantar skrip alert + kad GAP sebagai satu hantaran.
     Tiada ayat penutup tambahan (skrip alert ada pautan sendiri)."""
     g, dt = st["gap"], now_my()
+    fb_expiry_reminder(st, dt)
     price = p["gap_rm_per_gram"]
     thr = float(os.getenv("ALERT_THRESHOLD", "3"))
     update_range(st, price, dt.strftime("%Y-%m-%d"))
@@ -450,6 +451,32 @@ def mode_wa_channels(p, st):
     tg_plain("Senarai Channel WhatsApp:\n\n" + "\n\n".join(f"{n}\nID: {i}\nPeranan: {r}" for i, n, r in rows))
 
 
+def mode_fbcheck(p, st):
+    """Semak token Facebook tanpa membuat hantaran awam; keputusan ke Telegram peribadi."""
+    if not fb.enabled():
+        tg_plain("⚠️ Facebook belum dikonfigurasi (FB_PAGE_TOKEN / FB_PAGE_ID tiada).")
+        return
+    try:
+        name, exp = fb.check()
+        tg_plain(f"✅ Token Facebook OK. Page: {name}. Tamat: {exp}.")
+    except Exception as e:
+        tg_plain(f"⚠️ Token Facebook bermasalah: {e}")
+
+
+def fb_expiry_reminder(st, dt):
+    """Peringatan Telegram harian (selepas 9 pagi) bila token Facebook tinggal <= 14 hari."""
+    try:
+        from datetime import date
+        left = (date.fromisoformat(fb.TOKEN_EXPIRES) - dt.date()).days
+        today = dt.strftime("%Y-%m-%d")
+        if left <= 14 and dt.hour >= 9 and st.get("fb_remind") != today:
+            st["fb_remind"] = today
+            tg_plain(f"⏰ Peringatan: token Facebook Page tamat {fb.TOKEN_EXPIRES} ({left} hari lagi). "
+                     "Sila jana token baharu dan kemas kini FB_PAGE_TOKEN di GitHub.")
+    except Exception as e:
+        print("Peringatan token FB gagal:", e)
+
+
 def mode_berita(p, st):
     import news
     news.run(st, send, now_my(), notify=tg_plain)
@@ -501,7 +528,7 @@ def mode_relay(p, st):
     print(f"Relay: {n} posting disalin.")
 
 
-MODES = {"relay": mode_relay, "wa-channels": mode_wa_channels, "berita": mode_berita, "berita-test": mode_berita, "gap": mode_gap, "jewel": mode_jewel, "alert": mode_alert, "ilmu": mode_ilmu, "item": mode_item, "pgitem": mode_pgitem,
+MODES = {"fb-check": mode_fbcheck, "relay": mode_relay, "wa-channels": mode_wa_channels, "berita": mode_berita, "berita-test": mode_berita, "gap": mode_gap, "jewel": mode_jewel, "alert": mode_alert, "ilmu": mode_ilmu, "item": mode_item, "pgitem": mode_pgitem,
          "item-jewel": lambda p, st: mode_item(p, st, "jewel"),
          "item-mall": lambda p, st: mode_item(p, st, "mall")}
 

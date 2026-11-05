@@ -62,6 +62,8 @@ jobs:
           TG_CHANNEL_ENABLED: "1"
           ALERT_THRESHOLD: "3"
           WHAPI_TOKEN: ${{ secrets.WHAPI_TOKEN }}
+          FB_PAGE_TOKEN: ${{ secrets.FB_PAGE_TOKEN }}
+          FB_PAGE_ID: ${{ secrets.FB_PAGE_ID }}
           WA_CHANNEL_ID: ${{ secrets.WA_CHANNEL_ID }}
           # Suis WhatsApp auto: tukar "0" kepada "1" bila sudah bersedia. Tukar kembali "0" untuk berhenti.
           WA_ENABLED: "1"

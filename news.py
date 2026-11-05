@@ -176,14 +176,18 @@ def summarise(a):
     if not key:
         return None  # tanpa AI tiada terjemahan BM yang boleh dipercayai
     prompt = (
-        "Anda menulis caption berita emas untuk saluran WhatsApp/Telegram pengguna Malaysia.\n"
-        "Berdasarkan HANYA artikel di bawah, tulis dalam Bahasa Melayu mudah:\n"
-        '1) "tajuk": terjemahan tajuk (ringkas dan jelas)\n'
-        '2) "ringkasan": ringkasan padat, 3 hingga 4 ayat pendek (kira-kira 50 hingga 70 patah perkataan), tidak terlalu panjang dan tidak terlalu pendek. '
-        'Guna bahasa mudah yang orang biasa (layman) faham; terangkan istilah teknikal dengan perkataan harian '
-        '(contoh: "non-farm payrolls" = "laporan pekerjaan AS"). Jangan tambah fakta, ramalan atau nasihat pelaburan.\n'
-        'Balas JSON sahaja: {"tajuk": "...", "ringkasan": "..."}\n\n'
-        f"TAJUK: {a['title']}\nARTIKEL:\n{a['text'] or a['desc']}"
+        "Anda menulis kandungan berita emas untuk pengguna Malaysia. Berdasarkan HANYA artikel di bawah, tulis dalam Bahasa Melayu mudah. "
+        "Jangan reka fakta atau angka yang tiada dalam artikel. Jangan buat ramalan harga atau nasihat pelaburan.\n\n"
+        'Balas JSON sahaja dengan 3 kunci:\n'
+        '1) "tajuk": tajuk pendek dan jelas dalam HURUF BESAR (contoh: "HARGA EMAS TERUS MENINGKAT!"), maksimum 8 patah perkataan.\n'
+        '2) "ringkasan": laporan ringkas yang layman mudah faham, TIGA perenggan pendek dipisahkan baris kosong (guna \\n\\n), '
+        'kira-kira 50 hingga 70 patah perkataan semuanya, tidak panjang dan tidak pendek. Perenggan 1 = fakta utama; perenggan 2 = sebab atau konteks; '
+        'perenggan 3 = apa yang pasaran masih menunggu. Terangkan istilah teknikal dengan perkataan harian. Tanpa tajuk, tanpa emoji.\n'
+        '3) "threads": satu posting Threads 50 hingga 100 patah perkataan. Gaya santai, natural, berkongsi pendapat, BUKAN gaya laporan berita atau artikel akhbar. '
+        'Struktur: (a) hook atau persoalan menarik; (b) fakta utama daripada berita; (c) pandangan atau kesan berkaitan simpanan emas; '
+        '(d) akhiri dengan satu soalan untuk menggalakkan perbincangan. Elakkan ayat terlalu formal dan terlalu menjual. '
+        'Maksimum satu emoji jika benar-benar sesuai; tiada hashtag berlebihan (maksimum satu). Tiada pautan.\n\n'
+        f"TAJUK ASAL: {a['title']}\nARTIKEL:\n{a['text'] or a['desc']}"
     )
     r = requests.post("https://api.anthropic.com/v1/messages", timeout=90,
                       headers={"x-api-key": key, "anthropic-version": "2023-06-01", "content-type": "application/json"},
@@ -193,7 +197,8 @@ def summarise(a):
     r.raise_for_status()
     txt = "".join(b.get("text", "") for b in r.json().get("content", []) if b.get("type") == "text")
     j = json.loads(re.search(r"\{.*\}", txt, re.S).group(0))
-    return j["tajuk"].strip(), j["ringkasan"].strip()
+    a["threads"] = (j.get("threads") or "").strip()
+    return j["tajuk"].strip().upper(), j["ringkasan"].strip()
 
 
 def _dl_image(url, referer):
@@ -267,9 +272,8 @@ p{{font-size:28px;line-height:1.5;margin:0;color:#3a3a3a;flex:none;display:-webk
 
 
 def build_caption(a, tajuk, ringkas, dt, source=""):
-    tarikh = f"{dt.day} {BULAN[dt.month - 1]} {dt.year}"
     src = f"Sumber: {source}\n\n" if source else ""
-    return f"Berita emas @ {tarikh}\n\n{tajuk}\n\n{ringkas}\n\n{src}Berita penuh di :\n{a['url']}"
+    return f"[BERITA EMAS]\n\n{tajuk}\n\n{ringkas}\n\n{src}Berita penuh di :\n{a['url']}"
 
 
 def run(st, send, dt, out="out", notify=print):

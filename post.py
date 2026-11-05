@@ -528,7 +528,9 @@ def mode_fizikal_alert(p, st):
     data = fizikal.get_prices()
     ts = fmt_dt(now_my())
     n = int(st.get("fz_alert_n", 0))
-    if not CURRENT_MODE.endswith("-test"):
+    if CURRENT_MODE.endswith("-test"):
+        n = 1  # ujian: papar skrip 2 (tidak ubah putaran sebenar)
+    else:
         st["fz_alert_n"] = n + 1
     text = fizikal.ALERT_DOWN[n % len(fizikal.ALERT_DOWN)]
     os.makedirs(OUT, exist_ok=True)

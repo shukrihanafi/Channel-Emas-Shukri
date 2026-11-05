@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
     inputs:
       mode:
-        description: "Mod (gap / jewel / alert / ilmu / item / pgitem / berita / fb-check / wa-channels)"
+        description: "Mod (gap / jewel / alert / ilmu / item / pgitem / berita / testimoni / fb-check / wa-channels)"
         required: true
         default: "gap"
       url:
@@ -57,6 +57,10 @@ jobs:
           NEED=0
           case "$M" in berita*) NEED=1 ;; esac
           if [ "$M" = "alert" ] && [ "$((10#$HM))" -ge 1321 ] && [ "$((10#$HM))" -le 1540 ] && ! grep -q "$TODAY|13:09" data/state.json; then NEED=1; fi
+          NEEDT=0
+          case "$M" in testimoni*) NEEDT=1 ;; esac
+          if [ "$M" = "alert" ] && [ "$((10#$HM))" -ge 1521 ] && [ "$((10#$HM))" -le 1740 ] && ! grep -q "$TODAY|15:09" data/state.json; then NEEDT=1; fi
+          if [ "$NEEDT" = "1" ]; then sudo apt-get update -qq && sudo apt-get install -y -qq tesseract-ocr; fi
           if [ "$NEED" = "1" ]; then
             pip install playwright
             playwright install --with-deps chromium
@@ -78,7 +82,7 @@ jobs:
           # Suis WhatsApp auto: tukar "0" kepada "1" bila sudah bersedia. Tukar kembali "0" untuk berhenti.
           WA_ENABLED: "1"
           # Mod yang dihantar auto ke WhatsApp Channel.
-          WA_AUTO_MODES: "gap,jewel,alert,item,pgitem,ilmu,berita"
+          WA_AUTO_MODES: "gap,jewel,alert,item,pgitem,ilmu,berita,testimoni"
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           NEWS_URL: ${{ github.event.inputs.url }}
         run: python post.py ${{ steps.m.outputs.mode }}

@@ -187,10 +187,10 @@ def center_watermark(img, words, text="shukriee.com"):
     return Image.alpha_composite(img.convert("RGBA"), lay).convert("RGB")
 
 
-def cover(img, boxes, text="shukriee.com"):
-    """Tutup setiap kotak dengan warna latar sekeliling dan tulis watermark di atasnya."""
+def cover(img, boxes, text=None):
+    """Padam tarikh: isi kotak dengan warna latar sekeliling (tiada tulisan; watermark diletak berasingan)."""
     import numpy as np
-    from PIL import ImageDraw, ImageFont
+    from PIL import ImageDraw
     arr = np.asarray(img).astype(int)
     d = ImageDraw.Draw(img)
     for x0, y0, x1, y1 in boxes:
@@ -203,25 +203,7 @@ def cover(img, boxes, text="shukriee.com"):
             arr[max(0, y0 - r):y0, x0:x1].reshape(-1, 3), arr[y1:y1 + r, x0:x1].reshape(-1, 3),
             arr[y0:y1, max(0, x0 - r):x0].reshape(-1, 3), arr[y0:y1, x1:x1 + r].reshape(-1, 3)])
         bg = tuple(int(v) for v in (np.median(ring, axis=0) if len(ring) else (30, 30, 30)))
-        # tulisan masa lazimnya di sudut kanan-bawah gelembung: lebarkan ke kiri jika latar rata
-        w0, h0 = x1 - x0, y1 - y0
-        fs = max(8, int(h0 * 0.62))
-        font = ImageFont.truetype(FONT, fs)
-        tw = d.textlength(text, font=font)
-        need = int(tw + 2 * pad) - w0
-        if need > 0:
-            lx = max(0, x0 - need)
-            strip = arr[y0:y1, lx:x0]
-            if strip.size and strip.reshape(-1, 3).std(axis=0).max() < 14:
-                x0 = lx
-            else:  # tidak muat: kecilkan huruf
-                fs = max(7, int(fs * (w0 - pad) / max(tw, 1)))
-                font = ImageFont.truetype(FONT, fs)
-                tw = d.textlength(text, font=font)
         d.rectangle([x0, y0, x1, y1], fill=bg)
-        lum = 0.299 * bg[0] + 0.587 * bg[1] + 0.114 * bg[2]
-        col = (255, 255, 255) if lum < 140 else (25, 25, 25)
-        d.text(((x0 + x1 - tw) / 2, (y0 + y1) / 2), text, font=font, fill=col, anchor="lm")
     return img
 
 

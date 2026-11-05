@@ -122,8 +122,9 @@ ALERT_DOWN = [
     "Panduan di https://shukriee.com/beliemas\n\n"
     "Kalau nak saya bagi cadangan emas yang sesuai dengan bajet anda, boleh terus WhatsApp saya ok!",
     "🟢 BEST SIMPAN EMAS FIZIKAL 🟢\n\n"
-    "Anda simpan emas di GAP saja? Kemon!\n\n"
-    "Jom rasa aura pegang emas fizikal di tangan. Apa kata kali ini anda tambah simpanan emas fizikal pula?\n\n"
+    "Anda simpan emas di GAP saja? Kemon! Harga emas turun ni.\n\n"
+    "Apa kata kali ini anda tambah simpanan emas fizikal pula?\n\n"
+    "Boleh rasa aura best nya pegang emas fizikal di tangan. Serius!\n\n"
     "Panduan beli emas di https://shukriee.com/beliemas\n\n"
     "Kalau nak saya bagi cadangan emas yang sesuai dengan bajet anda, boleh terus WhatsApp saya ok!",
 ]

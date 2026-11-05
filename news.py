@@ -14,19 +14,69 @@ BULAN = ["Januari", "Februari", "Mac", "April", "Mei", "Jun", "Julai", "Ogos", "
 MODEL = os.getenv("NEWS_MODEL", "claude-haiku-5-5")
 
 
+RSS_SOURCES = [  # sumber tambahan (RSS); jika gagal dicapai, dilangkau tanpa menjejaskan yang lain
+    "https://www.bernama.com/en/rss/news_business.xml",
+    "https://www.thestar.com.my/rss/business/business-news",
+]
+KEYWORDS = re.compile(r"\b(gold|bullion|precious metal|emas)\b", re.I)
+MAX_AGE_H = 48
+
+
+def _parse_dt(s):
+    from email.utils import parsedate_to_datetime
+    from datetime import datetime, timezone
+    if not s:
+        return None
+    try:
+        d = datetime.fromisoformat(s.replace("Z", "+00:00"))
+    except ValueError:
+        try:
+            d = parsedate_to_datetime(s)
+        except Exception:
+            return None
+    return d if d.tzinfo else d.replace(tzinfo=timezone.utc)
+
+
 def discover(posted):
-    """Cari pautan artikel baharu daripada halaman kategori Precious Metals (The Edge)."""
-    r = requests.get(LISTING, headers=UA, timeout=30)
-    r.raise_for_status()
-    seen = []
-    for m in re.finditer(r'(?:https://theedgemalaysia\.com)?/node/(\d+)', r.text):
-        u = f"https://theedgemalaysia.com/node/{m.group(1)}"
-        if u not in seen:
-            seen.append(u)
-    for u in seen:
-        if u not in posted:
-            return u
-    return None
+    """Kumpul calon dari semua sumber, tapis yang terlalu lama / sudah dihantar, pilih yang paling baharu."""
+    from datetime import datetime, timezone
+    cands = []  # (tarikh, url)
+    try:  # The Edge Malaysia: kategori Precious Metals
+        r = requests.get(LISTING, headers=UA, timeout=30)
+        r.raise_for_status()
+        seen = []
+        for m in re.finditer(r'(?:https://theedgemalaysia\.com)?/node/(\d+)', r.text):
+            u = f"https://theedgemalaysia.com/node/{m.group(1)}"
+            if u not in seen:
+                seen.append(u)
+        for u in seen[:8]:
+            if u in posted:
+                continue
+            try:
+                d = _parse_dt(_meta(requests.get(u, headers=UA, timeout=30).text, "article:published_time"))
+            except Exception:
+                d = None
+            cands.append((d, u))
+    except Exception as e:
+        print("Sumber The Edge gagal:", str(e)[:100])
+    for feed in RSS_SOURCES:  # Bernama, The Star
+        try:
+            r = requests.get(feed, headers=UA, timeout=30)
+            r.raise_for_status()
+            for it in re.findall(r"(?is)<item>(.*?)</item>", r.text):
+                t = html.unescape(re.sub(r"<!\[CDATA\[|\]\]>", "", " ".join(re.findall(r"(?is)<(?:title|description)>(.*?)</(?:title|description)>", it))))
+                lk = re.search(r"(?is)<link>\s*(?:<!\[CDATA\[)?\s*(https?://[^<\s\]]+)", it)
+                pd = re.search(r"(?is)<pubDate>(.*?)</pubDate>", it)
+                if lk and KEYWORDS.search(t) and lk.group(1) not in posted:
+                    cands.append((_parse_dt(pd.group(1).strip()) if pd else None, lk.group(1)))
+        except Exception as e:
+            print("Sumber RSS gagal:", feed, str(e)[:100])
+    now = datetime.now(timezone.utc)
+    fresh = [(d, u) for d, u in cands if d and (now - d).total_seconds() <= MAX_AGE_H * 3600]
+    print(f"Calon berita: {len(cands)}, terkini (<{MAX_AGE_H}j): {len(fresh)}")
+    if not fresh:
+        return None
+    return max(fresh)[1]
 
 
 def _meta(page, prop):
@@ -50,7 +100,7 @@ def summarise(a):
     """Kembalikan (tajuk_bm, ringkasan_bm). Guna AI jika ada kunci; jika tidak, teks asal."""
     key = os.getenv("ANTHROPIC_API_KEY")
     if not key:
-        return a["title"], a["desc"]
+        return None  # tanpa AI tiada terjemahan BM yang boleh dipercayai
     prompt = (
         "Anda menulis caption berita emas untuk saluran WhatsApp/Telegram pengguna Malaysia.\n"
         "Berdasarkan HANYA artikel di bawah, tulis dalam Bahasa Melayu mudah:\n"
@@ -101,10 +151,17 @@ def run(st, send, dt, out="out"):
         print("Tiada berita baharu untuk dihantar.")
         return
     a = fetch_article(url)
-    tajuk, ringkas = summarise(a)
+    test = getattr(sys.modules.get("__main__"), "CURRENT_MODE", "").endswith("-test")
+    res = summarise(a)
+    if res is None:
+        if not test:
+            print("ANTHROPIC_API_KEY tiada: berita tidak dihantar (caption mesti BM).")
+            return
+        print("Mod ujian tanpa kunci AI: guna teks asal (Inggeris) sebagai contoh sahaja.")
+        res = (a["title"], a["desc"])
+    tajuk, ringkas = res
     os.makedirs(out, exist_ok=True)
     img = screenshot(url, f"{out}/berita.png")
     send(build_caption(a, tajuk, ringkas, dt), img, "berita", closing=False)
-    test = getattr(sys.modules.get("__main__"), "CURRENT_MODE", "").endswith("-test")
     if not test and url not in n["posted"]:  # mod ujian tidak menanda berita sebagai sudah dihantar
         n["posted"] = (n["posted"] + [url])[-60:]

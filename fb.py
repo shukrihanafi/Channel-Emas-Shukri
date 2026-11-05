@@ -56,6 +56,17 @@ def check():
     r = requests.get(f"{GRAPH}/{pid}", params={"fields": "name"}, headers=h, timeout=30)
     if r.status_code >= 300:
         raise RuntimeError(f"Facebook {r.status_code}: {r.text[:300]}")
+    # Uji hantar tanpa posting awam: gambar 1x1 TIDAK diterbitkan, kemudian dipadam
+    import base64
+    png = base64.b64decode("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4nGP4z8DwHwAFAAH/q842iQAAAABJRU5ErkJggg==")
+    ptok = page_token(pid, tok)
+    t = requests.post(f"{GRAPH}/{pid}/photos", data={"published": "false", "access_token": ptok}, files={"source": ("t.png", png, "image/png")}, timeout=60)
+    if t.status_code >= 300:
+        raise RuntimeError(f"Uji hantar gagal, Facebook {t.status_code}: {t.text[:300]}")
+    try:
+        requests.delete(f"{GRAPH}/{t.json().get('id')}", data={"access_token": ptok}, timeout=30)
+    except Exception:
+        pass
     exp = "tidak diketahui"
     try:
         d = requests.get(f"{GRAPH}/debug_token", params={"input_token": tok}, headers=h, timeout=30).json().get("data", {})
@@ -64,4 +75,4 @@ def check():
             exp = "tidak tamat" if e == 0 else datetime.fromtimestamp(e, timezone.utc).strftime("%Y-%m-%d")
     except Exception:
         pass
-    return r.json().get("name", "?"), exp
+    return r.json().get("name", "?") + " (uji hantar OK)", exp

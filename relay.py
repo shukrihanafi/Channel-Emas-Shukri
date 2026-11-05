@@ -51,8 +51,8 @@ def run(st, notify=print):
     base = f"https://api.telegram.org/bot{token}"
     first = "relay" not in st
     rs = st.setdefault("relay", {"offset": 0})
-    r = requests.get(f"{base}/getUpdates", params={"offset": rs["offset"], "timeout": 0,
-                     "allowed_updates": '["message","channel_post"]'}, timeout=(10, 60))
+    r = _retry(lambda: requests.get(f"{base}/getUpdates", params={"offset": rs["offset"], "timeout": 0,
+                     "allowed_updates": '["message","channel_post"]'}, timeout=(10, 60)))
     r.raise_for_status()
     if first:  # larian pertama: abaikan mesej lama, mula dari sekarang (elak siar mesej lama ke saluran awam)
         ups = r.json().get("result", [])

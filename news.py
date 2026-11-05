@@ -139,9 +139,9 @@ def summarise(a):
     )
     r = requests.post("https://api.anthropic.com/v1/messages", timeout=90,
                       headers={"x-api-key": key, "anthropic-version": "2023-06-01", "content-type": "application/json"},
-                      json={"model": MODEL, "max_tokens": 600, "messages": [{"role": "user", "content": prompt}]})
+                      json={"model": MODEL, "max_tokens": 1500, "messages": [{"role": "user", "content": prompt}]})
     r.raise_for_status()
-    txt = r.json()["content"][0]["text"]
+    txt = "".join(b.get("text", "") for b in r.json().get("content", []) if b.get("type") == "text")
     j = json.loads(re.search(r"\{.*\}", txt, re.S).group(0))
     return j["tajuk"].strip(), j["ringkasan"].strip()
 

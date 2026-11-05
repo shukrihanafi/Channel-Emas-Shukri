@@ -6,13 +6,33 @@ GRAPH = "https://graph.facebook.com/v21.0"
 TOKEN_EXPIRES = ""  # token System User tidak tamat; isi tarikh YYYY-MM-DD jika guna token bertarikh tamat (peringatan bermula 14 hari sebelum)
 
 
+_PT = {}
+
+
+def page_token(pid, tok):
+    """Token System User/pengguna -> token Page (diperlukan untuk menghantar sebagai Page). Jika gagal, guna token asal."""
+    if (pid, tok) in _PT:
+        return _PT[(pid, tok)]
+    pt = tok
+    try:
+        r = requests.get(f"{GRAPH}/{pid}", params={"fields": "access_token"},
+                         headers={"Authorization": f"Bearer {tok}"}, timeout=30)
+        if r.status_code < 300 and r.json().get("access_token"):
+            pt = r.json()["access_token"]
+    except Exception:
+        pass
+    _PT[(pid, tok)] = pt
+    return pt
+
+
 def enabled() -> bool:
     return bool(os.getenv("FB_PAGE_TOKEN") and os.getenv("FB_PAGE_ID") and os.getenv("FB_AUTO", "1") == "1")
 
 
 def post(text, image_path=None, video_path=None):
     """Video / gambar + caption (atau teks sahaja) ke Page. Token dihantar dalam badan permintaan, bukan URL."""
-    pid, tok = os.environ["FB_PAGE_ID"], os.environ["FB_PAGE_TOKEN"]
+    pid = os.environ["FB_PAGE_ID"]
+    tok = page_token(pid, os.environ["FB_PAGE_TOKEN"])
     if video_path and os.path.exists(video_path):
         with open(video_path, "rb") as f:
             r = requests.post(f"{GRAPH}/{pid}/videos", data={"description": text, "access_token": tok, "published": "true"},

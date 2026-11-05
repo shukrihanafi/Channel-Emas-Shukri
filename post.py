@@ -552,7 +552,7 @@ def mode_relay(p, st):
     print(f"Relay: {n} posting disalin.")
 
 
-MODES = {"fb-check": mode_fbcheck, "relay": mode_relay, "wa-channels": mode_wa_channels, "berita": mode_berita, "gap": mode_gap, "jewel": mode_jewel, "alert": mode_alert, "ilmu": mode_ilmu, "item": mode_item, "pgitem": mode_pgitem,
+MODES = {"fb-check": mode_fbcheck, "relay": mode_relay, "wa-channels": mode_wa_channels, "berita": mode_berita, "berita-test": mode_berita, "gap": mode_gap, "jewel": mode_jewel, "alert": mode_alert, "ilmu": mode_ilmu, "item": mode_item, "pgitem": mode_pgitem,
          "item-jewel": lambda p, st: mode_item(p, st, "jewel"),
          "item-mall": lambda p, st: mode_item(p, st, "mall")}
 

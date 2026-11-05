@@ -322,6 +322,11 @@ def mode_alert(p, st):
             mode_buyback_alert(p, st, fmt_dt(dt))
         except Exception as e:
             print("Alert PG Buy/Non-PG gagal:", e)
+    if diff < 0:  # GAP TURUN -> hantar alert emas fizikal DAHULU, kemudian alert GAP
+        try:
+            mode_fizikal_alert(p, st)
+        except Exception as e:
+            print("Alert emas fizikal gagal:", e)
     send(text, img, "price-alert", closing=False)
     g["last_alert"] = price
     g["last_post"] = price
@@ -517,6 +522,21 @@ def mode_fizikal(p, st):
     send(fizikal.caption(ts), img, "fizikal", closing=False)
 
 
+def mode_fizikal_alert(p, st):
+    """Alert emas fizikal TURUN: jadual harga terkini + skrip (2 skrip berputar). Dipanggil sebelum alert GAP turun."""
+    import fizikal
+    data = fizikal.get_prices()
+    ts = fmt_dt(now_my())
+    n = int(st.get("fz_alert_n", 0))
+    if not CURRENT_MODE.endswith("-test"):
+        st["fz_alert_n"] = n + 1
+    text = fizikal.ALERT_DOWN[n % len(fizikal.ALERT_DOWN)]
+    os.makedirs(OUT, exist_ok=True)
+    img = f"{OUT}/fizikal_alert.png"
+    fizikal.make_card(img, data, ts)
+    send(text, img, "alert-fizikal", closing=False)
+
+
 def mode_testimoni(p, st):
     import testimoni
     testimoni.run(st, send, now_my(), notify=tg_plain)
@@ -568,7 +588,7 @@ def mode_relay(p, st):
     print(f"Relay: {n} posting disalin.")
 
 
-MODES = {"fb-check": mode_fbcheck, "relay": mode_relay, "wa-channels": mode_wa_channels, "berita": mode_berita, "berita-test": mode_berita, "fizikal": mode_fizikal, "fizikal-test": mode_fizikal, "testimoni": mode_testimoni, "testimoni-test": mode_testimoni, "gap": mode_gap, "jewel": mode_jewel, "alert": mode_alert, "ilmu": mode_ilmu, "item": mode_item, "pgitem": mode_pgitem,
+MODES = {"fb-check": mode_fbcheck, "relay": mode_relay, "wa-channels": mode_wa_channels, "berita": mode_berita, "berita-test": mode_berita, "fizikal": mode_fizikal, "fizikal-test": mode_fizikal, "fizikal-alert-test": mode_fizikal_alert, "testimoni": mode_testimoni, "testimoni-test": mode_testimoni, "gap": mode_gap, "jewel": mode_jewel, "alert": mode_alert, "ilmu": mode_ilmu, "item": mode_item, "pgitem": mode_pgitem,
          "item-jewel": lambda p, st: mode_item(p, st, "jewel"),
          "item-mall": lambda p, st: mode_item(p, st, "mall")}
 

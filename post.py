@@ -452,7 +452,7 @@ def mode_wa_channels(p, st):
 
 def mode_berita(p, st):
     import news
-    news.run(st, send, now_my())
+    news.run(st, send, now_my(), notify=tg_plain)
 
 
 # Jadual tetap (waktu Malaysia). Alert 20-minit juga menjadi "pengawas": jika hantaran tertinggal (run tersekat di GitHub),

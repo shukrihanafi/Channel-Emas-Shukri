@@ -14,20 +14,22 @@ BULAN = ["Januari", "Februari", "Mac", "April", "Mei", "Jun", "Julai", "Ogos", "
 MODEL = os.getenv("NEWS_MODEL", "claude-haiku-5-5")
 
 
-RSS_SOURCES = [  # sumber tambahan (RSS); jika gagal dicapai, dilangkau tanpa menjejaskan yang lain
-    "https://www.bernama.com/en/rss/news_business.xml",
-    "https://www.thestar.com.my/rss/business/business-news",
-]
-KEYWORDS = re.compile(r"\b(gold|bullion|precious metal|emas|dinar)\b", re.I)
-BERNAMA_PAGES = ["https://www.bernama.com/bm/index.php", "https://www.bernama.com/bm/rssfeed.php"]  # BM; halaman + senarai RSS
+KEYWORDS = re.compile(r"\b(gold|bullion|precious metals?|emas|dinar)\b", re.I)
+BERNAMA_PAGES = ["https://www.bernama.com/bm/index.php", "https://www.bernama.com/bm/ekonomi/"]  # Bernama BM
 MAX_AGE_H = 48
 
 
 def _parse_dt(s):
+    """Terima ISO (The Edge), RFC822, atau 'dd/mm/yyyy hh:mm AM' (Bernama, waktu Malaysia)."""
     from email.utils import parsedate_to_datetime
-    from datetime import datetime, timezone
+    from datetime import datetime, timezone, timedelta
     if not s:
         return None
+    m = re.match(r"(\d{1,2})/(\d{1,2})/(\d{4})\s+(\d{1,2}):(\d{2})\s*([AP]M)?", s.strip(), re.I)
+    if m:
+        d_, mo, y, h, mi, ap = m.groups()
+        h = int(h) % 12 + (12 if (ap or "").upper() == "PM" else 0) if ap else int(h)
+        return datetime(int(y), int(mo), int(d_), h, int(mi), tzinfo=timezone(timedelta(hours=8)))
     try:
         d = datetime.fromisoformat(s.replace("Z", "+00:00"))
     except ValueError:
@@ -38,76 +40,66 @@ def _parse_dt(s):
     return d if d.tzinfo else d.replace(tzinfo=timezone.utc)
 
 
+def _edge_candidates(posted):
+    """The Edge Malaysia (kategori Precious Metals): senarai berita ada dalam JSON __NEXT_DATA__ (nid + created ms)."""
+    from datetime import datetime, timezone
+    r = requests.get(LISTING, headers=UA, timeout=30)
+    r.raise_for_status()
+    out = []
+    m = re.search(r'<script id="__NEXT_DATA__"[^>]*>(.*?)</script>', r.text, re.S)
+    if m:
+        data = json.loads(m.group(1))
+        for it in data.get("props", {}).get("pageProps", {}).get("corporateData", []) or []:
+            if it.get("nid") and it.get("created"):
+                u = f"https://theedgemalaysia.com/node/{it['nid']}"
+                if u not in posted:
+                    out.append((datetime.fromtimestamp(it["created"] / 1000, timezone.utc), u))
+    if not out:  # sandaran: pautan /node/ biasa
+        for n_ in list(dict.fromkeys(re.findall(r"/node/(\d+)", r.text)))[:8]:
+            u = f"https://theedgemalaysia.com/node/{n_}"
+            if u not in posted:
+                try:
+                    out.append((_parse_dt(_meta(requests.get(u, headers=UA, timeout=30).text, "article:published_time")), u))
+                except Exception:
+                    pass
+    return out
+
+
+def _bernama_candidates(posted):
+    """Bernama BM: imbas halaman utama + Ekonomi, ambil pautan yang tajuknya berkaitan emas, baca tarikh dari artikel."""
+    links = []
+    for pgurl in BERNAMA_PAGES:
+        try:
+            t = requests.get(pgurl, headers=UA, timeout=30).text
+        except Exception as e:
+            print("Bernama gagal:", pgurl, str(e)[:80])
+            continue
+        for h, txt in re.findall(r'(?is)<a[^>]+href=["\']([^"\']*news(?:-bm)?\.php\?id=\d+[^"\']*)["\'][^>]*>(.*?)</a>', t):
+            txt = html.unescape(re.sub(r"<[^>]+>", " ", txt))
+            if KEYWORDS.search(txt):
+                links.append(requests.compat.urljoin(pgurl, html.unescape(h)))
+    out = []
+    for u in list(dict.fromkeys(links))[:10]:
+        if u in posted:
+            continue
+        try:
+            out.append((_parse_dt(_meta(requests.get(u, headers=UA, timeout=30).text, "article:published_time")), u))
+        except Exception:
+            pass
+    return out
+
+
 def discover(posted):
     """Kumpul calon dari semua sumber, tapis yang terlalu lama / sudah dihantar, pilih yang paling baharu."""
     from datetime import datetime, timezone
-    cands = []  # (tarikh, url)
-    try:  # The Edge Malaysia: kategori Precious Metals
-        r = requests.get(LISTING, headers=UA, timeout=30)
-        r.raise_for_status()
-        seen = []
-        for m in re.finditer(r'(?:https://theedgemalaysia\.com)?/node/(\d+)', r.text):
-            u = f"https://theedgemalaysia.com/node/{m.group(1)}"
-            if u not in seen:
-                seen.append(u)
-        for u in seen[:8]:
-            if u in posted:
-                continue
-            try:
-                d = _parse_dt(_meta(requests.get(u, headers=UA, timeout=30).text, "article:published_time"))
-            except Exception:
-                d = None
-            cands.append((d, u))
-    except Exception as e:
-        print("Sumber The Edge gagal:", str(e)[:100])
-    for feed in RSS_SOURCES:  # Bernama, The Star
+    cands = []
+    for name, fn in (("The Edge", _edge_candidates), ("Bernama BM", _bernama_candidates)):
         try:
-            r = requests.get(feed, headers=UA, timeout=30)
-            r.raise_for_status()
-            for it in re.findall(r"(?is)<item>(.*?)</item>", r.text):
-                t = html.unescape(re.sub(r"<!\[CDATA\[|\]\]>", "", " ".join(re.findall(r"(?is)<(?:title|description)>(.*?)</(?:title|description)>", it))))
-                lk = re.search(r"(?is)<link>\s*(?:<!\[CDATA\[)?\s*(https?://[^<\s\]]+)", it)
-                pd = re.search(r"(?is)<pubDate>(.*?)</pubDate>", it)
-                if lk and KEYWORDS.search(t) and lk.group(1) not in posted:
-                    cands.append((_parse_dt(pd.group(1).strip()) if pd else None, lk.group(1)))
+            got = fn(posted)
+            print(f"Sumber {name}: {len(got)} calon")
+            cands += got
         except Exception as e:
-            print("Sumber RSS gagal:", feed, str(e)[:100])
-    try:  # Bernama BM: imbas halaman utama + semua RSS yang tersenarai, ambil pautan berita berkaitan emas
-        feeds, pages = [], []
-        for pgurl in BERNAMA_PAGES:
-            try:
-                t = requests.get(pgurl, headers=UA, timeout=30).text
-            except Exception as e:
-                print("Bernama gagal:", pgurl, str(e)[:80]); continue
-            pages.append(t)
-            for h in re.findall(r'href=["\']([^"\']*(?:rss|\.xml)[^"\']*)["\']', t, re.I):
-                feeds.append(requests.compat.urljoin(pgurl, html.unescape(h)))
-        links = []
-        for t in pages:  # <a href=".../news.php?id=123">Tajuk</a>
-            for h, txt in re.findall(r'(?is)<a[^>]+href=["\']([^"\']*news(?:-bm)?\.php\?id=\d+[^"\']*)["\'][^>]*>(.*?)</a>', t):
-                txt = html.unescape(re.sub(r"<[^>]+>", " ", txt))
-                if KEYWORDS.search(txt):
-                    links.append(requests.compat.urljoin("https://www.bernama.com/bm/", html.unescape(h)))
-        for f in list(dict.fromkeys(feeds))[:8]:
-            try:
-                x = requests.get(f, headers=UA, timeout=30).text
-                for it in re.findall(r"(?is)<item>(.*?)</item>", x):
-                    tt = html.unescape(re.sub(r"<!\[CDATA\[|\]\]>|<[^>]+>", " ", it))
-                    lk = re.search(r"(?is)<link>\s*(?:<!\[CDATA\[)?\s*(https?://[^<\s\]]+)", it)
-                    pd = re.search(r"(?is)<pubDate>(.*?)</pubDate>", it)
-                    if lk and KEYWORDS.search(tt) and lk.group(1) not in posted:
-                        cands.append((_parse_dt(pd.group(1).strip()) if pd else None, lk.group(1)))
-            except Exception:
-                pass
-        for u in list(dict.fromkeys(links))[:10]:
-            if u in posted or any(u == c[1] for c in cands):
-                continue
-            try:
-                cands.append((_parse_dt(_meta(requests.get(u, headers=UA, timeout=30).text, "article:published_time")), u))
-            except Exception:
-                pass
-    except Exception as e:
-        print("Bernama BM gagal:", str(e)[:100])
+            print(f"Sumber {name} gagal:", str(e)[:100])
     now = datetime.now(timezone.utc)
     fresh = [(d, u) for d, u in cands if d and (now - d).total_seconds() <= MAX_AGE_H * 3600]
     print(f"Calon berita: {len(cands)}, terkini (<{MAX_AGE_H}j): {len(fresh)}")

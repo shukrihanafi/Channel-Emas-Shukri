@@ -75,4 +75,13 @@ def check():
             exp = "tidak tamat" if e == 0 else datetime.fromtimestamp(e, timezone.utc).strftime("%Y-%m-%d")
     except Exception:
         pass
+    try:  # Instagram: akaun yang dipaut ke Page + kebenaran token (tanpa menghantar apa-apa)
+        hp = {"Authorization": f"Bearer {ptok}"}
+        j = requests.get(f"{GRAPH}/{pid}", params={"fields": "instagram_business_account{id,username}"}, headers=hp, timeout=30).json()
+        ig = j.get("instagram_business_account") or {}
+        d2 = requests.get(f"{GRAPH}/debug_token", params={"input_token": tok}, headers=h, timeout=30).json().get("data", {})
+        exp += " | IG=" + str(ig.get("username") or ig.get("id") or ("tiada " + str(j.get("error", {}).get("message", ""))[:100])) \
+            + " | skop=" + ",".join(d2.get("scopes", []))
+    except Exception as e:
+        exp += " | IG semak gagal: " + str(e)[:80]
     return r.json().get("name", "?") + " (uji hantar OK)", exp

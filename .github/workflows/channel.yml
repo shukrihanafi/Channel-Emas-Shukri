@@ -5,11 +5,11 @@ on:
   workflow_dispatch:
     inputs:
       mode:
-        description: "Mod (gap / jewel / alert / ilmu / item / pgitem / berita / berita-test / wa-channels)"
+        description: "Mod (gap / jewel / alert / ilmu / item / pgitem / berita / fb-check / wa-channels)"
         required: true
         default: "gap"
       url:
-        description: "Pautan berita (pilihan, untuk mod berita / berita-test)"
+        description: "Pautan berita (pilihan, untuk mod berita sahaja)"
         required: false
         default: ""
 
@@ -72,6 +72,8 @@ jobs:
           WHAPI_TOKEN: ${{ secrets.WHAPI_TOKEN }}
           FB_PAGE_TOKEN: ${{ secrets.FB_PAGE_TOKEN }}
           FB_PAGE_ID: ${{ secrets.FB_PAGE_ID }}
+          GMAIL_USER: "shukripublicgold@gmail.com"
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
           WA_CHANNEL_ID: ${{ secrets.WA_CHANNEL_ID }}
           # Suis WhatsApp auto: tukar "0" kepada "1" bila sudah bersedia. Tukar kembali "0" untuk berhenti.
           WA_ENABLED: "1"

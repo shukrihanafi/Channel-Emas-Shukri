@@ -9,11 +9,23 @@ import requests
 import whapi
 
 
+def _retry(fn, tries=3):
+    """Ulang panggilan rangkaian (Telegram kadang-kadang tamat masa dari GitHub)."""
+    import time
+    for i in range(tries):
+        try:
+            return fn()
+        except requests.RequestException:
+            if i == tries - 1:
+                raise
+            time.sleep(3 * (i + 1))
+
+
 def _fetch_photo(base, token, file_id):
-    r = requests.get(f"{base}/getFile", params={"file_id": file_id}, timeout=30)
+    r = _retry(lambda: requests.get(f"{base}/getFile", params={"file_id": file_id}, timeout=(10, 60)))
     r.raise_for_status()
     fp = r.json()["result"]["file_path"]
-    data = requests.get(f"https://api.telegram.org/file/bot{token}/{fp}", timeout=60)
+    data = _retry(lambda: requests.get(f"https://api.telegram.org/file/bot{token}/{fp}", timeout=(10, 90)))
     data.raise_for_status()
     path = os.path.join(tempfile.mkdtemp(), os.path.basename(fp))
     open(path, "wb").write(data.content)
@@ -23,13 +35,13 @@ def _fetch_photo(base, token, file_id):
 def _tg_push(base, target, text, path):
     if path and len(text) <= 1024:
         with open(path, "rb") as f:
-            requests.post(f"{base}/sendPhoto", data={"chat_id": target, "caption": text}, files={"photo": f}, timeout=60).raise_for_status()
+            _retry(lambda: requests.post(f"{base}/sendPhoto", data={"chat_id": target, "caption": text}, files={"photo": open(path, "rb")}, timeout=(10, 90))).raise_for_status()
         return
     if path:
         with open(path, "rb") as f:
-            requests.post(f"{base}/sendPhoto", data={"chat_id": target}, files={"photo": f}, timeout=60).raise_for_status()
+            _retry(lambda: requests.post(f"{base}/sendPhoto", data={"chat_id": target}, files={"photo": open(path, "rb")}, timeout=(10, 90))).raise_for_status()
     if text:
-        requests.post(f"{base}/sendMessage", data={"chat_id": target, "text": text}, timeout=60).raise_for_status()
+        _retry(lambda: requests.post(f"{base}/sendMessage", data={"chat_id": target, "text": text}, timeout=(10, 60))).raise_for_status()
 
 
 def run(st, notify=print):
@@ -40,7 +52,7 @@ def run(st, notify=print):
     first = "relay" not in st
     rs = st.setdefault("relay", {"offset": 0})
     r = requests.get(f"{base}/getUpdates", params={"offset": rs["offset"], "timeout": 0,
-                     "allowed_updates": '["message","channel_post"]'}, timeout=30)
+                     "allowed_updates": '["message","channel_post"]'}, timeout=(10, 60))
     r.raise_for_status()
     if first:  # larian pertama: abaikan mesej lama, mula dari sekarang (elak siar mesej lama ke saluran awam)
         ups = r.json().get("result", [])
@@ -50,33 +62,43 @@ def run(st, notify=print):
     done = 0
     tg_channel = os.getenv("TELEGRAM_CHANNEL", "").strip()
     for u in r.json().get("result", []):
-        rs["offset"] = u["update_id"] + 1
+        uid = u["update_id"]
         m = u.get("channel_post") or u.get("message")
         if not m:
+            rs["offset"] = uid + 1
             continue
         from_channel = "channel_post" in u
         if from_channel:
             uname = "@" + (m["chat"].get("username") or "")
             if tg_channel and uname.lower() != tg_channel.lower():
+                rs["offset"] = uid + 1
                 continue
         elif str(m["chat"]["id"]) != owner:  # hanya pemilik boleh guna chat peribadi
+            rs["offset"] = uid + 1
             continue
         text = (m.get("caption") or m.get("text") or "").strip()
-        if text.startswith("/"):
+        if text.startswith("/") or (not text and not m.get("photo")):  # arahan / jenis tidak disokong
+            rs["offset"] = uid + 1
             continue
-        path = None
         try:
-            if m.get("photo"):
-                path = _fetch_photo(base, token, m["photo"][-1]["file_id"])
-            elif not text:
-                continue  # jenis lain (video, dokumen, dll.) tidak disokong
-            whapi.post_channel(text, path)
+            path = _fetch_photo(base, token, m["photo"][-1]["file_id"]) if m.get("photo") else None
+            if rs.get("wa_done") != uid:  # elak hantar dua kali ke WhatsApp jika langkah kemudian perlu diulang
+                whapi.post_channel(text, path)
+                rs["wa_done"] = uid
             dest = "WhatsApp Channel"
             if not from_channel and tg_channel:
                 _tg_push(base, tg_channel, text, path)
                 dest += f" + Telegram Channel {tg_channel}"
+            rs["offset"], rs["tries"] = uid + 1, 0
             notify(f"✅ Posting manual disalin ke {dest}.")
             done += 1
         except Exception as e:
-            notify(f"⚠️ Gagal salin posting manual: {e}")
+            # JANGAN majukan offset: cuba lagi pada larian seterusnya (maksimum 5 kali, lalu dilangkau)
+            rs["tries"] = rs.get("tries", 0) + 1
+            if rs["tries"] >= 5:
+                rs["offset"], rs["tries"] = uid + 1, 0
+                notify(f"⚠️ Posting manual gagal disalin selepas 5 percubaan, dilangkau: {e}")
+            elif rs["tries"] == 1:
+                notify(f"⚠️ Gagal salin posting manual (akan dicuba lagi): {e}")
+            break
     return done

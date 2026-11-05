@@ -73,12 +73,17 @@ def screenshot(url, path):
     with sync_playwright() as pw:
         b = pw.chromium.launch()
         pg = b.new_page(viewport={"width": 900, "height": 1400}, device_scale_factor=1.5, user_agent=UA["User-Agent"])
-        pg.goto(url, wait_until="domcontentloaded", timeout=60000)
-        pg.wait_for_timeout(4000)
+        pg.goto(url, wait_until="load", timeout=60000)
+        pg.wait_for_timeout(5000)
+        print("Halaman:", pg.title(), "|", pg.inner_text("body")[:160].replace("\n", " "))
         pg.evaluate("""() => { document.querySelectorAll('[class*=cookie],[id*=cookie],[class*=consent],[class*=advert],[id*=google_ads],iframe')
                        .forEach(e => e.remove()); }""")
-        box = pg.locator("h1").first.bounding_box()
-        top = max(box["y"] - 16, 0)
+        try:
+            pg.wait_for_selector("h1", timeout=15000)
+            top = max(pg.locator("h1").first.bounding_box(timeout=5000)["y"] - 16, 0)
+        except Exception as e:  # tajuk tidak ditemui: tangkap bahagian atas halaman dan simpan untuk semakan
+            print("h1 tidak ditemui:", str(e)[:120])
+            top = 0
         pg.screenshot(path=path, clip={"x": 0, "y": top, "width": 900, "height": 860})
         b.close()
     return path

@@ -2,3 +2,4 @@ requests
 Pillow
 matplotlib
 numpy
+pytesseract

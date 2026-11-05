@@ -75,6 +75,8 @@
   },
   "bb_last": 2,
   "relay": {
-    "offset": 991464014
+    "offset": 991464016,
+    "wa_done": 991464015,
+    "tries": 0
   }
 }

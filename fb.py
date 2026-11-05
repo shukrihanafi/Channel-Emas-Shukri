@@ -9,10 +9,14 @@ def enabled() -> bool:
     return bool(os.getenv("FB_PAGE_TOKEN") and os.getenv("FB_PAGE_ID") and os.getenv("FB_AUTO", "1") == "1")
 
 
-def post(text, image_path=None):
-    """Gambar + caption (atau teks sahaja) ke Page. Token dihantar dalam badan permintaan, bukan URL."""
+def post(text, image_path=None, video_path=None):
+    """Video / gambar + caption (atau teks sahaja) ke Page. Token dihantar dalam badan permintaan, bukan URL."""
     pid, tok = os.environ["FB_PAGE_ID"], os.environ["FB_PAGE_TOKEN"]
-    if image_path and os.path.exists(image_path):
+    if video_path and os.path.exists(video_path):
+        with open(video_path, "rb") as f:
+            r = requests.post(f"{GRAPH}/{pid}/videos", data={"description": text, "access_token": tok, "published": "true"},
+                              files={"source": f}, timeout=(10, 600))
+    elif image_path and os.path.exists(image_path):
         with open(image_path, "rb") as f:
             r = requests.post(f"{GRAPH}/{pid}/photos", data={"caption": text, "access_token": tok, "published": "true"},
                               files={"source": f}, timeout=(10, 120))

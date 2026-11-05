@@ -3,7 +3,7 @@ import os
 import requests
 
 GRAPH = "https://graph.facebook.com/v21.0"
-TOKEN_EXPIRES = "2027-01-04"  # tarikh token Page tamat (kemas kini bila token diganti); peringatan Telegram bermula 14 hari sebelum
+TOKEN_EXPIRES = ""  # token System User tidak tamat; isi tarikh YYYY-MM-DD jika guna token bertarikh tamat (peringatan bermula 14 hari sebelum)
 
 
 def enabled() -> bool:

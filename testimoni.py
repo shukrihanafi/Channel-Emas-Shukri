@@ -70,59 +70,73 @@ def _to_pil(content):
     return Image.open(io.BytesIO(content)).convert("RGB")
 
 
-def find_boxes(img):
-    """Cari kotak masa & tarikh dalam gambar dengan OCR. Kembalikan senarai (x0,y0,x1,y1) dalam piksel gambar asal."""
+def _ocr_words(img):
+    """Perkataan OCR: [(teks, x0, y0, x1, y1)] dalam piksel gambar asal."""
     import pytesseract
     from PIL import ImageOps
     scale = 3 if img.width < 1400 else 2
-    big = img.resize((img.width * scale, img.height * scale))
-    variants = [ImageOps.grayscale(big), ImageOps.invert(ImageOps.grayscale(big))]
-    boxes = []
-    for v in variants:
+    big = ImageOps.grayscale(img.resize((img.width * scale, img.height * scale)))
+    words = []
+    for v in (big, ImageOps.invert(big)):  # teks cerah atas latar gelap dan sebaliknya
         try:
             d = pytesseract.image_to_data(v, config="--psm 11 -l eng", output_type=pytesseract.Output.DICT)
         except Exception as e:
             print("OCR gagal:", str(e)[:100])
             continue
-        n = len(d["text"])
-        words = []
-        for i in range(n):
+        for i in range(len(d["text"])):
             t = (d["text"][i] or "").strip()
-            if not t or float(d["conf"][i]) < 30:
-                continue
-            words.append((t, d["left"][i], d["top"][i], d["width"][i], d["height"][i]))
-        for idx, (t, x, y, w, h) in enumerate(words):
-            t0 = t.strip("✓✔√ ")
-            box = None
-            # masa: 6:55, 6:55pm, 6:55 pm, 18:55
-            mt = re.match(r"^\(?(\d{1,2})[:.](\d{2})\s*([ap]\.?m\.?)?\)?$", t0, re.I)
-            if mt:
-                hh, mm, ap = int(mt.group(1)), int(mt.group(2)), mt.group(3)
-                valid = mm < 60 and ((ap and 1 <= hh <= 12) or (not ap and hh <= 23 and len(mt.group(1)) == 2) or (not ap and 1 <= hh <= 12))
-                if valid and not (hh == 0 and not ap and len(mt.group(1)) == 1):
-                    box = [x, y, x + w, y + h]
-                    if not ap:  # am/pm sebagai perkataan berasingan di sebelah kanan, baris sama
-                        for t2, x2, y2, w2, h2 in words[idx + 1: idx + 3]:
-                            if AMPM_RE.match(t2.strip()) and abs(y2 - y) < h and 0 <= x2 - (x + w) < h * 2:
-                                box[2] = x2 + w2
-                                box[1] = min(box[1], y2)
-                                box[3] = max(box[3], y2 + h2)
-                                break
-            elif any(rx.match(t0) for rx in DATE_RES):
-                # tarikh: gabung perkataan berjiran (contoh "11 Oct 2025")
-                box = [x, y, x + w, y + h]
-                for t2, x2, y2, w2, h2 in words[max(0, idx - 2): idx + 4]:
-                    if (t2, x2, y2) != (t, x, y) and abs(y2 - y) < h and abs((x2 + w2 / 2) - (box[0] + box[2]) / 2) < h * 10 and \
-                            (re.match(r"^\d{1,4}[,.]?$", t2) or re.match(r"^" + MONTHS + r"[,.]?$", t2, re.I)):
-                        box = [min(box[0], x2), min(box[1], y2), max(box[2], x2 + w2), max(box[3], y2 + h2)]
-                if re.match(r"^" + MONTHS, t0, re.I):  # nama bulan: hari di kiri dan tahun di kanan mungkin tidak dibaca OCR
-                    box[0] -= h * 2.4
-                    box[2] += h * 3.4
-            if box:
-                boxes.append([c / scale for c in box])
-        if boxes:
-            break  # variasi pertama sudah berjumpa: cukup
-    # gabung kotak bertindih
+            if t and float(d["conf"][i]) >= 30:
+                x, y, w, h = d["left"][i], d["top"][i], d["width"][i], d["height"][i]
+                words.append((t, x / scale, y / scale, (x + w) / scale, (y + h) / scale))
+    return words
+
+
+_MON = r"(?:jan|feb|mac|mar|apr|mei|may|jun|jul|ogo|aug|sep|okt|oct|nov|dis|dec)[a-z]*\.?"
+DATE_PATTERNS = [
+    re.compile(r"\d{1,2}[/.\-]\d{1,2}[/.\-]\d{2,4}"),
+    re.compile(r"\d{4}[/\-]\d{1,2}[/\-]\d{1,2}"),
+    re.compile(r"\d{1,2}\s*" + _MON + r"\s*,?\s*(?:20\d\d)?", re.I),
+    re.compile(_MON + r"\s*\d{1,2}\s*,?\s*(?:20\d\d)?", re.I),
+    re.compile(_MON + r"\s*,?\s*20\d\d", re.I),
+]
+LEAD_RE = re.compile(r"^(today|yesterday|hari\s*ini|semalam|last|updated|update|dikemaskini|tarikh|date)[:,.]*$", re.I)
+
+
+def find_dates(words):
+    """Cari tarikh (bukan masa) dalam senarai perkataan OCR. Kembalikan kotak [(x0,y0,x1,y1)]; masa jam tidak ditutup."""
+    rows = []
+    for w in sorted(words, key=lambda w: (w[2] + w[4]) / 2):
+        cy, h = (w[2] + w[4]) / 2, w[4] - w[2]
+        for r in rows:
+            if abs(r["cy"] - cy) < max(h, r["h"]) * 0.6:
+                r["w"].append(w)
+                break
+        else:
+            rows.append({"cy": cy, "h": h, "w": [w]})
+    boxes = []
+    for r in rows:
+        ws = sorted(r["w"], key=lambda w: w[1])
+        uniq = []
+        for w in ws:  # buang pendua (dua variasi OCR) pada kedudukan hampir sama
+            if not any(abs(w[1] - u[1]) < 4 and w[0].lower() == u[0].lower() for u in uniq):
+                uniq.append(w)
+        ws = uniq
+        text, spans = "", []
+        for w in ws:
+            spans.append((len(text), len(text) + len(w[0]), w))
+            text += w[0] + " "
+        for rx in DATE_PATTERNS:
+            for m in rx.finditer(text):
+                if not re.search(r"[A-Za-z]{3}|\d{1,2}[/.\-]\d", m.group(0)):
+                    continue
+                hit = [w for s0, e0, w in spans if s0 < m.end() and e0 > m.start()]
+                if not hit:
+                    continue
+                i0 = ws.index(hit[0])
+                while i0 > 0 and LEAD_RE.match(ws[i0 - 1][0]):  # "Today," / "Last updated:" di hadapan tarikh
+                    i0 -= 1
+                grp = ws[i0: ws.index(hit[-1]) + 1]
+                boxes.append([min(g[1] for g in grp), min(g[2] for g in grp), max(g[3] for g in grp), max(g[4] for g in grp)])
     merged = []
     for b in sorted(boxes):
         for m in merged:
@@ -132,6 +146,38 @@ def find_boxes(img):
         else:
             merged.append(list(b))
     return merged
+
+
+def find_boxes(img):
+    """Kembalikan (kotak_tarikh, semua_perkataan)."""
+    words = _ocr_words(img)
+    return find_dates(words), words
+
+
+def center_watermark(img, words, text="shukriee.com"):
+    """Tiada tarikh: letak watermark lutsinar di tengah, di jalur mendatar yang paling kurang tulisan."""
+    import numpy as np
+    from PIL import Image, ImageDraw, ImageFont
+    W, H = img.size
+    fs = max(16, int(W * 0.07))
+    font = ImageFont.truetype(FONT, fs)
+    tw = ImageDraw.Draw(img).textlength(text, font=font)
+    th = fs * 1.3
+    g = np.asarray(img.convert("L")).astype(float)
+    gm = np.abs(np.diff(g, axis=1))[:-1, :] + np.abs(np.diff(g, axis=0))[:, :-1]  # tenaga tepi: tinggi di tempat ada tulisan
+    best = None
+    for k in range(0, 61):
+        cy = H * (0.22 + 0.56 * k / 60)
+        y0, y1, x0, x1 = int(max(0, cy - th / 2)), int(min(H - 2, cy + th / 2)), int(max(0, (W - tw) / 2)), int(min(W - 2, (W + tw) / 2))
+        ov = sum(max(0, min(x1, w[3]) - max(x0, w[1])) * max(0, min(y1, w[4]) - max(y0, w[2])) for w in words) / max(1, (x1 - x0) * (y1 - y0))
+        edge = float(gm[y0:y1, x0:x1].mean()) if y1 > y0 and x1 > x0 else 999
+        score = edge + ov * 200 + abs(cy - H / 2) / H * 6  # utamakan tengah jika sama
+        if best is None or score < best[0]:
+            best = (score, cy)
+    lay = Image.new("RGBA", img.size, (0, 0, 0, 0))
+    ImageDraw.Draw(lay).text((W / 2, best[1]), text, font=font, fill=(255, 255, 255, 135), anchor="mm",
+                             stroke_width=max(1, fs // 14), stroke_fill=(0, 0, 0, 110))
+    return Image.alpha_composite(img.convert("RGBA"), lay).convert("RGB")
 
 
 def cover(img, boxes, text="shukriee.com"):
@@ -195,7 +241,12 @@ def fit_ratio(img):
 def run(st, send, dt, out="out", notify=print):
     n = st.setdefault("testi", {"used": []})
     test = getattr(sys.modules.get("__main__"), "CURRENT_MODE", "").endswith("-test")
-    posts = list_posts()
+    try:
+        posts = list_posts()
+    except Exception as e:
+        print("Senarai testimoni gagal:", str(e)[:200])
+        notify("⚠️ Testimoni: gagal baca saluran @kenaliemas: " + str(e)[:120])
+        return
     # senarai gambar: (kunci unik, teks, url)
     items = [(f"{p['key']}#{i}", p["text"], u) for p in posts for i, u in enumerate(p["photos"][:1])]
     print(f"Testimoni dijumpai: {len(items)} (gambar), sudah digunakan: {len(n['used'])}")
@@ -214,17 +265,18 @@ def run(st, send, dt, out="out", notify=print):
             r = requests.get(url, headers=UA, timeout=60)
             r.raise_for_status()
             img = _to_pil(r.content)
-            boxes = find_boxes(img)
+            boxes, words = find_boxes(img)
         except Exception as e:
             print(f"Testimoni {key} dilangkau: {str(e)[:120]}")
             continue
-        if not boxes:
-            print(f"Testimoni {key}: tiada masa/tarikh dikesan, dilangkau (takut masa masih nampak)")
-            continue
-        img = fit_ratio(cover(img, boxes))
+        if boxes:
+            img = cover(img, boxes)
+        else:  # tiada tarikh kelihatan: watermark biasa di tengah (masa jam tidak ditutup)
+            img = center_watermark(img, words)
+        img = fit_ratio(img)
         path = f"{out}/testimoni.jpg"
         img.save(path, "JPEG", quality=92)
-        print(f"Testimoni dipilih: {key} ({len(boxes)} kawasan ditutup)")
+        print(f"Testimoni dipilih: {key} (tarikh ditutup: {len(boxes)})")
         cap = text or "Terima kasih atas kepercayaan anda."
         if "shukriee.com" not in cap.lower():
             cap += "\n\nKlik shukriee.com untuk simpan emas!"
@@ -232,4 +284,4 @@ def run(st, send, dt, out="out", notify=print):
         if not test:
             n["used"] = (n["used"] + [key])[-400:]
         return
-    notify("⚠️ Testimoni: tiada gambar yang masa/tarikhnya berjaya dikesan untuk ditutup. Tiada hantaran.")
+    notify("⚠️ Testimoni: tiada gambar berjaya diproses. Tiada hantaran.")

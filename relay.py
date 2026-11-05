@@ -6,7 +6,7 @@ Mesej bermula dengan "/" diabaikan. Dipanggil dalam larian alert (setiap 20 mini
 """
 import os, tempfile
 import requests
-import whapi
+import whapi, fb
 
 
 def _retry(fn, tries=3):
@@ -87,8 +87,15 @@ def run(st, notify=print):
                 rs["wa_done"] = uid
             dest = "WhatsApp Channel"
             if not from_channel and tg_channel:
-                _tg_push(base, tg_channel, text, path)
+                if rs.get("tg_done") != uid:
+                    _tg_push(base, tg_channel, text, path)
+                    rs["tg_done"] = uid
                 dest += f" + Telegram Channel {tg_channel}"
+            if fb.enabled():
+                if rs.get("fb_done") != uid:
+                    fb.post(text, path)
+                    rs["fb_done"] = uid
+                dest += " + Facebook Page"
             rs["offset"], rs["tries"] = uid + 1, 0
             notify(f"✅ Posting manual disalin ke {dest}.")
             done += 1

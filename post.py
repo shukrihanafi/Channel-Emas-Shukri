@@ -506,6 +506,17 @@ def mode_berita(p, st):
     news.run(st, send, now_my(), notify=tg_plain)
 
 
+def mode_fizikal(p, st):
+    """Harga emas fizikal (Gold Bar + Dinar) daripada website Public Gold: gambar + caption."""
+    import fizikal
+    data = fizikal.get_prices()
+    ts = fmt_dt(now_my())
+    os.makedirs(OUT, exist_ok=True)
+    img = f"{OUT}/fizikal.png"
+    fizikal.make_card(img, data, ts)
+    send(fizikal.caption(ts), img, "fizikal", closing=False)
+
+
 def mode_testimoni(p, st):
     import testimoni
     testimoni.run(st, send, now_my(), notify=tg_plain)
@@ -513,7 +524,7 @@ def mode_testimoni(p, st):
 
 # Jadual tetap (waktu Malaysia). Alert 20-minit juga menjadi "pengawas": jika hantaran tertinggal (run tersekat di GitHub),
 # ia dijalankan semula sendiri dalam tempoh 150 minit selepas masa asal.
-SLOTS = [("08:09", "gap"), ("10:09", "pgitem"), ("13:09", "berita"), ("15:09", "testimoni"), ("16:09", "jewel"),
+SLOTS = [("08:09", "gap"), ("08:39", "fizikal"), ("10:09", "pgitem"), ("13:09", "berita"), ("15:09", "testimoni"), ("16:09", "jewel"),
          ("18:09", "item"), ("20:09", "gap"), ("21:09", "ilmu"), ("22:39", "pgitem")]
 
 
@@ -557,7 +568,7 @@ def mode_relay(p, st):
     print(f"Relay: {n} posting disalin.")
 
 
-MODES = {"fb-check": mode_fbcheck, "relay": mode_relay, "wa-channels": mode_wa_channels, "berita": mode_berita, "berita-test": mode_berita, "testimoni": mode_testimoni, "testimoni-test": mode_testimoni, "gap": mode_gap, "jewel": mode_jewel, "alert": mode_alert, "ilmu": mode_ilmu, "item": mode_item, "pgitem": mode_pgitem,
+MODES = {"fb-check": mode_fbcheck, "relay": mode_relay, "wa-channels": mode_wa_channels, "berita": mode_berita, "berita-test": mode_berita, "fizikal": mode_fizikal, "fizikal-test": mode_fizikal, "testimoni": mode_testimoni, "testimoni-test": mode_testimoni, "gap": mode_gap, "jewel": mode_jewel, "alert": mode_alert, "ilmu": mode_ilmu, "item": mode_item, "pgitem": mode_pgitem,
          "item-jewel": lambda p, st: mode_item(p, st, "jewel"),
          "item-mall": lambda p, st: mode_item(p, st, "mall")}
 

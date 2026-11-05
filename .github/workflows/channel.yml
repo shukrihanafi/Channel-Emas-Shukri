@@ -48,11 +48,19 @@ jobs:
               *) echo "mode=alert" >> $GITHUB_OUTPUT ;;
             esac
           fi
-      - name: Pasang pelayar (mod berita sahaja)
-        if: startsWith(steps.m.outputs.mode, 'berita')
+      - name: Pasang pelayar (berita, atau pengawas jika slot berita terlepas)
+        if: steps.m.outputs.mode != 'skip'
         run: |
-          pip install playwright
-          playwright install --with-deps chromium
+          M="${{ steps.m.outputs.mode }}"
+          HM=$(TZ=Asia/Kuala_Lumpur date +%H%M)
+          TODAY=$(TZ=Asia/Kuala_Lumpur date +%F)
+          NEED=0
+          case "$M" in berita*) NEED=1 ;; esac
+          if [ "$M" = "alert" ] && [ "$((10#$HM))" -ge 1321 ] && [ "$((10#$HM))" -le 1540 ] && ! grep -q "$TODAY|13:09" data/state.json; then NEED=1; fi
+          if [ "$NEED" = "1" ]; then
+            pip install playwright
+            playwright install --with-deps chromium
+          fi
       - name: Jalankan bot
         if: steps.m.outputs.mode != 'skip'
         env:

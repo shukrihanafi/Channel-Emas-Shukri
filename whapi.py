@@ -22,10 +22,15 @@ def list_channels():
     return [(c.get("id"), c.get("name"), c.get("role") or c.get("viewer_meta", {}).get("role", "")) for c in items]
 
 
-def post_channel(text, image_path=None):
-    """Satu post ke Channel: gambar + caption, atau teks sahaja."""
+def post_channel(text, image_path=None, video_path=None):
+    """Satu post ke Channel: video/gambar + caption, atau teks sahaja."""
     cid = os.environ["WA_CHANNEL_ID"]
-    if image_path and os.path.exists(image_path):
+    if video_path and os.path.exists(video_path):
+        mime = mimetypes.guess_type(video_path)[0] or "video/mp4"
+        b64 = base64.b64encode(open(video_path, "rb").read()).decode()
+        body = {"to": cid, "media": f"data:{mime};name={os.path.basename(video_path)};base64,{b64}", "caption": text}
+        r = requests.post(f"{API}/messages/video", json=body, headers=_headers(), timeout=(10, 420))
+    elif image_path and os.path.exists(image_path):
         mime = mimetypes.guess_type(image_path)[0] or "image/png"
         b64 = base64.b64encode(open(image_path, "rb").read()).decode()
         body = {"to": cid, "media": f"data:{mime};name={os.path.basename(image_path)};base64,{b64}", "caption": text}

@@ -482,6 +482,8 @@ def send_email(subject, body):
 
 def fb_expiry_reminder(st, dt):
     """Peringatan Telegram harian (selepas 9 pagi) bila token Facebook tinggal <= 14 hari."""
+    if not fb.TOKEN_EXPIRES:  # token tidak tamat: tiada peringatan
+        return
     try:
         from datetime import date
         left = (date.fromisoformat(fb.TOKEN_EXPIRES) - dt.date()).days

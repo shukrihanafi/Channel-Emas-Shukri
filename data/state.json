@@ -81,11 +81,11 @@
   },
   "bb_last": 1,
   "relay": {
-    "offset": 991464020,
-    "wa_done": 991464019,
+    "offset": 991464021,
+    "wa_done": 991464020,
     "tries": 0,
-    "tg_done": 991464016,
-    "fb_done": 991464019
+    "tg_done": 991464020,
+    "fb_done": 991464020
   },
   "testi": {
     "used": []

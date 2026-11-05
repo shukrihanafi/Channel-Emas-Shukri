@@ -9,7 +9,7 @@ import json, os, random, sys
 from datetime import datetime
 from zoneinfo import ZoneInfo
 import requests
-import pgfetch, pgitems, card, items, whapi
+import pgfetch, pgitems, card, items, whapi, relay
 
 TZ = ZoneInfo("Asia/Kuala_Lumpur")
 STATE = "data/state.json"
@@ -491,7 +491,12 @@ def watchdog(p, st):
             CURRENT_MODE = "alert"
 
 
-MODES = {"wa-channels": mode_wa_channels, "berita": mode_berita, "berita-test": mode_berita, "gap": mode_gap, "jewel": mode_jewel, "alert": mode_alert, "ilmu": mode_ilmu, "item": mode_item, "pgitem": mode_pgitem,
+def mode_relay(p, st):
+    n = relay.run(st, tg_plain)
+    print(f"Relay: {n} posting disalin.")
+
+
+MODES = {"relay": mode_relay, "wa-channels": mode_wa_channels, "berita": mode_berita, "berita-test": mode_berita, "gap": mode_gap, "jewel": mode_jewel, "alert": mode_alert, "ilmu": mode_ilmu, "item": mode_item, "pgitem": mode_pgitem,
          "item-jewel": lambda p, st: mode_item(p, st, "jewel"),
          "item-mall": lambda p, st: mode_item(p, st, "mall")}
 
@@ -508,6 +513,10 @@ if __name__ == "__main__":
     prices = pgfetch.get_prices() if mode in ("gap", "jewel", "alert") else {}
     MODES[mode](prices, st)
     if mode == "alert":
+        try:
+            relay.run(st, tg_plain)
+        except Exception as e:
+            print("Relay gagal:", e)
         watchdog(prices, st)
     elif not mode.endswith("-test") and mode != "wa-channels":
         mark_slot(st, mode, now_my())

@@ -146,7 +146,7 @@ def summarise(a):
     return j["tajuk"].strip(), j["ringkasan"].strip()
 
 
-def screenshot(url, path):
+def screenshot(url, path, title=""):
     """Tangkap bahagian atas artikel (tajuk, penulis, gambar, perenggan pertama)."""
     from playwright.sync_api import sync_playwright
     with sync_playwright() as pw:
@@ -155,14 +155,15 @@ def screenshot(url, path):
         pg.goto(url, wait_until="load", timeout=60000)
         pg.wait_for_timeout(5000)
         print("Halaman:", pg.title(), "|", pg.inner_text("body")[:160].replace("\n", " "))
-        pg.evaluate("""() => { document.querySelectorAll('[class*=cookie],[id*=cookie],[class*=consent],[class*=advert],[id*=google_ads],iframe')
+        pg.evaluate("""() => { document.querySelectorAll('[class*=cookie],[id*=cookie],[class*=consent],[class*=advert],[id*=google_ads],iframe,nav,[class*=sticky],[class*=Sticky]')
                        .forEach(e => e.remove()); }""")
-        try:
-            pg.wait_for_selector("h1", timeout=15000)
-            top = max(pg.locator("h1").first.bounding_box(timeout=5000)["y"] - 16, 0)
-        except Exception as e:  # tajuk tidak ditemui: tangkap bahagian atas halaman dan simpan untuk semakan
-            print("h1 tidak ditemui:", str(e)[:120])
-            top = 0
+        top = 0
+        try:  # cari tajuk artikel mengikut teksnya (h1 tidak boleh dipercayai)
+            loc = pg.get_by_text(title[:60], exact=False).first if title else pg.locator("h1").first
+            loc.wait_for(state="visible", timeout=15000)
+            top = max(loc.bounding_box(timeout=5000)["y"] - 16, 0)
+        except Exception as e:
+            print("Tajuk tidak ditemui:", str(e)[:120])
         pg.screenshot(path=path, clip={"x": 0, "y": top, "width": 900, "height": 860})
         b.close()
     return path
@@ -190,7 +191,7 @@ def run(st, send, dt, out="out"):
         res = (a["title"], a["desc"])
     tajuk, ringkas = res
     os.makedirs(out, exist_ok=True)
-    img = screenshot(url, f"{out}/berita.png")
+    img = screenshot(url, f"{out}/berita.png", a["title"])
     send(build_caption(a, tajuk, ringkas, dt), img, "berita", closing=False)
     if not test and url not in n["posted"]:  # mod ujian tidak menanda berita sebagai sudah dihantar
         n["posted"] = (n["posted"] + [url])[-60:]

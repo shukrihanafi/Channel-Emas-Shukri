@@ -1,6 +1,7 @@
 """Berita emas: pilih berita dari sumber dipercayai, screenshot bahagian atas artikel, tulis caption BM.
 
 Guna:  mode `berita` (hantar ke semua) atau `berita-test` (hantar ke Telegram peribadi sahaja).
+Sumber diputar bergilir (lihat SOURCES), emas sahaja.
 Env:   NEWS_URL (pilihan: paksa satu artikel), ANTHROPIC_API_KEY (pilihan: ringkasan BM oleh AI;
        jika tiada, guna tajuk + penerangan asal artikel).
 """
@@ -14,8 +15,19 @@ BULAN = ["Januari", "Februari", "Mac", "April", "Mei", "Jun", "Julai", "Ogos", "
 MODEL = os.getenv("NEWS_MODEL", "claude-haiku-5-5")
 
 
-KEYWORDS = re.compile(r"\b(gold|bullion|precious metals?|emas|dinar)\b", re.I)
-BERNAMA_PAGES = ["https://www.bernama.com/bm/index.php", "https://www.bernama.com/bm/ekonomi/"]  # Bernama BM
+KEYWORDS = re.compile(r"\b(gold|bullion|precious metals?|emas|dinar|xau)\b", re.I)
+# Fokus emas sahaja: buang berita sukan (pingat emas, dll.) dan sebutan "emas" yang bukan berkaitan logam
+NEGATIVE = re.compile(r"pingat|medal|olimpik|olympic|sukan|sea games|juara|kejohanan|gold coast|gold cup|golden globe|piala", re.I)
+# Sumber berita, diputar bergilir (satu sumber setiap hari); sumber tanpa berita emas terkini dilangkau
+SOURCES = [
+    ("The Edge Malaysia", None),
+    ("Bernama", ["https://www.bernama.com/bm/", "https://www.bernama.com/bm/ekonomi/"]),
+    ("Astro Awani", ["https://www.astroawani.com/"]),
+    ("Sinar Harian", ["https://www.sinarharian.com.my/"]),
+    ("Reuters", ["https://www.reuters.com/markets/commodities/"]),
+    ("Kitco", ["https://www.kitco.com/"]),
+    ("Bloomberg", ["https://www.bloomberg.com/latest/gold"]),
+]
 MAX_AGE_H = 48
 
 
@@ -65,47 +77,67 @@ def _edge_candidates(posted):
     return out
 
 
-def _bernama_candidates(posted):
-    """Bernama BM: imbas halaman utama + Ekonomi, ambil pautan yang tajuknya berkaitan emas, baca tarikh dari artikel."""
-    links = []
-    for pgurl in BERNAMA_PAGES:
+def _article_date(page):
+    """Tarikh siaran artikel: meta, JSON-LD atau <time>."""
+    for prop in ("article:published_time", "og:article:published_time", "datePublished", "date", "pubdate"):
+        d = _parse_dt(_meta(page, prop))
+        if d:
+            return d
+    m = re.search(r'"datePublished"\s*:\s*"([^"]+)"', page) or re.search(r'<time[^>]+datetime=["\']([^"\']+)["\']', page)
+    return _parse_dt(m.group(1)) if m else None
+
+
+def _generic_candidates(pages, posted):
+    """Imbas halaman utama sumber: ambil pautan yang tajuk/URL-nya berkaitan emas, baca tarikh dan tajuk dari artikel."""
+    from urllib.parse import urljoin, urlparse
+    host = urlparse(pages[0]).netloc.replace("www.", "")
+    links = {}
+    for pgurl in pages:
         try:
-            t = requests.get(pgurl, headers=UA, timeout=30).text
+            r = requests.get(pgurl, headers=UA, timeout=30)
+            r.raise_for_status()
         except Exception as e:
-            print("Bernama gagal:", pgurl, str(e)[:80])
+            print("  halaman gagal:", pgurl, str(e)[:80])
             continue
-        for h, txt in re.findall(r'(?is)<a[^>]+href=["\']([^"\']*news(?:-bm)?\.php\?id=\d+[^"\']*)["\'][^>]*>(.*?)</a>', t):
+        for h, txt in re.findall(r'(?is)<a\b[^>]*href=["\']([^"\']+)["\'][^>]*>(.*?)</a>', r.text):
             txt = html.unescape(re.sub(r"<[^>]+>", " ", txt))
-            if KEYWORDS.search(txt):
-                links.append(requests.compat.urljoin(pgurl, html.unescape(h)))
+            u = urljoin(pgurl, html.unescape(h)).split("#")[0]
+            p = urlparse(u)
+            if host not in p.netloc or len(p.path) + len(p.query) < 12:
+                continue
+            if (KEYWORDS.search(txt) or KEYWORDS.search(p.path)) and not NEGATIVE.search(txt + " " + p.path):
+                links[u] = 1
     out = []
-    for u in list(dict.fromkeys(links))[:10]:
+    for u in list(links)[:12]:
         if u in posted:
             continue
         try:
-            out.append((_parse_dt(_meta(requests.get(u, headers=UA, timeout=30).text, "article:published_time")), u))
+            page = requests.get(u, headers=UA, timeout=30).text
         except Exception:
-            pass
+            continue
+        title = _meta(page, "og:title") or _meta(page, "twitter:title")
+        if not KEYWORDS.search(title) or NEGATIVE.search(title):  # mesti tajuk berkaitan emas sahaja
+            continue
+        out.append((_article_date(page), u))
     return out
 
 
-def discover(posted):
-    """Kumpul calon dari semua sumber, tapis yang terlalu lama / sudah dihantar, pilih yang paling baharu."""
+def discover(posted, rot=0):
+    """Putar sumber bergilir bermula dari `rot`; hasilkan (indeks, nama, url) bagi berita emas terkini (<48j), yang paling baharu dahulu."""
     from datetime import datetime, timezone
-    cands = []
-    for name, fn in (("The Edge", _edge_candidates), ("Bernama BM", _bernama_candidates)):
+    for i in range(len(SOURCES)):
+        idx = (rot + i) % len(SOURCES)
+        name, pages = SOURCES[idx]
         try:
-            got = fn(posted)
-            print(f"Sumber {name}: {len(got)} calon")
-            cands += got
+            got = _edge_candidates(posted) if pages is None else _generic_candidates(pages, posted)
         except Exception as e:
             print(f"Sumber {name} gagal:", str(e)[:100])
-    now = datetime.now(timezone.utc)
-    fresh = [(d, u) for d, u in cands if d and (now - d).total_seconds() <= MAX_AGE_H * 3600]
-    print(f"Calon berita: {len(cands)}, terkini (<{MAX_AGE_H}j): {len(fresh)}")
-    if not fresh:
-        return None
-    return max(fresh)[1]
+            continue
+        now = datetime.now(timezone.utc)
+        fresh = sorted(((d, u) for d, u in got if d and 0 <= (now - d).total_seconds() <= MAX_AGE_H * 3600), reverse=True)
+        print(f"Sumber {name}: {len(got)} calon, terkini (<{MAX_AGE_H}j): {len(fresh)}")
+        for d, u in fresh[:2]:
+            yield idx, name, u
 
 
 def _meta(page, prop):
@@ -154,7 +186,11 @@ def screenshot(url, path, title=""):
         pg = b.new_page(viewport={"width": 900, "height": 1400}, device_scale_factor=1.5, user_agent=UA["User-Agent"])
         pg.goto(url, wait_until="load", timeout=60000)
         pg.wait_for_timeout(5000)
-        print("Halaman:", pg.title(), "|", pg.inner_text("body")[:160].replace("\n", " "))
+        head = pg.title() + " | " + pg.inner_text("body")[:200].replace("\n", " ")
+        print("Halaman:", head[:200])
+        if re.search(r"access denied|just a moment|attention required|are you a robot|captcha|forbidden|unusual activity|verify you are human|px-captcha", head, re.I):
+            b.close()
+            raise RuntimeError("halaman disekat (anti-bot)")
         pg.evaluate("""() => { document.querySelectorAll('[class*=cookie],[id*=cookie],[class*=consent],[class*=advert],[id*=google_ads],iframe,nav,[class*=sticky],[class*=Sticky]')
                        .forEach(e => e.remove()); }""")
         top = 0
@@ -176,22 +212,35 @@ def build_caption(a, tajuk, ringkas, dt):
 
 def run(st, send, dt, out="out"):
     n = st.setdefault("news", {"posted": []})
-    url = os.getenv("NEWS_URL", "").strip() or discover(n["posted"])
-    if not url:
-        print("Tiada berita baharu untuk dihantar.")
-        return
-    a = fetch_article(url)
+    forced = os.getenv("NEWS_URL", "").strip()
+    cands = iter([(-1, "manual", forced)]) if forced else discover(n["posted"], n.get("rot", 0))
     test = getattr(sys.modules.get("__main__"), "CURRENT_MODE", "").endswith("-test")
-    res = summarise(a)
-    if res is None:
-        if not test:
-            print("ANTHROPIC_API_KEY tiada: berita tidak dihantar (caption mesti BM).")
-            return
-        print("Mod ujian tanpa kunci AI: guna teks asal (Inggeris) sebagai contoh sahaja.")
-        res = (a["title"], a["desc"])
-    tajuk, ringkas = res
-    os.makedirs(out, exist_ok=True)
-    img = screenshot(url, f"{out}/berita.png", a["title"])
-    send(build_caption(a, tajuk, ringkas, dt), img, "berita", closing=False)
-    if not test and url not in n["posted"]:  # mod ujian tidak menanda berita sebagai sudah dihantar
-        n["posted"] = (n["posted"] + [url])[-60:]
+    tries = 0
+    for idx, name, url in cands:
+        if tries >= 5:
+            break
+        tries += 1
+        try:
+            a = fetch_article(url)
+            res = summarise(a)
+            if res is None:
+                if not test:
+                    print("ANTHROPIC_API_KEY tiada: berita tidak dihantar (caption mesti BM).")
+                    return
+                print("Mod ujian tanpa kunci AI: guna teks asal (Inggeris) sebagai contoh sahaja.")
+                res = (a["title"], a["desc"])
+            tajuk, ringkas = res
+            os.makedirs(out, exist_ok=True)
+            img = screenshot(url, f"{out}/berita.png", a["title"])
+        except Exception as e:  # sumber ini bermasalah (disekat/ralat): cuba calon seterusnya
+            print(f"Calon {name} dilangkau: {str(e)[:120]}")
+            continue
+        print(f"Berita dipilih dari {name}: {url}")
+        send(build_caption(a, tajuk, ringkas, dt), img, "berita", closing=False)
+        if not test:  # mod ujian tidak menanda berita sebagai sudah dihantar dan tidak memutar sumber
+            if url not in n["posted"]:
+                n["posted"] = (n["posted"] + [url])[-60:]
+            if idx >= 0:
+                n["rot"] = (idx + 1) % len(SOURCES)
+        return
+    print("Tiada berita emas baharu untuk dihantar.")

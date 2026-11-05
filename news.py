@@ -24,9 +24,9 @@ SOURCES = [
     ("Bernama", ["https://www.bernama.com/bm/carian.php?terms=harga+emas", "https://www.bernama.com/bm/ekonomi/", "https://www.bernama.com/bm/"]),
     ("Astro Awani", ["https://www.astroawani.com/search?q=harga+emas", "https://www.astroawani.com/search?q=emas", "https://www.astroawani.com/"]),
     ("Sinar Harian", ["https://www.sinarharian.com.my/carian?query=harga+emas", "https://www.sinarharian.com.my/"]),
-    ("Reuters", ["https://www.reuters.com/markets/commodities/"]),  # kerap menyekat bot: dilangkau automatik jika disekat
     ("Kitco", ["https://www.kitco.com/news"]),
-    ("Bloomberg", ["https://www.bloomberg.com/latest/gold"]),  # kerap menyekat bot: dilangkau automatik jika disekat
+    ("Investing.com", ["https://www.investing.com/commodities/gold", "https://www.investing.com/commodities/gold-news"]),  # jika disekat anti-bot, dilangkau automatik
+    ("GoldSeek", ["https://goldseek.com/", "https://goldseek.com/gold-headlines"]),
 ]
 MAX_AGE_H = 48
 
@@ -84,7 +84,14 @@ def _article_date(page):
         if d:
             return d
     m = re.search(r'"datePublished"\s*:\s*"([^"]+)"', page) or re.search(r'<time[^>]+datetime=["\']([^"\']+)["\']', page)
-    return _parse_dt(m.group(1)) if m else None
+    if m:
+        return _parse_dt(m.group(1))
+    m = re.search(r"(?is)<h1.{0,1500}?\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.? (\d{1,2}),? (\d{4})", page)  # tarikh dipaparkan selepas tajuk (GoldSeek)
+    if m:
+        from datetime import datetime, timezone
+        mon = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"].index(m.group(1).lower()) + 1
+        return datetime(int(m.group(3)), mon, int(m.group(2)), 12, tzinfo=timezone.utc)
+    return None
 
 
 def _generic_candidates(pages, posted):

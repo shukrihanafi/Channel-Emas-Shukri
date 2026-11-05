@@ -269,10 +269,9 @@ def run(st, send, dt, out="out", notify=print):
         except Exception as e:
             print(f"Testimoni {key} dilangkau: {str(e)[:120]}")
             continue
-        if boxes:
+        if boxes:  # tarikh dibuang terus: ditutup dengan watermark shukriee.com
             img = cover(img, boxes)
-        else:  # tiada tarikh kelihatan: watermark biasa di tengah (masa jam tidak ditutup)
-            img = center_watermark(img, words)
+        img = center_watermark(img, words)  # watermark lutsinar di tengah, jalur yang tak ganggu tulisan (masa jam tidak ditutup)
         img = fit_ratio(img)
         path = f"{out}/testimoni.jpg"
         img.save(path, "JPEG", quality=92)

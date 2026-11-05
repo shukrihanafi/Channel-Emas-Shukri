@@ -18,7 +18,8 @@ RSS_SOURCES = [  # sumber tambahan (RSS); jika gagal dicapai, dilangkau tanpa me
     "https://www.bernama.com/en/rss/news_business.xml",
     "https://www.thestar.com.my/rss/business/business-news",
 ]
-KEYWORDS = re.compile(r"\b(gold|bullion|precious metal|emas)\b", re.I)
+KEYWORDS = re.compile(r"\b(gold|bullion|precious metal|emas|dinar)\b", re.I)
+BERNAMA_PAGES = ["https://www.bernama.com/bm/index.php", "https://www.bernama.com/bm/rssfeed.php"]  # BM; halaman + senarai RSS
 MAX_AGE_H = 48
 
 
@@ -71,6 +72,42 @@ def discover(posted):
                     cands.append((_parse_dt(pd.group(1).strip()) if pd else None, lk.group(1)))
         except Exception as e:
             print("Sumber RSS gagal:", feed, str(e)[:100])
+    try:  # Bernama BM: imbas halaman utama + semua RSS yang tersenarai, ambil pautan berita berkaitan emas
+        feeds, pages = [], []
+        for pgurl in BERNAMA_PAGES:
+            try:
+                t = requests.get(pgurl, headers=UA, timeout=30).text
+            except Exception as e:
+                print("Bernama gagal:", pgurl, str(e)[:80]); continue
+            pages.append(t)
+            for h in re.findall(r'href=["\']([^"\']*(?:rss|\.xml)[^"\']*)["\']', t, re.I):
+                feeds.append(requests.compat.urljoin(pgurl, html.unescape(h)))
+        links = []
+        for t in pages:  # <a href=".../news.php?id=123">Tajuk</a>
+            for h, txt in re.findall(r'(?is)<a[^>]+href=["\']([^"\']*news(?:-bm)?\.php\?id=\d+[^"\']*)["\'][^>]*>(.*?)</a>', t):
+                txt = html.unescape(re.sub(r"<[^>]+>", " ", txt))
+                if KEYWORDS.search(txt):
+                    links.append(requests.compat.urljoin("https://www.bernama.com/bm/", html.unescape(h)))
+        for f in list(dict.fromkeys(feeds))[:8]:
+            try:
+                x = requests.get(f, headers=UA, timeout=30).text
+                for it in re.findall(r"(?is)<item>(.*?)</item>", x):
+                    tt = html.unescape(re.sub(r"<!\[CDATA\[|\]\]>|<[^>]+>", " ", it))
+                    lk = re.search(r"(?is)<link>\s*(?:<!\[CDATA\[)?\s*(https?://[^<\s\]]+)", it)
+                    pd = re.search(r"(?is)<pubDate>(.*?)</pubDate>", it)
+                    if lk and KEYWORDS.search(tt) and lk.group(1) not in posted:
+                        cands.append((_parse_dt(pd.group(1).strip()) if pd else None, lk.group(1)))
+            except Exception:
+                pass
+        for u in list(dict.fromkeys(links))[:10]:
+            if u in posted or any(u == c[1] for c in cands):
+                continue
+            try:
+                cands.append((_parse_dt(_meta(requests.get(u, headers=UA, timeout=30).text, "article:published_time")), u))
+            except Exception:
+                pass
+    except Exception as e:
+        print("Bernama BM gagal:", str(e)[:100])
     now = datetime.now(timezone.utc)
     fresh = [(d, u) for d, u in cands if d and (now - d).total_seconds() <= MAX_AGE_H * 3600]
     print(f"Calon berita: {len(cands)}, terkini (<{MAX_AGE_H}j): {len(fresh)}")

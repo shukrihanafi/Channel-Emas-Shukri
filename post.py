@@ -463,6 +463,21 @@ def mode_fbcheck(p, st):
         tg_plain(f"⚠️ Token Facebook bermasalah: {e}")
 
 
+def send_email(subject, body):
+    """E-mel ke diri sendiri melalui Gmail SMTP (perlu GMAIL_USER + GMAIL_APP_PASSWORD); senyap jika tiada."""
+    user, pw = os.getenv("GMAIL_USER"), os.getenv("GMAIL_APP_PASSWORD")
+    if not (user and pw) or os.getenv("DRY_RUN"):
+        return
+    import smtplib
+    from email.message import EmailMessage
+    m = EmailMessage()
+    m["From"], m["To"], m["Subject"] = user, user, subject
+    m.set_content(body)
+    with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=30) as s:
+        s.login(user, pw)
+        s.send_message(m)
+
+
 def fb_expiry_reminder(st, dt):
     """Peringatan Telegram harian (selepas 9 pagi) bila token Facebook tinggal <= 14 hari."""
     try:
@@ -471,8 +486,13 @@ def fb_expiry_reminder(st, dt):
         today = dt.strftime("%Y-%m-%d")
         if left <= 14 and dt.hour >= 9 and st.get("fb_remind") != today:
             st["fb_remind"] = today
-            tg_plain(f"⏰ Peringatan: token Facebook Page tamat {fb.TOKEN_EXPIRES} ({left} hari lagi). "
-                     "Sila jana token baharu dan kemas kini FB_PAGE_TOKEN di GitHub.")
+            msg = (f"Token Facebook Page tamat {fb.TOKEN_EXPIRES} ({left} hari lagi). "
+                   "Sila jana token baharu dan kemas kini FB_PAGE_TOKEN di GitHub.")
+            tg_plain("⏰ Peringatan: " + msg)
+            try:
+                send_email(f"[Peringatan] Token Facebook Page tamat {fb.TOKEN_EXPIRES}", msg)
+            except Exception as e:
+                print("E-mel peringatan gagal:", e)
     except Exception as e:
         print("Peringatan token FB gagal:", e)
 
@@ -528,7 +548,7 @@ def mode_relay(p, st):
     print(f"Relay: {n} posting disalin.")
 
 
-MODES = {"fb-check": mode_fbcheck, "relay": mode_relay, "wa-channels": mode_wa_channels, "berita": mode_berita, "berita-test": mode_berita, "gap": mode_gap, "jewel": mode_jewel, "alert": mode_alert, "ilmu": mode_ilmu, "item": mode_item, "pgitem": mode_pgitem,
+MODES = {"fb-check": mode_fbcheck, "relay": mode_relay, "wa-channels": mode_wa_channels, "berita": mode_berita, "gap": mode_gap, "jewel": mode_jewel, "alert": mode_alert, "ilmu": mode_ilmu, "item": mode_item, "pgitem": mode_pgitem,
          "item-jewel": lambda p, st: mode_item(p, st, "jewel"),
          "item-mall": lambda p, st: mode_item(p, st, "mall")}
 

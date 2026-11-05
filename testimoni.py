@@ -32,38 +32,44 @@ def _clean_caption(raw):
     return "\n".join(lines).strip()
 
 
-def list_posts(max_pages=6):
-    """Semua siaran #testimoni yang ada gambar: [{key, text, photos:[url]}], paling baharu dahulu."""
-    out, before = [], None
-    for _ in range(max_pages):
-        url = f"https://t.me/s/{CHANNEL}?q=%23testimoni" + (f"&before={before}" if before else "")
-        r = requests.get(url, headers=UA, timeout=30)
-        r.raise_for_status()
-        blocks = re.split(r'(?=<div class="tgme_widget_message_wrap)', r.text)[1:]
-        ids = []
-        for b in blocks:
-            m = re.search(r'data-post="%s/(\d+)"' % CHANNEL, b)
-            if not m:
-                continue
-            pid = int(m.group(1))
-            ids.append(pid)
-            photos = re.findall(r"tgme_widget_message_photo_wrap[^>]*background-image:url\('([^']+)'\)", b)
-            tx = re.search(r'(?s)<div class="tgme_widget_message_text[^"]*"[^>]*>(.*?)</div>', b)
-            raw = tx.group(1) if tx else ""
-            if photos and "#testimoni" in html.unescape(re.sub(r"<[^>]+>", "", raw)).lower():
-                out.append({"key": str(pid), "text": _clean_caption(raw), "photos": photos})
-        if not ids or len(ids) < 2:
-            break
-        nb = min(ids)
-        if nb == before:
-            break
-        before = nb
-    seen, res = set(), []
-    for p in sorted(out, key=lambda x: -int(x["key"])):
-        if p["key"] not in seen:
-            seen.add(p["key"])
-            res.append(p)
-    return res
+def _parse_page(text):
+    out = []
+    for b in re.split(r'(?=<div class="tgme_widget_message_wrap)', text)[1:]:
+        m = re.search(r'data-post="%s/(\d+)"' % CHANNEL, b)
+        if not m:
+            continue
+        photos = re.findall(r"tgme_widget_message_photo_wrap[^>]*background-image:url\('([^']+)'\)", b)
+        tx = re.search(r'(?s)<div class="tgme_widget_message_text[^"]*"[^>]*>(.*?)</div>', b)
+        raw = tx.group(1) if tx else ""
+        plain = html.unescape(re.sub(r"<[^>]+>", "", raw)).lower()
+        out.append({"id": int(m.group(1)), "photos": photos, "raw": raw, "tag": "#testimoni" in plain})
+    return out
+
+
+def _get_page(before=None):
+    url = f"https://t.me/s/{CHANNEL}" + (f"?before={before}" if before else "")
+    r = requests.get(url, headers=UA, timeout=30)
+    r.raise_for_status()
+    return _parse_page(r.text)
+
+
+def list_posts(used=(), forced=None, want=6, tries=30):
+    """Siaran #testimoni berserta gambar. Carian Telegram tidak lengkap, jadi halaman saluran diambil pada kedudukan rawak
+    (20 siaran setiap halaman) sehingga cukup calon yang belum digunakan. forced = nombor siaran tertentu (ujian)."""
+    if forced:
+        ps = [p for p in _get_page(int(forced) + 1) if p["id"] == int(forced)]
+    else:
+        maxid = max(p["id"] for p in _get_page())
+        ps, seen = [], set()
+        for _ in range(tries):
+            for p in _get_page(random.randint(40, maxid)):
+                if p["id"] not in seen:
+                    seen.add(p["id"])
+                    ps.append(p)
+            ok = [p for p in ps if p["tag"] and p["photos"] and f"{p['id']}#0" not in used]
+            if len(ok) >= want:
+                break
+    return [{"key": str(p["id"]), "text": _clean_caption(p["raw"]), "photos": p["photos"]} for p in ps if p["tag"] and p["photos"]]
 
 
 def _to_pil(content):
@@ -243,7 +249,8 @@ def run(st, send, dt, out="out", notify=print):
     n = st.setdefault("testi", {"used": []})
     test = getattr(sys.modules.get("__main__"), "CURRENT_MODE", "").endswith("-test")
     try:
-        posts = list_posts()
+        _f = os.getenv("NEWS_URL", "").strip().lstrip("#")
+        posts = list_posts(n["used"], _f if (test and _f.isdigit()) else None)
     except Exception as e:
         print("Senarai testimoni gagal:", str(e)[:200])
         notify("⚠️ Testimoni: gagal baca saluran @kenaliemas: " + str(e)[:120])

@@ -9,7 +9,7 @@ import json, os, random, sys
 from datetime import datetime
 from zoneinfo import ZoneInfo
 import requests
-import pgfetch, pgitems, card, items, whapi, relay
+import pgfetch, pgitems, card, items, whapi, relay, fb
 
 TZ = ZoneInfo("Asia/Kuala_Lumpur")
 STATE = "data/state.json"
@@ -104,6 +104,12 @@ def send(text, image=None, label="post", closing=True):
             wa_note = (wa_note + "\n" if wa_note else "") + f"✅ Sudah dihantar ke Telegram Channel {tg_channel} (auto)."
         except Exception as e:
             wa_note = (wa_note + "\n" if wa_note else "") + f"⚠️ Gagal hantar ke Telegram Channel {tg_channel}: {e}"
+    if fb.enabled() and not test_only:  # Facebook Page (ganti IFTTT)
+        try:
+            fb.post(text, image)
+            wa_note = (wa_note + "\n" if wa_note else "") + "✅ Sudah dihantar ke Facebook Page (auto)."
+        except Exception as e:
+            wa_note = (wa_note + "\n" if wa_note else "") + f"⚠️ Gagal hantar ke Facebook Page: {e}"
     if wa_note:
         tg_plain(wa_note)
 

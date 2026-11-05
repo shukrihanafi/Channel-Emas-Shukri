@@ -162,7 +162,8 @@ def fetch_article(url):
     paras = [html.unescape(re.sub(r"<[^>]+>", " ", p)).strip() for p in re.findall(r"(?is)<p[^>]*>(.*?)</p>", body)]
     paras = [re.sub(r"\s+", " ", p) for p in paras if len(p) > 60]
     return {"url": url, "title": _meta(page, "og:title") or "", "desc": _meta(page, "og:description"),
-            "date": _meta(page, "article:published_time"), "text": "\n".join(paras)[:12000]}
+            "date": _meta(page, "article:published_time"), "text": "\n".join(paras)[:12000],
+            "image": _meta(page, "og:image"), "site": _meta(page, "og:site_name"), "paras": paras[:4]}
 
 
 class ApiKeyError(Exception):
@@ -177,7 +178,10 @@ def summarise(a):
     prompt = (
         "Anda menulis caption berita emas untuk saluran WhatsApp/Telegram pengguna Malaysia.\n"
         "Berdasarkan HANYA artikel di bawah, tulis dalam Bahasa Melayu mudah:\n"
-        '1) "tajuk": terjemahan tajuk (ringkas)\n2) "ringkasan": tepat DUA ayat ringkas. Jangan tambah fakta, ramalan atau nasihat pelaburan.\n'
+        '1) "tajuk": terjemahan tajuk (ringkas dan jelas)\n'
+        '2) "ringkasan": ringkasan padat, 3 hingga 4 ayat pendek (kira-kira 50 hingga 70 patah perkataan), tidak terlalu panjang dan tidak terlalu pendek. '
+        'Guna bahasa mudah yang orang biasa (layman) faham; terangkan istilah teknikal dengan perkataan harian '
+        '(contoh: "non-farm payrolls" = "laporan pekerjaan AS"). Jangan tambah fakta, ramalan atau nasihat pelaburan.\n'
         'Balas JSON sahaja: {"tajuk": "...", "ringkasan": "..."}\n\n'
         f"TAJUK: {a['title']}\nARTIKEL:\n{a['text'] or a['desc']}"
     )
@@ -192,36 +196,80 @@ def summarise(a):
     return j["tajuk"].strip(), j["ringkasan"].strip()
 
 
-def screenshot(url, path, title=""):
-    """Tangkap bahagian atas artikel (tajuk, penulis, gambar, perenggan pertama)."""
+def _dl_image(url, referer):
+    """Muat turun gambar utama artikel sebagai data-URI (kembalikan "" jika gagal)."""
+    import base64
+    if not url:
+        return ""
+    try:
+        r = requests.get(url, headers={**UA, "Referer": referer}, timeout=30)
+        r.raise_for_status()
+        ct = r.headers.get("content-type", "image/jpeg").split(";")[0]
+        if not ct.startswith("image/") or len(r.content) < 5000:
+            return ""
+        return f"data:{ct};base64," + base64.b64encode(r.content).decode()
+    except Exception as e:
+        print("Gambar utama gagal dimuat turun:", str(e)[:100])
+        return ""
+
+
+def _first_paras(a, limit=520):
+    out = ""
+    for p in a.get("paras", []):
+        if len(p) < 90 and out == "":  # buang baris pendek (penulis / caption)
+            continue
+        out = (out + " " + p).strip()
+        if len(out) >= 260:
+            break
+    if not out:
+        out = a.get("desc", "")
+    if len(out) > limit:
+        out = out[:limit].rsplit(" ", 1)[0] + " ..."
+    return out
+
+
+def screenshot(url, path, title="", a=None, source=""):
+    """Bina kad berita bersih (tajuk, gambar utama, perenggan pertama) TANPA iklan laman, lalu tangkap sebagai PNG."""
     from playwright.sync_api import sync_playwright
+    a = a or {}
+    img = _dl_image(a.get("image", ""), url)
+    try:
+        d = _parse_dt(a.get("date", ""))
+        tarikh = f"{d.day} {BULAN[d.month - 1]} {d.year}" if d else ""
+    except Exception:
+        tarikh = ""
+    esc = html.escape
+    fonts = os.path.abspath("fonts")
+    doc = f"""<!doctype html><html><head><meta charset="utf-8"><style>
+@font-face{{font-family:P;font-weight:700;src:url('file://{fonts}/Poppins-Bold.ttf')}}
+@font-face{{font-family:P;font-weight:400;src:url('file://{fonts}/Poppins-Regular.ttf')}}
+*{{box-sizing:border-box}} body{{margin:0;background:#fffdf8;font-family:P,sans-serif;color:#222}}
+#c{{width:1080px;padding:56px 54px 48px}}
+.bar{{width:90px;height:8px;background:#d4a017;border-radius:4px;margin-bottom:28px}}
+h1{{font-size:50px;line-height:1.25;margin:0 0 22px;font-weight:700;color:#1f1f1f}}
+.by{{font-size:26px;color:#8a8a8a;margin-bottom:30px}} .by b{{color:#c8860d;font-weight:700}}
+.im{{width:100%;height:600px;object-fit:cover;border-radius:18px;display:block;margin-bottom:30px}}
+p{{font-size:31px;line-height:1.55;margin:0;color:#3a3a3a}}
+</style></head><body><div id="c"><div class="bar"></div><h1>{esc(a.get('title') or title)}</h1>
+<div class="by"><b>{esc(source)}</b>{' · ' + esc(tarikh) if tarikh else ''}</div>
+{f'<img class="im" src="{img}">' if img else ''}<p>{esc(_first_paras(a))}</p></div></body></html>"""
+    os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
+    hp = os.path.abspath(os.path.join(os.path.dirname(path) or ".", "berita.html"))
+    open(hp, "w", encoding="utf-8").write(doc)
     with sync_playwright() as pw:
         b = pw.chromium.launch()
-        pg = b.new_page(viewport={"width": 900, "height": 1400}, device_scale_factor=1.5, user_agent=UA["User-Agent"])
-        pg.goto(url, wait_until="load", timeout=60000)
-        pg.wait_for_timeout(5000)
-        head = pg.title() + " | " + pg.inner_text("body")[:200].replace("\n", " ")
-        print("Halaman:", head[:200])
-        if re.search(r"access denied|just a moment|attention required|are you a robot|captcha|forbidden|unusual activity|verify you are human|px-captcha", head, re.I):
-            b.close()
-            raise RuntimeError("halaman disekat (anti-bot)")
-        pg.evaluate("""() => { document.querySelectorAll('[class*=cookie],[id*=cookie],[class*=consent],[class*=advert],[id*=google_ads],iframe,nav,[class*=sticky],[class*=Sticky]')
-                       .forEach(e => e.remove()); }""")
-        top = 0
-        try:  # cari tajuk artikel mengikut teksnya (h1 tidak boleh dipercayai)
-            loc = pg.get_by_text(title[:60], exact=False).first if title else pg.locator("h1").first
-            loc.wait_for(state="visible", timeout=15000)
-            top = max(loc.bounding_box(timeout=5000)["y"] - 16, 0)
-        except Exception as e:
-            print("Tajuk tidak ditemui:", str(e)[:120])
-        pg.screenshot(path=path, clip={"x": 0, "y": top, "width": 900, "height": 860})
+        pg = b.new_page(viewport={"width": 1080, "height": 1200}, device_scale_factor=1)
+        pg.goto("file://" + hp, wait_until="load")
+        pg.wait_for_timeout(800)
+        pg.locator("#c").screenshot(path=path)
         b.close()
     return path
 
 
-def build_caption(a, tajuk, ringkas, dt):
+def build_caption(a, tajuk, ringkas, dt, source=""):
     tarikh = f"{dt.day} {BULAN[dt.month - 1]} {dt.year}"
-    return f"Berita emas @ {tarikh}\n\n{tajuk}\n\n{ringkas}\n\nBerita penuh di : {a['url']}"
+    src = f"Sumber: {source}\n\n" if source else ""
+    return f"Berita emas @ {tarikh}\n\n{tajuk}\n\n{ringkas}\n\n{src}Berita penuh di :\n{a['url']}"
 
 
 def run(st, send, dt, out="out", notify=print):
@@ -248,7 +296,8 @@ def run(st, send, dt, out="out", notify=print):
                 res = (a["title"], a["desc"])
             tajuk, ringkas = res
             os.makedirs(out, exist_ok=True)
-            img = screenshot(url, f"{out}/berita.png", a["title"])
+            src_name = a.get("site") or (name if name != "manual" else re.sub(r"^www\.", "", url.split("/")[2]))
+            img = screenshot(url, f"{out}/berita.png", a["title"], a, src_name)
         except ApiKeyError as e:  # bukan salah sumber: jangan cuba calon lain, beritahu pemilik
             print(f"Kunci API Anthropic bermasalah: {e}")
             notify("⚠️ Kunci API Anthropic bermasalah, berita BM hari ini tidak dihantar. "
@@ -259,7 +308,7 @@ def run(st, send, dt, out="out", notify=print):
             print(f"Calon {name} dilangkau: {str(e)[:120]}")
             continue
         print(f"Berita dipilih dari {name}: {url}")
-        send(build_caption(a, tajuk, ringkas, dt), img, "berita", closing=False)
+        send(build_caption(a, tajuk, ringkas, dt, src_name), img, "berita", closing=False)
         if not test:  # mod ujian tidak menanda berita sebagai sudah dihantar dan tidak memutar sumber
             if url not in n["posted"]:
                 n["posted"] = (n["posted"] + [url])[-60:]

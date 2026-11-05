@@ -22,11 +22,10 @@ NEGATIVE = re.compile(r"pingat|medal|olimpik|olympic|sukan|sea games|juara|kejoh
 SOURCES = [
     ("The Edge Malaysia", None),
     ("Bernama", ["https://www.bernama.com/bm/carian.php?terms=harga+emas", "https://www.bernama.com/bm/ekonomi/", "https://www.bernama.com/bm/"]),
-    ("Astro Awani", ["https://www.astroawani.com/search?q=harga+emas", "https://www.astroawani.com/search?q=emas", "https://www.astroawani.com/"]),
-    ("Sinar Harian", ["https://www.sinarharian.com.my/carian?query=harga+emas", "https://www.sinarharian.com.my/"]),
     ("Kitco", ["https://www.kitco.com/news"]),
-    ("Investing.com", ["https://www.investing.com/commodities/gold", "https://www.investing.com/commodities/gold-news"]),  # jika disekat anti-bot, dilangkau automatik
+    ("Astro Awani", ["https://www.astroawani.com/search?q=harga+emas", "https://www.astroawani.com/search?q=emas", "https://www.astroawani.com/"]),
     ("GoldSeek", ["https://goldseek.com/", "https://goldseek.com/gold-headlines"]),
+    ("Sinar Harian", ["https://www.sinarharian.com.my/carian?query=harga+emas", "https://www.sinarharian.com.my/"]),
 ]
 MAX_AGE_H = 48
 

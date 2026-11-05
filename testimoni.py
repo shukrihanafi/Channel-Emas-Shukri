@@ -11,7 +11,8 @@ import requests
 
 CHANNEL = "kenaliemas"
 UA = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124 Safari/537.36"}
-FONT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "fonts", "Poppins-Bold.ttf")
+_HERE = os.path.dirname(os.path.abspath(__file__))
+FONT = next((p for p in (os.path.join(_HERE, "Poppins-Bold.ttf"), os.path.join(_HERE, "fonts", "Poppins-Bold.ttf")) if os.path.exists(p)), "DejaVuSans-Bold.ttf")
 MONTHS = r"(jan|feb|mac|mar|apr|mei|may|jun|jul|ogo|aug|sep|okt|oct|nov|dis|dec)[a-z]*"
 AMPM_RE = re.compile(r"^(a\.?m\.?|p\.?m\.?)$", re.I)
 DATE_RES = [

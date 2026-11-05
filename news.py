@@ -215,6 +215,8 @@ def run(st, send, dt, out="out"):
     forced = os.getenv("NEWS_URL", "").strip()
     cands = iter([(-1, "manual", forced)]) if forced else discover(n["posted"], n.get("rot", 0))
     test = getattr(sys.modules.get("__main__"), "CURRENT_MODE", "").endswith("-test")
+    if test and not forced:  # ujian: semak semua sumber supaya log melaporkan setiap satu
+        cands = iter(list(cands))
     tries = 0
     for idx, name, url in cands:
         if tries >= 5:

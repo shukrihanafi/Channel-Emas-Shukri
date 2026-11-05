@@ -75,9 +75,10 @@
   },
   "news": {
     "posted": [
-      "https://theedgemalaysia.com/node/824618"
+      "https://theedgemalaysia.com/node/824618",
+      "https://www.bernama.com/bm/pasaran/news.php?id=2630148"
     ],
-    "rot": 1
+    "rot": 2
   },
   "bb_last": 1,
   "relay": {

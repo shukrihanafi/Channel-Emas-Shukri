@@ -66,5 +66,8 @@
     ]
   },
   "alert_n": 3,
-  "slots": {}
+  "slots": {},
+  "news": {
+    "posted": []
+  }
 }

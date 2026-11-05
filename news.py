@@ -213,13 +213,13 @@ def _dl_image(url, referer):
         return ""
 
 
-def _first_paras(a, limit=520):
+def _first_paras(a, limit=420):
     out = ""
     for p in a.get("paras", []):
         if len(p) < 90 and out == "":  # buang baris pendek (penulis / caption)
             continue
         out = (out + " " + p).strip()
-        if len(out) >= 260:
+        if len(out) >= 240:
             break
     if not out:
         out = a.get("desc", "")
@@ -244,12 +244,12 @@ def screenshot(url, path, title="", a=None, source=""):
 @font-face{{font-family:P;font-weight:700;src:url('file://{fonts}/Poppins-Bold.ttf')}}
 @font-face{{font-family:P;font-weight:400;src:url('file://{fonts}/Poppins-Regular.ttf')}}
 *{{box-sizing:border-box}} body{{margin:0;background:#fffdf8;font-family:P,sans-serif;color:#222}}
-#c{{width:1080px;padding:56px 54px 48px}}
-.bar{{width:90px;height:8px;background:#d4a017;border-radius:4px;margin-bottom:28px}}
-h1{{font-size:50px;line-height:1.25;margin:0 0 22px;font-weight:700;color:#1f1f1f}}
-.by{{font-size:26px;color:#8a8a8a;margin-bottom:30px}} .by b{{color:#c8860d;font-weight:700}}
-.im{{width:100%;height:600px;object-fit:cover;border-radius:18px;display:block;margin-bottom:30px}}
-p{{font-size:31px;line-height:1.55;margin:0;color:#3a3a3a}}
+html,body{{height:100%}} #c{{width:1080px;height:1080px;padding:48px 54px 44px;display:flex;flex-direction:column;overflow:hidden}}
+.bar{{width:90px;height:8px;background:#d4a017;border-radius:4px;margin-bottom:22px;flex:none}}
+h1{{font-size:46px;line-height:1.22;margin:0 0 14px;font-weight:700;color:#1f1f1f;flex:none;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}}
+.by{{font-size:25px;color:#8a8a8a;margin-bottom:20px;flex:none}} .by b{{color:#c8860d;font-weight:700}}
+.im{{width:100%;flex:1 1 0;min-height:0;object-fit:cover;border-radius:18px;display:block;margin-bottom:22px}}
+p{{font-size:28px;line-height:1.5;margin:0;color:#3a3a3a;flex:none;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}}
 </style></head><body><div id="c"><div class="bar"></div><h1>{esc(a.get('title') or title)}</h1>
 <div class="by"><b>{esc(source)}</b>{' · ' + esc(tarikh) if tarikh else ''}</div>
 {f'<img class="im" src="{img}">' if img else ''}<p>{esc(_first_paras(a))}</p></div></body></html>"""
@@ -258,7 +258,7 @@ p{{font-size:31px;line-height:1.55;margin:0;color:#3a3a3a}}
     open(hp, "w", encoding="utf-8").write(doc)
     with sync_playwright() as pw:
         b = pw.chromium.launch()
-        pg = b.new_page(viewport={"width": 1080, "height": 1200}, device_scale_factor=1)
+        pg = b.new_page(viewport={"width": 1080, "height": 1080}, device_scale_factor=1)
         pg.goto("file://" + hp, wait_until="load")
         pg.wait_for_timeout(800)
         pg.locator("#c").screenshot(path=path)

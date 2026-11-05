@@ -108,7 +108,9 @@ def _generic_candidates(pages, posted):
             if (KEYWORDS.search(txt) or KEYWORDS.search(p.path)) and not NEGATIVE.search(txt + " " + p.path):
                 links[u] = 1
     out = []
-    for u in list(links)[:12]:
+    # utamakan pautan berbentuk artikel (halaman harga/carta tidak membawa tarikh berita)
+    ranked = sorted(links, key=lambda u: not re.search(r"/(article|news|berita|read|story)/|/\d{5,}", urlparse(u).path))
+    for u in ranked[:15]:
         if u in posted:
             continue
         try:

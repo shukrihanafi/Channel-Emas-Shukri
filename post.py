@@ -241,7 +241,6 @@ ALERT_DOWN = [
 BB_COMMON = (
     "Anda boleh KUNCI (LOCK) harga PG Buy terus melalui aplikasi Public Gold. Selepas lock harga, anda perlu hadir ke cawangan "
     "Public Gold berdekatan dalam tempoh 24 jam untuk menyelesaikan urusan jualan.\n\n"
-    "🔴‼️PENTING 🔴‼️\n\n"
 )
 BB_LINKS = (
     "📲 Whatsapp saya :\nhttps://shukriee.com/buyback\n\n"
@@ -311,14 +310,14 @@ def mode_alert(p, st):
     g.setdefault("history", {})[dt.strftime("%Y-%m-%d")] = price
     seed_history(st)
     _, img = gap_text_and_card(p, st, diff, fmt_dt(dt), base=base)
-    send(text, img, "price-alert", closing=False)
-    g["last_alert"] = price
-    g["last_post"] = price
-    if diff > 0:  # GAP NAIK -> galak orang jual emas: alert PG Buy + Non-PG Buyback
+    if diff > 0:  # GAP NAIK -> hantar alert PG Buy + Non-PG Buyback DAHULU, kemudian alert GAP
         try:
             mode_buyback_alert(p, st, fmt_dt(dt))
         except Exception as e:
             print("Alert PG Buy/Non-PG gagal:", e)
+    send(text, img, "price-alert", closing=False)
+    g["last_alert"] = price
+    g["last_post"] = price
 
 
 SEED = {  # graf 30 hari GAP (05/10 - 03/11/2026) daripada graf rujukan Shukri

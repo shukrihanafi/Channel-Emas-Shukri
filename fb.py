@@ -3,6 +3,7 @@ import os
 import requests
 
 GRAPH = "https://graph.facebook.com/v21.0"
+TOKEN_EXPIRES = "2027-01-04"  # tarikh token Page tamat (kemas kini bila token diganti); peringatan Telegram bermula 14 hari sebelum
 
 
 def enabled() -> bool:
@@ -25,3 +26,22 @@ def post(text, image_path=None, video_path=None):
     if r.status_code >= 300:
         raise RuntimeError(f"Facebook {r.status_code}: {r.text[:300]}")
     return r.json()
+
+
+def check():
+    """Semak token Page tanpa menghantar apa-apa: kembalikan (nama_page, tarikh_tamat). Raise jika token tidak sah."""
+    from datetime import datetime, timezone
+    pid, tok = os.environ["FB_PAGE_ID"], os.environ["FB_PAGE_TOKEN"]
+    h = {"Authorization": f"Bearer {tok}"}
+    r = requests.get(f"{GRAPH}/{pid}", params={"fields": "name"}, headers=h, timeout=30)
+    if r.status_code >= 300:
+        raise RuntimeError(f"Facebook {r.status_code}: {r.text[:300]}")
+    exp = "tidak diketahui"
+    try:
+        d = requests.get(f"{GRAPH}/debug_token", params={"input_token": tok}, headers=h, timeout=30).json().get("data", {})
+        e = d.get("expires_at", None)
+        if e is not None:
+            exp = "tidak tamat" if e == 0 else datetime.fromtimestamp(e, timezone.utc).strftime("%Y-%m-%d")
+    except Exception:
+        pass
+    return r.json().get("name", "?"), exp

@@ -17,16 +17,16 @@ MODEL = os.getenv("NEWS_MODEL", "claude-haiku-5-5")
 
 KEYWORDS = re.compile(r"\b(gold|bullion|precious metals?|emas|dinar|xau)\b", re.I)
 # Fokus emas sahaja: buang berita sukan (pingat emas, dll.) dan sebutan "emas" yang bukan berkaitan logam
-NEGATIVE = re.compile(r"pingat|medal|olimpik|olympic|sukan|sea games|juara|kejohanan|gold coast|gold cup|golden globe|piala", re.I)
+NEGATIVE = re.compile(r"pingat|medal|olimpik|olympic|sukan|sea games|juara|kejohanan|gold coast|gold cup|golden globe|piala|warga emas|sindiket|scam|ditahan|penipuan|bunuh|samun|rompak", re.I)
 # Sumber berita, diputar bergilir (satu sumber setiap hari); sumber tanpa berita emas terkini dilangkau
 SOURCES = [
     ("The Edge Malaysia", None),
-    ("Bernama", ["https://www.bernama.com/bm/", "https://www.bernama.com/bm/ekonomi/"]),
-    ("Astro Awani", ["https://www.astroawani.com/"]),
-    ("Sinar Harian", ["https://www.sinarharian.com.my/"]),
-    ("Reuters", ["https://www.reuters.com/markets/commodities/"]),
-    ("Kitco", ["https://www.kitco.com/"]),
-    ("Bloomberg", ["https://www.bloomberg.com/latest/gold"]),
+    ("Bernama", ["https://www.bernama.com/bm/carian.php?terms=harga+emas", "https://www.bernama.com/bm/ekonomi/", "https://www.bernama.com/bm/"]),
+    ("Astro Awani", ["https://www.astroawani.com/search?q=harga+emas", "https://www.astroawani.com/search?q=emas", "https://www.astroawani.com/"]),
+    ("Sinar Harian", ["https://www.sinarharian.com.my/carian?query=harga+emas", "https://www.sinarharian.com.my/"]),
+    ("Reuters", ["https://www.reuters.com/markets/commodities/"]),  # kerap menyekat bot: dilangkau automatik jika disekat
+    ("Kitco", ["https://www.kitco.com/news"]),
+    ("Bloomberg", ["https://www.bloomberg.com/latest/gold"]),  # kerap menyekat bot: dilangkau automatik jika disekat
 ]
 MAX_AGE_H = 48
 

@@ -191,7 +191,7 @@ def summarise(a):
     )
     r = requests.post("https://api.anthropic.com/v1/messages", timeout=90,
                       headers={"x-api-key": key, "anthropic-version": "2023-06-01", "content-type": "application/json"},
-                      json={"model": MODEL, "max_tokens": 1500, "messages": [{"role": "user", "content": prompt}]})
+                      json={"model": MODEL, "max_tokens": 8000, "messages": [{"role": "user", "content": prompt}]})
     if r.status_code in (401, 402, 403, 429) or (r.status_code == 400 and "credit" in r.text.lower()):
         raise ApiKeyError(f"HTTP {r.status_code}: {r.text[:160]}")
     r.raise_for_status()

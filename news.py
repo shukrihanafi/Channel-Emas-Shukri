@@ -165,6 +165,10 @@ def fetch_article(url):
             "date": _meta(page, "article:published_time"), "text": "\n".join(paras)[:12000]}
 
 
+class ApiKeyError(Exception):
+    """Kunci API tidak sah / kredit habis / akaun disekat."""
+
+
 def summarise(a):
     """Kembalikan (tajuk_bm, ringkasan_bm). Guna AI jika ada kunci; jika tidak, teks asal."""
     key = os.getenv("ANTHROPIC_API_KEY")
@@ -180,6 +184,8 @@ def summarise(a):
     r = requests.post("https://api.anthropic.com/v1/messages", timeout=90,
                       headers={"x-api-key": key, "anthropic-version": "2023-06-01", "content-type": "application/json"},
                       json={"model": MODEL, "max_tokens": 1500, "messages": [{"role": "user", "content": prompt}]})
+    if r.status_code in (401, 402, 403, 429) or (r.status_code == 400 and "credit" in r.text.lower()):
+        raise ApiKeyError(f"HTTP {r.status_code}: {r.text[:160]}")
     r.raise_for_status()
     txt = "".join(b.get("text", "") for b in r.json().get("content", []) if b.get("type") == "text")
     j = json.loads(re.search(r"\{.*\}", txt, re.S).group(0))
@@ -218,7 +224,7 @@ def build_caption(a, tajuk, ringkas, dt):
     return f"Berita emas @ {tarikh}\n\n{tajuk}\n\n{ringkas}\n\nBerita penuh di : {a['url']}"
 
 
-def run(st, send, dt, out="out"):
+def run(st, send, dt, out="out", notify=print):
     n = st.setdefault("news", {"posted": []})
     forced = os.getenv("NEWS_URL", "").strip()
     cands = iter([(-1, "manual", forced)]) if forced else discover(n["posted"], n.get("rot", 0))
@@ -236,12 +242,19 @@ def run(st, send, dt, out="out"):
             if res is None:
                 if not test:
                     print("ANTHROPIC_API_KEY tiada: berita tidak dihantar (caption mesti BM).")
+                    notify("⚠️ Kunci API Anthropic tiada (ANTHROPIC_API_KEY), berita BM tidak dihantar.")
                     return
                 print("Mod ujian tanpa kunci AI: guna teks asal (Inggeris) sebagai contoh sahaja.")
                 res = (a["title"], a["desc"])
             tajuk, ringkas = res
             os.makedirs(out, exist_ok=True)
             img = screenshot(url, f"{out}/berita.png", a["title"])
+        except ApiKeyError as e:  # bukan salah sumber: jangan cuba calon lain, beritahu pemilik
+            print(f"Kunci API Anthropic bermasalah: {e}")
+            notify("⚠️ Kunci API Anthropic bermasalah, berita BM hari ini tidak dihantar. "
+                   "Semak baki kredit / kunci di platform.claude.com/settings/billing. "
+                   "Slot lain tidak terjejas.\n" + str(e)[:200])
+            return
         except Exception as e:  # sumber ini bermasalah (disekat/ralat): cuba calon seterusnya
             print(f"Calon {name} dilangkau: {str(e)[:120]}")
             continue

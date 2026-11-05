@@ -195,8 +195,17 @@ def summarise(a):
     if r.status_code in (401, 402, 403, 429) or (r.status_code == 400 and "credit" in r.text.lower()):
         raise ApiKeyError(f"HTTP {r.status_code}: {r.text[:160]}")
     r.raise_for_status()
-    txt = "".join(b.get("text", "") for b in r.json().get("content", []) if b.get("type") == "text")
-    j = json.loads(re.search(r"\{.*\}", txt, re.S).group(0))
+    jr = r.json()
+    txt = "".join(b.get("text", "") for b in jr.get("content", []) if b.get("type") == "text")
+    m_ = re.search(r"\{.*\}", txt, re.S)
+    if not m_:
+        print("AI tidak balas JSON. stop_reason=%s, balasan: %r" % (jr.get("stop_reason"), txt[:300]))
+        raise ValueError("balasan AI bukan JSON")
+    try:
+        j = json.loads(m_.group(0), strict=False)
+    except ValueError:
+        print("JSON AI rosak: %r" % txt[:300])
+        raise
     a["threads"] = (j.get("threads") or "").strip()
     return j["tajuk"].strip().upper(), j["ringkasan"].strip()
 

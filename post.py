@@ -458,8 +458,10 @@ def mode_fbcheck(p, st):
         return
     try:
         name, exp = fb.check()
+        print(f"FBCHECK OK page={name} tamat={exp}")
         tg_plain(f"✅ Token Facebook OK. Page: {name}. Tamat: {exp}.")
     except Exception as e:
+        print(f"FBCHECK GAGAL {str(e)[:200]}")
         tg_plain(f"⚠️ Token Facebook bermasalah: {e}")
 
 

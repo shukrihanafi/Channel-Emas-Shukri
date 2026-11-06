@@ -179,6 +179,8 @@ def send(text, image=None, label="post", closing=True):
             if ttext:
                 threads.post(st_, ttext, image)
                 wa_note = (wa_note + "\n" if wa_note else "") + "✅ Sudah dihantar ke Threads (auto)."
+            else:
+                wa_note = (wa_note + "\n" if wa_note else "") + "⚠️ Threads: teks santai kosong (kunci Anthropic / penulisan semula gagal), tidak dihantar."
         except Exception as e:
             wa_note = (wa_note + "\n" if wa_note else "") + f"⚠️ Gagal hantar ke Threads: {e}"
             try:
@@ -720,7 +722,19 @@ def mode_threadstest(p, st):
         tg_plain(f"⚠️ Post ujian Threads gagal: {e}")
 
 
-MODES = {"threads-test": mode_threadstest, "threads-check": mode_threadscheck, "fb-check": mode_fbcheck, "relay": mode_relay, "wa-channels": mode_wa_channels, "berita": mode_berita, "berita-test": mode_berita, "fizikal": mode_fizikal, "fizikal-test": mode_fizikal, "fizikal-alert-test": mode_fizikal_alert, "semangat": mode_semangat, "semangat-test": mode_semangat, "testimoni": mode_testimoni, "testimoni-test": mode_testimoni, "gap": mode_gap, "jewel": mode_jewel, "alert": mode_alert, "ilmu": mode_ilmu, "item": mode_item, "pgitem": mode_pgitem,
+def mode_threadscasual(p, st):
+    """Ujian: tulis semula satu contoh berita jadi teks Threads santai; hasil ke Telegram peribadi sahaja (tiada post awam)."""
+    sample = ("[BERITA EMAS]\n\nKENAPA HARGA EMAS JATUH DI BAWAH $4,000?\n\nHarga emas jatuh di bawah $4,000 setiap auns pada Jumaat lalu, "
+              "paras terendah dalam 12 bulan. Ahli pasaran kata pelabur jual emas untuk dapatkan tunai, selepas saham teknologi merudum.\n\n"
+              "Kadar faedah tinggi juga menekan emas kerana emas tidak membayar faedah. Pasaran kini menunggu keputusan Bank Pusat AS (Fed) pada Disember.")
+    try:
+        t = threads.casual(sample)
+        tg_plain("Contoh teks Threads (ujian, tidak dipost):\n\n" + (t or "(KOSONG - ANTHROPIC_API_KEY tiada?)"))
+    except Exception as e:
+        tg_plain(f"⚠️ Ujian penulisan semula gagal: {str(e)[:400]}")
+
+
+MODES = {"threads-casual-test": mode_threadscasual, "threads-test": mode_threadstest, "threads-check": mode_threadscheck, "fb-check": mode_fbcheck, "relay": mode_relay, "wa-channels": mode_wa_channels, "berita": mode_berita, "berita-test": mode_berita, "fizikal": mode_fizikal, "fizikal-test": mode_fizikal, "fizikal-alert-test": mode_fizikal_alert, "semangat": mode_semangat, "semangat-test": mode_semangat, "testimoni": mode_testimoni, "testimoni-test": mode_testimoni, "gap": mode_gap, "jewel": mode_jewel, "alert": mode_alert, "ilmu": mode_ilmu, "item": mode_item, "pgitem": mode_pgitem,
          "item-jewel": lambda p, st: mode_item(p, st, "jewel"),
          "item-mall": lambda p, st: mode_item(p, st, "mall")}
 

@@ -172,7 +172,7 @@ def send(text, image=None, label="post", closing=True):
             wa_note = (wa_note + "\n" if wa_note else "") + "✅ Sudah dihantar ke Facebook Page (auto)."
         except Exception as e:
             wa_note = (wa_note + "\n" if wa_note else "") + f"⚠️ Gagal hantar ke Facebook Page: {e}"
-    if threads.enabled() and not test_only and ((label in ("berita", "testimoni", "semangat") or (label == "harga-GAP" and now_my().hour < 12)) or (CURRENT_MODE == "pgitem-all" or (CURRENT_MODE == "pgitem" and now_my().hour >= 20))):  # Threads: harga GAP harian & berita emas sahaja
+    if threads.enabled() and not test_only and ((label in ("berita", "testimoni", "semangat", "ilmu-emas") or (label == "harga-GAP" and now_my().hour < 12)) or (CURRENT_MODE == "pgitem-all" or (CURRENT_MODE == "pgitem" and now_my().hour >= 20))):  # Threads: harga GAP harian & berita emas sahaja
         try:
             st_ = globals().get("_ST") or {}
             ttext = threads.gap_text(text) if label == "harga-GAP" else ((threads.PRESET or threads.casual(text) or "") if label == "berita" else text)
@@ -187,7 +187,7 @@ def send(text, image=None, label="post", closing=True):
                 send_email("⚠️ Alert Threads", f"Gagal hantar ke Threads (mod {CURRENT_MODE}): {str(e)[:300]}")
             except Exception:
                 pass
-    if instagram.enabled() and not test_only and ((label in ("berita", "testimoni", "semangat") or (label == "harga-GAP" and now_my().hour < 12)) or (CURRENT_MODE == "pgitem-all" or (CURRENT_MODE == "pgitem" and now_my().hour >= 20))):  # Instagram: sama seperti Threads
+    if instagram.enabled() and not test_only and ((label in ("berita", "testimoni", "semangat", "ilmu-emas") or (label == "harga-GAP" and now_my().hour < 12)) or (CURRENT_MODE == "pgitem-all" or (CURRENT_MODE == "pgitem" and now_my().hour >= 20))):  # Instagram: sama seperti Threads
         try:
             image = image or instagram.fallback_image()
             if not image:

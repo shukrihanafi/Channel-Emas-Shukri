@@ -67,15 +67,23 @@ assert relay.run(st, note) == 0 and any(c[0] == "editMessageReplyMarkup" for c i
 W.posted.clear()
 updates[:] = [{"update_id": 7, "message": {"chat": {"id": 42}, "text": "post manual"}}]
 assert relay.run(st, note) == 1 and W.posted[0][1] == "post manual"
-# 8) TikTok: ap = tiada TikTok; ts/tn/tl masuk giliran TikTok dengan mod betul; jadual = mod 'same'
-assert "tiktok" not in st["relay"] or not any(k == "a7" for k in st["relay"]["tiktok"])
-updates[:] = [cb(8, "ts", mid=20), cb(9, "tn", mid=21), cb(10, "tl", mid=22), cb(11, "n20", mid=23)]
+# 8) TikTok manual: butang 🎵 -> peringatan + caption selepas disiar; 'ap' tiada peringatan
+calls.clear(); W.posted.clear()
+updates[:] = [cb(8, "ts", mid=20), cb(9, "ap", mid=21)]
 relay.run(st, note)
-tk = st["relay"]["tiktok"]
-assert tk["a20"]["mode"] == "slot" and tk["a21"]["mode"] == "now" and tk["a22"]["mode"] == "later", tk
-assert tk["a23"]["mode"] == "same" and tk["a23"]["at"] and tk["a23"]["status"] == "wait" and tk["a20"]["vid"]["file_id"] == "VID"
-assert tk["a8"]["mode"] == "same" and "a7" not in tk and "a9" not in tk  # n20 lama kini = semua 6; 'ap' dan 'rj' tiada TikTok
-assert any("TikTok" in m for m in msgs)
+sm = [c for c in calls if c[0] == "sendMessage"]
+assert len(sm) == 2, sm   # hanya mid=20: arahan + caption
+assert "TikTok" in sm[0][1]["text"] and sm[1][1]["text"].startswith("```") and "Amboi" in sm[1][1]["text"]
+assert sm[0][1]["reply_to_message_id"] == 20 and len([p for p in W.posted if p[0] == "wa"]) == 2
+# jadual: peringatan hanya selepas masa tiba
+calls.clear()
+updates[:] = [cb(10, "n20", mid=23)]
+relay.run(st, note)
+assert not [c for c in calls if c[0] == "sendMessage"] and st["relay"]["pending"]["a23"]["tt"] is True
+st["relay"]["pending"]["a23"]["due"] = (datetime.now(timezone.utc) - timedelta(minutes=1)).isoformat()
+updates[:] = []
+relay.run(st, note)
+assert len([c for c in calls if c[0] == "sendMessage"]) == 2
 kb = relay.approval_keyboard()
-assert {b["callback_data"] for r in kb["inline_keyboard"] for b in r} >= {"ts", "tn", "tl", "ap", "n20", "m07", "hr", "rj"}
+assert {b["callback_data"] for r in kb["inline_keyboard"] for b in r} >= {"ts", "ap", "n20", "m07", "hr", "rj"}
 print("SEMUA UJIAN LULUS")

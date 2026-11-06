@@ -57,9 +57,9 @@ def _now():
 
 
 def approval_keyboard(page="main"):
-    """Papan butang untuk video menunggu kelulusan. callback_data: ts / tn / tl / ap / n20 / m07 / hr / h{HH} / bk / rj / noop.
-    Pilihan TikTok: ts = 5 sekarang + TikTok jadual slot kosong; tn = semua 6 sekarang; n20/m07/h{HH} = semua 6 pada masa sama;
-    tl = 5 sekarang, TikTok kemudian; ap = 5 sahaja (tiada TikTok)."""
+    """Papan butang untuk video menunggu kelulusan. callback_data: ts / ap / n20 / m07 / hr / h{HH} / bk / rj / noop.
+    TikTok ialah MANUAL oleh Shukri di telefon: pilihan dengan 🎵 (ts, n20, m07, h{HH}) menyebabkan bot hantar peringatan + caption siap salin
+    ke DM selepas video disiar ke 5 platform. ap = 5 platform sahaja."""
     if page == "hours":
         rows, row = [], []
         for h in range(7, 24):
@@ -72,19 +72,22 @@ def approval_keyboard(page="main"):
         rows.append([{"text": "⬅️ Kembali", "callback_data": "bk"}])
         return {"inline_keyboard": rows}
     return {"inline_keyboard": [
-        [{"text": "✅ 5 sekarang + 🎵 TikTok jadual", "callback_data": "ts"}],
-        [{"text": "🚀 Semua 6 sekarang", "callback_data": "tn"}],
-        [{"text": "🌙 Semua 6 malam ini 8:09", "callback_data": "n20"}, {"text": "🌅 Semua 6 esok 7:09", "callback_data": "m07"}],
-        [{"text": "🕒 Jadual semua 6 (pilih masa)", "callback_data": "hr"}],
-        [{"text": "⏳ 5 sekarang, TikTok kemudian", "callback_data": "tl"}, {"text": "📵 5 sahaja", "callback_data": "ap"}],
+        [{"text": "✅ Approve 5 sekarang + 🎵 TikTok manual", "callback_data": "ts"}],
+        [{"text": "🌙 Malam ini 8:09 + 🎵", "callback_data": "n20"}, {"text": "🌅 Esok 7:09 + 🎵", "callback_data": "m07"}],
+        [{"text": "🕒 Pilih masa lain (+ 🎵)", "callback_data": "hr"}],
+        [{"text": "📵 5 sahaja (tiada TikTok)", "callback_data": "ap"}],
         [{"text": "❌ Tolak", "callback_data": "rj"}]]}
 
 
-def tt_enqueue(rs, key, vid, text, mode, at=None):
-    """Catat video dalam giliran TikTok (state["relay"]["tiktok"]). TikTok tiada API untuk bot cloud: Claude yang muat naik
-    dari Chrome Shukri bila sesi aktif. mode: slot (jadual slot kosong) / now / same (jadual pada masa 'at') / later (tangguh)."""
-    rs.setdefault("tiktok", {})[key] = {"vid": vid, "text": text, "mode": mode, "at": at, "status": "wait",
-                                         "added": _now().isoformat()}
+def tt_reminder(base, owner, text, mid, notify=print):
+    """Peringatan TikTok manual: hantar caption siap salin ke DM (balas pada video kelulusan). Tanpa Claude."""
+    body = ("🎵 TikTok (manual di telefon)\n"
+            "1) Simpan video di atas ke galeri (tekan lama > Simpan)\n"
+            "2) Buka TikTok > Upload > tampal caption di bawah (tekan caption untuk salin)\n"
+            "3) Siar sekarang, atau jadual jika app menyediakannya (TikTok Studio web ada jadual sehingga ~30 hari)")
+    _tg(base, "sendMessage", chat_id=owner, text=body, reply_to_message_id=mid)
+    cap = (text or "").replace("`", "'")
+    _tg(base, "sendMessage", chat_id=owner, text=f"```\n{cap}\n```", parse_mode="Markdown", reply_to_message_id=mid)
 
 
 def _next_slot(hour, tomorrow=False):
@@ -221,15 +224,11 @@ def _handle_callback(rs, cb, owner, base, notify):
     if (vid.get("file_size") or 0) > MAX_VIDEO:
         ans("Video melebihi 20 MB.")
         return notify(f"⚠️ Video {vid['file_size'] / 1048576:.0f} MB melebihi had 20 MB bot Telegram, tidak boleh disiar auto. Sila post manual.")
-    tt, tt_at = None, None
+    tt = False
     if data == "ap":
         due, label = _now(), "✅ 5 platform sekarang (tiada TikTok)"
     elif data == "ts":
-        due, label, tt = _now(), "✅ 5 platform sekarang + 🎵 TikTok jadual slot kosong", "slot"
-    elif data == "tn":
-        due, label, tt = _now(), "🚀 Semua 6 sekarang (TikTok oleh Claude)", "now"
-    elif data == "tl":
-        due, label, tt = _now(), "✅ 5 platform sekarang, 🎵 TikTok kemudian", "later"
+        due, label, tt = _now(), "✅ 5 platform sekarang + 🎵 peringatan TikTok", True
     elif data == "n20" or data == "m07" or (data.startswith("h") and data[1:].isdigit()):
         if data == "n20":
             due = _next_slot(20)
@@ -237,20 +236,16 @@ def _handle_callback(rs, cb, owner, base, notify):
             due = _next_slot(7, tomorrow=True)
         else:
             due = _next_slot(int(data[1:]))
-        label, tt, tt_at = f"⏰ Semua 6 dijadual {due.astimezone(MYT):%d/%m %H:%M}", "same", due.isoformat()
+        label, tt = f"⏰ Dijadual {due.astimezone(MYT):%d/%m %H:%M} + 🎵 peringatan TikTok", True
     else:
         return ans("Butang tidak dikenali.")
-    pend[key] = {"vid": vid, "text": text, "due": due.isoformat(), "tries": 0, "mid": mid}
+    pend[key] = {"vid": vid, "text": text, "due": due.isoformat(), "tries": 0, "mid": mid, "tt": tt}
     done.append(mid)
     rs["cbdone"] = done[-50:]
-    if tt:
-        tt_enqueue(rs, key, vid, text, tt, tt_at)
     mark({"inline_keyboard": [[{"text": label, "callback_data": "noop"}]]})
     ans(label)
-    msg = f"{label}. Video akan disiar ke 5 platform pada semakan seterusnya (setiap ~3-20 minit)."
-    if tt:
-        msg += " 🎵 TikTok: dalam giliran, menunggu Claude muat naik dari Chrome kamu (sebut 'post TikTok' dalam sesi Claude)."
-    notify(msg)
+    notify(f"{label}. Video akan disiar ke 5 platform pada semakan seterusnya (setiap ~3-20 minit)."
+           + (" Peringatan TikTok akan dihantar selepas itu." if tt else ""))
 
 
 def _process_pending(st, rs, base, token, tg_channel, notify):
@@ -265,6 +260,8 @@ def _process_pending(st, rs, base, token, tg_channel, notify):
             del pend[key]
             notify(f"✅ Video lulus disiar ke {dest}.")
             n += 1
+            if it.get("tt"):
+                tt_reminder(base, os.getenv("TELEGRAM_CHAT_ID", ""), it["text"], it.get("mid"), notify)
         except Exception as e:
             it["tries"] = it.get("tries", 0) + 1
             if it["tries"] >= 5:

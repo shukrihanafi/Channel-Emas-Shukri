@@ -1,0 +1,48 @@
+name: Hantar video ke DM
+
+# Claude push cabang outbox/<nama> berisi job.json + video.mp4.
+# Workflow ini hantar ke DM Shukri guna GitHub Secrets (tiada token perlu ditampal), kemudian padam cabang itu.
+on:
+  push:
+    branches: ["outbox/**"]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: send-video
+  cancel-in-progress: false
+
+jobs:
+  send:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install requests
+      - name: Hantar
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          TELEGRAM_CHANNEL: "@kenaliemas"
+          BR: ${{ github.ref_name }}
+        run: |
+          set -e
+          mkdir -p /tmp/job && cp outbox/* /tmp/job/ 
+          ARGS=""
+          python3 - <<'PY' > /tmp/job/args.sh
+          import json, shlex
+          j = json.load(open("/tmp/job/job.json"))
+          a = ["python", "send_for_approval.py", "/tmp/job/" + j["video"], open("/tmp/job/" + j["caption_file"]).read()]
+          if j.get("auto"): a.append("--auto")
+          if j.get("tiktok") == "none": a += ["--tiktok", "none"]
+          print(" ".join(shlex.quote(x) for x in a))
+          PY
+          git config user.name channel-bot
+          git config user.email bot@users.noreply.github.com
+          bash /tmp/job/args.sh
+      - name: Padam cabang outbox
+        if: always()
+        run: git push origin --delete "${{ github.ref_name }}" || true

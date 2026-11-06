@@ -140,3 +140,10 @@ def diag():
     except Exception as e:
         out.append(f"page->ig ERR {str(e)[:200]}")
     return "\n\n".join(out)
+
+
+def fallback_image():
+    """Gambar sandaran dari repo (news_img/bar-*) jika post tiada gambar; bertukar mengikut hari."""
+    import glob, datetime
+    fs = sorted(glob.glob(os.path.join(os.path.dirname(os.path.abspath(__file__)), "news_img", "bar-*.jpg")))
+    return fs[datetime.date.today().toordinal() % len(fs)] if fs else None

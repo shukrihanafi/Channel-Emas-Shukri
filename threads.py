@@ -34,9 +34,11 @@ def enabled():
     return bool(os.getenv("THREADS_TOKEN")) and os.getenv("THREADS_AUTO", "1") == "1"
 
 
-def _fernet():
+def _fernet(legacy=False):
+    """Kunci penyulitan. Baharu: diterbitkan daripada secret THREADS_TOKEN (tidak terjejas jika token bot Telegram ditukar/revoke).
+    legacy=True: kunci lama daripada token bot (hanya untuk membaca token yang disimpan sebelum perubahan ini)."""
     from cryptography.fernet import Fernet
-    seed = (os.getenv("TELEGRAM_BOT_TOKEN") or "") + "|threads"
+    seed = ((os.getenv("TELEGRAM_BOT_TOKEN") or "") if legacy else os.environ["THREADS_TOKEN"].strip()) + "|threads"
     return Fernet(base64.urlsafe_b64encode(hashlib.sha256(seed.encode()).digest()))
 
 
@@ -49,10 +51,11 @@ def token(st):
     env = os.environ["THREADS_TOKEN"].strip()
     s = (st or {}).get("threads") or {}
     if s.get("src") == _h(env) and s.get("enc"):
-        try:
-            return _fernet().decrypt(s["enc"].encode()).decode()
-        except Exception:
-            pass
+        for legacy in (False, True):
+            try:
+                return _fernet(legacy).decrypt(s["enc"].encode()).decode()
+            except Exception:
+                pass
     return env
 
 

@@ -10,7 +10,7 @@ DEFAULT_ID = "17841404089345637"  # @shukrieepg (pengganti jika /me tidak memula
 
 
 def enabled():
-    return bool(os.getenv("IG_TOKEN")) and os.getenv("IG_AUTO", "0") == "1"  # dimatikan sehingga token Instagram disahkan
+    return bool(os.getenv("IG_TOKEN")) and os.getenv("IG_AUTO", "1") == "1"
 
 
 def _tok():

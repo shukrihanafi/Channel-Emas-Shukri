@@ -76,6 +76,7 @@ jobs:
           WHAPI_TOKEN: ${{ secrets.WHAPI_TOKEN }}
           FB_PAGE_TOKEN: ${{ secrets.FB_PAGE_TOKEN }}
           FB_PAGE_ID: ${{ secrets.FB_PAGE_ID }}
+          THREADS_TOKEN: ${{ secrets.THREADS_TOKEN }}
           GMAIL_USER: "shukripublicgold@gmail.com"
           GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
           WA_CHANNEL_ID: ${{ secrets.WA_CHANNEL_ID }}

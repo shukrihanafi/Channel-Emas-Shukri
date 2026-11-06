@@ -702,7 +702,19 @@ def mode_threadscheck(p, st):
 def mode_threadstest(p, st):
     """Satu post ujian sebenar ke Threads (teks sahaja)."""
     try:
-        r = threads.post(st, "Ujian auto-post Threads dari bot Public Gold ✅ (post ujian, akan dipadam)")
+        from PIL import Image, ImageDraw, ImageFont
+        os.makedirs(OUT, exist_ok=True)
+        ip = f"{OUT}/threads-test.png"
+        im = Image.new("RGB", (1080, 1080), (120, 10, 20))
+        d = ImageDraw.Draw(im)
+        d.rectangle([30, 30, 1050, 1050], outline=(212, 175, 55), width=8)
+        try:
+            f = ImageFont.truetype("Poppins-Bold.ttf", 70)
+        except Exception:
+            f = ImageFont.load_default()
+        d.text((540, 540), "UJIAN GAMBAR THREADS\nshukriee.com", fill=(240, 210, 120), font=f, anchor="mm", align="center")
+        im.save(ip)
+        r = threads.post(st, "Ujian post bergambar dari bot Public Gold ✅ (akan dipadam)", ip)
         tg_plain(f"✅ Post ujian Threads berjaya dihantar. ID: {r.get('id')}")
     except Exception as e:
         tg_plain(f"⚠️ Post ujian Threads gagal: {e}")

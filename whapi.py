@@ -40,3 +40,15 @@ def post_channel(text, image_path=None, video_path=None):
     if r.status_code >= 300:
         raise RuntimeError(f"Whapi {r.status_code}: {r.text[:300]}")
     return r.json()
+
+
+def health():
+    """Semak sambungan nombor WhatsApp pada Whapi. Pulang (ok, teks status); ok=True jika status AUTH (bersambung)."""
+    r = requests.get(f"{API}/health", headers=_headers(), timeout=30)
+    if r.status_code in (401, 403):
+        return False, f"HTTP {r.status_code} (token Whapi tidak sah / tamat)"
+    r.raise_for_status()
+    j = r.json()
+    s = j.get("status") or {}
+    text = str(s.get("text") or j)[:80]
+    return (s.get("code") == 4 or text.upper() == "AUTH"), text

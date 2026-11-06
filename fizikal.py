@@ -115,13 +115,13 @@ def caption(ts):
 
 # Skrip ALERT emas fizikal turun (diputar mengikut alert)
 ALERT_DOWN = [
-    "🟢 HARGA EMAS FIZIKAL TURUN 🟢\n\n"
-    "Ini adalah peluang terbaik untuk anda beli emas fizikal dengan harga murah!\n\n"
+    "🔴 PELUANG SIMPAN EMAS FIZIKAL 🔴\n\n"
+    "Ini adalah peluang terbaik untuk anda beli emas fizikal dengan harga turun!\n\n"
     "Boleh beli emas fizikal serendah 1 Dinar (4.25gram) atau 5gram.\n\n"
     "Jom ambil peluang ni sekarang!\n"
     "Panduan di https://shukriee.com/beliemas\n\n"
     "Kalau nak saya bagi cadangan emas yang sesuai dengan bajet anda, boleh terus WhatsApp saya ok!",
-    "🟢 BEST SIMPAN EMAS FIZIKAL 🟢\n\n"
+    "🔴 HARGA EMAS FIZIKAL TURUN! 🔴\n\n"
     "Anda simpan emas di GAP saja? Kemon! Harga emas turun ni.\n\n"
     "Apa kata kali ini anda tambah simpanan emas fizikal pula?\n\n"
     "Boleh rasa aura best nya pegang emas fizikal di tangan. Serius!\n\n"

@@ -267,10 +267,11 @@ html,body{{height:100%}} #c{{width:1080px;height:1080px;padding:48px 54px 44px;d
 h1{{font-size:46px;line-height:1.22;margin:0 0 14px;font-weight:700;color:#1f1f1f;flex:none;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}}
 .by{{font-size:25px;color:#8a8a8a;margin-bottom:20px;flex:none}} .by b{{color:#c8860d;font-weight:700}}
 .im{{width:100%;flex:1 1 0;min-height:0;object-fit:cover;border-radius:18px;display:block;margin-bottom:22px}}
+.ph{{width:100%;flex:1 1 0;min-height:0;border-radius:18px;margin-bottom:22px;background:linear-gradient(135deg,#6e0a12,#a8101c 55%,#d4a017);display:flex;flex-direction:column;align-items:center;justify-content:center;color:#f3d77a;font-weight:700;font-size:64px;letter-spacing:2px}} .ph small{{font-size:30px;font-weight:400;color:#fff;margin-top:12px;letter-spacing:0}}
 p{{font-size:28px;line-height:1.5;margin:0;color:#3a3a3a;flex:none;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}}
 </style></head><body><div id="c"><div class="bar"></div><h1>{esc(a.get('title') or title)}</h1>
 <div class="by"><b>{esc(source)}</b>{' · ' + esc(tarikh) if tarikh else ''}</div>
-{f'<img class="im" src="{img}">' if img else ''}<p>{esc(_first_paras(a))}</p></div></body></html>"""
+{f'<img class="im" src="{img}">' if img else '<div class="ph">BERITA EMAS<small>shukriee.com</small></div>'}<p>{esc(_first_paras(a))}</p></div></body></html>"""
     os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
     hp = os.path.abspath(os.path.join(os.path.dirname(path) or ".", "berita.html"))
     open(hp, "w", encoding="utf-8").write(doc)

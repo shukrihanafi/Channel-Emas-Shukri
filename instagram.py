@@ -158,10 +158,14 @@ def fallback_image():
     return fs[datetime.date.today().toordinal() % len(fs)] if fs else None
 
 
-def ilmu_image(k):
-    """Gambar untuk ilmu nombor k (ilmu_img/k.jpg atau .jpeg/.png); jika tiada guna gambar sandaran."""
+def ilmu_image(k, n=None):
+    """Gambar untuk ilmu: jika ada ilmu_img/k.jpg guna itu; jika tidak, ikut susunan semua gambar (ilmu_img kemudian news_img/bar-*)
+    mengikut nombor siaran n, dan ulang dari gambar pertama bila habis."""
     for ext in ("jpg", "jpeg", "png"):
         fs = _imgs("ilmu_img", [f"{k}.{ext}"])
         if fs:
             return fs[0]
-    return fallback_image()
+    pool = _imgs("ilmu_img", ["*.jpg", "*.jpeg", "*.png"]) + _imgs("news_img", ["bar-*.jpg"])
+    if not pool:
+        return fallback_image()
+    return pool[((n or k) - 1) % len(pool)]

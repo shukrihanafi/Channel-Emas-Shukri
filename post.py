@@ -699,7 +699,16 @@ def mode_threadscheck(p, st):
         tg_plain(f"⚠️ Token Threads bermasalah: {e}")
 
 
-MODES = {"threads-check": mode_threadscheck, "fb-check": mode_fbcheck, "relay": mode_relay, "wa-channels": mode_wa_channels, "berita": mode_berita, "berita-test": mode_berita, "fizikal": mode_fizikal, "fizikal-test": mode_fizikal, "fizikal-alert-test": mode_fizikal_alert, "semangat": mode_semangat, "semangat-test": mode_semangat, "testimoni": mode_testimoni, "testimoni-test": mode_testimoni, "gap": mode_gap, "jewel": mode_jewel, "alert": mode_alert, "ilmu": mode_ilmu, "item": mode_item, "pgitem": mode_pgitem,
+def mode_threadstest(p, st):
+    """Satu post ujian sebenar ke Threads (teks sahaja)."""
+    try:
+        r = threads.post(st, "Ujian auto-post Threads dari bot Public Gold ✅ (post ujian, akan dipadam)")
+        tg_plain(f"✅ Post ujian Threads berjaya dihantar. ID: {r.get('id')}")
+    except Exception as e:
+        tg_plain(f"⚠️ Post ujian Threads gagal: {e}")
+
+
+MODES = {"threads-test": mode_threadstest, "threads-check": mode_threadscheck, "fb-check": mode_fbcheck, "relay": mode_relay, "wa-channels": mode_wa_channels, "berita": mode_berita, "berita-test": mode_berita, "fizikal": mode_fizikal, "fizikal-test": mode_fizikal, "fizikal-alert-test": mode_fizikal_alert, "semangat": mode_semangat, "semangat-test": mode_semangat, "testimoni": mode_testimoni, "testimoni-test": mode_testimoni, "gap": mode_gap, "jewel": mode_jewel, "alert": mode_alert, "ilmu": mode_ilmu, "item": mode_item, "pgitem": mode_pgitem,
          "item-jewel": lambda p, st: mode_item(p, st, "jewel"),
          "item-mall": lambda p, st: mode_item(p, st, "mall")}
 

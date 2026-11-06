@@ -144,3 +144,26 @@ def gap_text(text):
     """Versi ringkas caption GAP untuk Threads (had 500 aksara)."""
     parts = [p for p in text.split("\n\n") if not p.startswith(("Terendah", "Dikemaskini"))]
     return "\n\n".join(parts)
+
+
+
+def summarize(text, limit=450):
+    """Ringkaskan teks panjang supaya muat had aksara (guna Claude Haiku). Jika sudah ringkas atau AI gagal, pulangkan teks asal."""
+    text = (text or "").strip()
+    if len(text) <= limit:
+        return text
+    key = os.getenv("ANTHROPIC_API_KEY")
+    if not key:
+        return text
+    try:
+        prompt = (f"Ringkaskan post ini dalam Bahasa Melayu dengan gaya yang sama, jumlah TIDAK melebihi {limit - 60} aksara. "
+                  "Kekalkan mesej utama dan fakta penting (angka, harga, tarikh) tanpa mereka fakta. Susun dalam perenggan pendek dipisahkan baris kosong. "
+                  "Jangan tulis shukriee.com dan jangan tambah pautan. Beri teks post sahaja.\n\nPOST:\n" + text[:6000])
+        r = requests.post("https://api.anthropic.com/v1/messages", timeout=90,
+                          headers={"x-api-key": key, "anthropic-version": "2023-06-01", "content-type": "application/json"},
+                          json={"model": "claude-haiku-5-5", "max_tokens": 4000, "messages": [{"role": "user", "content": prompt}]})
+        r.raise_for_status()
+        out = "".join(b.get("text", "") for b in r.json()["content"]).strip()
+        return out if out and len(out) <= limit else text
+    except Exception:
+        return text

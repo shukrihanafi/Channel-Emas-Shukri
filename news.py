@@ -246,11 +246,33 @@ def _first_paras(a, limit=520):
     return out
 
 
+def pick_fallback(a, n):
+    """Artikel tiada gambar utama: pilih gambar emas daripada news_img/ (dalam repo, jadi PC tidak perlu hidup).
+    Padanan kandungan: berkaitan GAP/simpanan -> kumpulan gap, selain itu -> bar/dinar. Tidak ulang sehingga semua digunakan."""
+    import glob, random
+    txt = ((a.get("title") or "") + " " + (a.get("text") or a.get("desc") or "")).lower()
+    grp = "gap" if re.search(r"akaun gap|gold accumulation|auto debit|simpanan emas|menabung", txt) else "bar"
+    fs = sorted(glob.glob(f"news_img/{grp}-*.jpg")) or sorted(glob.glob("news_img/*.jpg"))
+    if not fs:
+        return ""
+    used = n.setdefault("imgs", [])
+    left = [f for f in fs if os.path.basename(f) not in used]
+    if not left:  # semua sudah digunakan: mula pusingan baharu bagi kumpulan ini
+        used[:] = [u for u in used if not u.startswith(grp + "-")]
+        left = fs
+    return random.choice(left)
+
+
 def screenshot(url, path, title="", a=None, source=""):
     """Bina kad berita bersih (tajuk, gambar utama, perenggan pertama) TANPA iklan laman, lalu tangkap sebagai PNG."""
     from playwright.sync_api import sync_playwright
     a = a or {}
     img = _dl_image(a.get("image", ""), url)
+    if not img and a.get("fb_file"):
+        try:
+            img = "data:image/jpeg;base64," + base64.b64encode(open(a["fb_file"], "rb").read()).decode()
+        except Exception as e:
+            print("Gambar sandaran gagal:", str(e)[:100])
     try:
         d = _parse_dt(a.get("date", ""))
         tarikh = f"{d.day} {BULAN[d.month - 1]} {d.year}" if d else ""
@@ -315,6 +337,12 @@ def run(st, send, dt, out="out", notify=print):
             tajuk, ringkas = res
             os.makedirs(out, exist_ok=True)
             src_name = a.get("site") or (name if name != "manual" else re.sub(r"^www\.", "", url.split("/")[2]))
+            a["fb_file"] = pick_fallback(a, n) if not a.get("image") else ""
+            try:
+                import threads
+                threads.PRESET = (a.get("threads") or "").strip()
+            except Exception:
+                pass
             img = screenshot(url, f"{out}/berita.png", a["title"], a, src_name)
         except ApiKeyError as e:  # bukan salah sumber: jangan cuba calon lain, beritahu pemilik
             print(f"Kunci API Anthropic bermasalah: {e}")
@@ -328,6 +356,9 @@ def run(st, send, dt, out="out", notify=print):
         print(f"Berita dipilih dari {name}: {url}")
         send(build_caption(a, tajuk, ringkas, dt, src_name), img, "berita", closing=False)
         if not test:  # mod ujian tidak menanda berita sebagai sudah dihantar dan tidak memutar sumber
+            if a.get("fb_file"):
+                n.setdefault("imgs", []).append(os.path.basename(a["fb_file"]))
+                n["imgs"] = n["imgs"][-60:]
             if url not in n["posted"]:
                 n["posted"] = (n["posted"] + [url])[-60:]
             if idx >= 0:

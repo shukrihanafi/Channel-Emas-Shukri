@@ -172,25 +172,26 @@ def ilmu_image(k, n=None):
 
 
 
-def post_video(text, video_path):
-    """Post video sebagai Reel Instagram (video dihos sebagai video FB Page tidak diterbitkan)."""
-    import threads
-    uid = me()["id"]
-    url = threads._host_video(video_path)
-    r = requests.post(f"{GRAPH}/{uid}/media", data={"media_type": "REELS", "video_url": url, "caption": fmt(text), "share_to_feed": "true", "access_token": _tok()}, timeout=60)
-    if r.status_code >= 300:
-        raise RuntimeError(f"Instagram reel {r.status_code}: {r.text[:300]}")
-    cid = r.json()["id"]
+def _status(cid):
+    """Pulangkan (status_code, butiran) bekas media IG."""
+    try:
+        j = _get(cid, fields="status_code,status")
+        return j.get("status_code"), j.get("status")
+    except Exception as e:
+        return None, str(e)[:150]
+
+
+def _wait_publish(uid, cid, label):
+    s, d = None, None
     for _ in range(60):  # tunggu Instagram siap memproses video
         time.sleep(5)
-        try:
-            s = _get(cid, fields="status_code").get("status_code")
-        except Exception:
-            s = None
+        s, d = _status(cid)
         if s == "FINISHED":
             break
         if s in ("ERROR", "EXPIRED"):
-            raise RuntimeError("Instagram reel " + s)
+            raise RuntimeError(f"Instagram reel {s} ({label}): {d}")
+    else:
+        raise RuntimeError(f"Instagram reel tamat masa ({label}): {s} {d}")
     last = None
     for i in range(4):
         p = requests.post(f"{GRAPH}/{uid}/media_publish", data={"creation_id": cid, "access_token": _tok()}, timeout=60)
@@ -199,3 +200,50 @@ def post_video(text, video_path):
         last = p
         time.sleep(8)
     raise RuntimeError(f"Instagram reel publish {last.status_code}: {last.text[:300]}")
+
+
+def _reel_resumable(uid, text, video_path):
+    """Muat naik terus fail ke Instagram (tanpa URL awam)."""
+    r = requests.post(f"{GRAPH}/{uid}/media", data={"media_type": "REELS", "upload_type": "resumable", "caption": fmt(text),
+                      "share_to_feed": "true", "access_token": _tok()}, timeout=60)
+    if r.status_code >= 300:
+        raise RuntimeError(f"media {r.status_code}: {r.text[:200]}")
+    cid = r.json()["id"]
+    size = os.path.getsize(video_path)
+    with open(video_path, "rb") as f:
+        u = requests.post(f"https://rupload.facebook.com/ig-api-upload/v21.0/{cid}",
+                          headers={"Authorization": "OAuth " + _tok(), "offset": "0", "file_size": str(size)}, data=f, timeout=(10, 600))
+    if u.status_code >= 300 or not u.json().get("success", True):
+        raise RuntimeError(f"rupload {u.status_code}: {u.text[:200]}")
+    return cid
+
+
+def _reel_url_with(host):
+    def f(uid, text, video_path):
+        return _reel_url(uid, text, video_path, host)
+    return f
+
+
+def _reel_url(uid, text, video_path, host=None):
+    import threads
+    url = (host or threads._host_video)(video_path)
+    r = requests.post(f"{GRAPH}/{uid}/media", data={"media_type": "REELS", "video_url": url, "caption": fmt(text), "share_to_feed": "true", "access_token": _tok()}, timeout=60)
+    if r.status_code >= 300:
+        raise RuntimeError(f"media {r.status_code}: {r.text[:300]}")
+    return r.json()["id"]
+
+
+def post_video(text, video_path):
+    """Post video sebagai Reel Instagram: cuba muat naik terus dahulu, jika gagal guna URL video yang dihos di FB Page."""
+    uid = me()["id"]
+    errs = []
+    import threads
+    tries = [("muat naik terus", _reel_resumable)] + [(f"URL {n}", _reel_url_with(h)) for n, h in threads.video_hosts(video_path)]
+    for label, fn in tries:
+        try:
+            cid = fn(uid, text, video_path)
+            return _wait_publish(uid, cid, label)
+        except Exception as e:
+            print(f"Instagram reel {label} gagal: {e}")
+            errs.append(f"{label}: {str(e)[:220]}")
+    raise RuntimeError("Instagram reel gagal | " + " | ".join(errs))

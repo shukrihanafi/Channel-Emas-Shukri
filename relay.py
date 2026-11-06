@@ -119,27 +119,61 @@ def _deliver(st, rs, key, text, vid, photo, from_channel, notify, base, token, t
             fb.post(text, video_path=path) if vid else fb.post(text, path)
             rs["fb_done"] = key
         dest += " + Facebook Page"
-    # Threads + Instagram: teks panjang diringkaskan, sentiasa tamat dengan shukriee.com. Kegagalan di sini tidak mengulang langkah lain.
+    # Threads + Instagram: teks panjang diringkaskan, sentiasa tamat dengan shukriee.com.
+    # Kegagalan di sini tidak mengulang langkah lain; platform yang gagal dimasukkan ke giliran cuba-semula (rs["redo"]).
     import threads, instagram
-    if threads.enabled():
+    for name, mod in (("th", threads), ("ig", instagram)):
+        if not mod.enabled() or rs.get(f"{name}_done") == key:
+            continue
         try:
-            if rs.get("th_done") != key:
-                rs["th_done"] = key
-                tt = threads.summarize(text, 450)
-                threads.post_video(st, tt, path) if vid else threads.post(st, tt, path)
-            dest += " + Threads"
+            _post_social(st, name, text, path, bool(vid))
+            rs[f"{name}_done"] = key
+            dest += " + " + ("Threads" if name == "th" else "Instagram")
         except Exception as e:
-            notify(f"⚠️ Gagal hantar posting manual ke Threads: {e}")
-    if instagram.enabled():
-        try:
-            if rs.get("ig_done") != key:
-                rs["ig_done"] = key
-                ic = threads.summarize(text, 1200)
-                instagram.post_video(ic, path) if vid else instagram.post(ic, path or instagram.fallback_image())
-            dest += " + Instagram"
-        except Exception as e:
-            notify(f"⚠️ Gagal hantar posting manual ke Instagram: {e}")
+            label = "Threads" if name == "th" else "Instagram"
+            notify(f"⚠️ Gagal hantar posting manual ke {label}: {e} (akan dicuba lagi automatik)")
+            if vid:
+                rd = rs.setdefault("redo", {}).setdefault(key, {"vid": vid, "text": text, "plats": [], "tries": 0,
+                                                                "due": (_now() + timedelta(minutes=10)).isoformat()})
+                if name not in rd["plats"]:
+                    rd["plats"].append(name)
     return dest
+
+
+def _post_social(st, name, text, path, is_video):
+    import threads, instagram
+    if name == "th":
+        tt = threads.summarize(text, 450)
+        threads.post_video(st, tt, path) if is_video else threads.post(st, tt, path)
+    else:
+        ic = threads.summarize(text, 1200)
+        instagram.post_video(ic, path) if is_video else instagram.post(ic, path or instagram.fallback_image())
+
+
+def _process_redo(st, rs, base, token, notify):
+    """Cuba semula Threads/Instagram yang gagal (sehingga 3 percubaan tambahan, jarak 10 minit)."""
+    redo = rs.get("redo") or {}
+    for key in list(redo):
+        it = redo[key]
+        if datetime.fromisoformat(it["due"]) > _now():
+            continue
+        path = _fetch_file(base, token, it["vid"]["file_id"])
+        for name in list(it["plats"]):
+            label = "Threads" if name == "th" else "Instagram"
+            try:
+                _post_social(st, name, it["text"], path, True)
+                rs[f"{name}_done"] = key
+                it["plats"].remove(name)
+                notify(f"✅ {label} berjaya selepas dicuba semula.")
+            except Exception as e:
+                it["tries"] += 1
+                it["due"] = (_now() + timedelta(minutes=10)).isoformat()
+                if it["tries"] >= 3 * len(it["plats"]):
+                    it["plats"].remove(name)
+                    notify(f"❌ {label} gagal selepas beberapa percubaan: {str(e)[:300]}. Sila post manual ke {label}.")
+        if not it["plats"]:
+            del redo[key]
+        break  # satu item setiap larian (elak larian terlalu lama)
 
 
 def _handle_callback(rs, cb, owner, base, notify):
@@ -284,4 +318,8 @@ def run(st, notify=print):
                 notify(f"⚠️ Gagal salin posting manual (akan dicuba lagi): {e}")
             break
     done += _process_pending(st, rs, base, token, tg_channel, notify)
+    try:
+        _process_redo(st, rs, base, token, notify)
+    except Exception as e:
+        notify(f"⚠️ Gagal cuba semula Threads/Instagram: {e}")
     return done

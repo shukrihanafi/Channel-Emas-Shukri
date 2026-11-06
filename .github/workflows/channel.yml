@@ -69,6 +69,7 @@ jobs:
         if: steps.m.outputs.mode != 'skip'
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           TELEGRAM_CHANNEL: "@kenaliemas"
           TG_CHANNEL_ENABLED: "1"

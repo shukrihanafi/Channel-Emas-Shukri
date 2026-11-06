@@ -63,6 +63,67 @@ def wa_auto_for(mode):
     return os.getenv("WA_ENABLED") == "1" and whapi.enabled() and mode.split("-")[0] in modes
 
 
+def wa_notify(msg):
+    """Alert masalah WhatsApp/Whapi: Telegram bot + e-mel (shukripublicgold@gmail.com)."""
+    try:
+        tg_plain(msg)
+    except Exception as e:
+        print("Alert Telegram gagal:", e)
+    try:
+        send_email("⚠️ Alert WhatsApp Channel (Whapi)", msg)
+    except Exception as e:
+        print("Alert e-mel gagal:", e)
+
+
+def wa_fail_alert(err):
+    """Hantaran ke WhatsApp gagal: alert (paling kerap sekali setiap 60 minit)."""
+    st = globals().get("_ST")
+    try:
+        h = st.setdefault("wa_health", {}) if isinstance(st, dict) else {}
+        last = h.get("last_fail_alert")
+        if last and (now_my() - datetime.fromisoformat(last)).total_seconds() < 3600:
+            return
+        h["last_fail_alert"] = now_my().isoformat()
+    except Exception:
+        pass
+    wa_notify(f"⚠️ Gagal hantar ke WhatsApp Channel (mod {CURRENT_MODE}).\n{str(err)[:300]}\nSila semak Whapi (nombor WhatsApp Business mungkin terputus). Telegram & Facebook tidak terjejas.")
+
+
+def wa_health_check(st):
+    """Semak sambungan Whapi setiap larian alert (20 minit). Alert bila terputus; ingatan semula setiap 3 jam; mesej bila pulih."""
+    if os.getenv("WA_ENABLED") != "1" or not whapi.enabled():
+        return
+    h = st.setdefault("wa_health", {})
+    dt = now_my()
+    try:
+        ok, txt = whapi.health()
+        err = None
+    except Exception as e:
+        ok, txt, err = None, "", str(e)[:150]
+    if ok is None:  # tidak dapat hubungi Whapi: alert selepas 2 kali gagal berturut-turut
+        h["fails"] = int(h.get("fails", 0)) + 1
+        if h["fails"] < 2:
+            return
+        reason = f"Tidak dapat hubungi Whapi: {err}"
+    elif ok:
+        h["fails"] = 0
+        if h.get("bad"):
+            h["bad"] = False
+            wa_notify("✅ WhatsApp Channel (Whapi) sudah bersambung semula.")
+        return
+    else:
+        h["fails"] = 0
+        reason = f"Status Whapi: {txt} (nombor WhatsApp terputus / perlu sambung semula)"
+    last = h.get("last_alert")
+    due = True
+    if h.get("bad") and last:
+        due = (dt - datetime.fromisoformat(last)).total_seconds() >= 3 * 3600
+    h["bad"] = True
+    if due:
+        h["last_alert"] = dt.isoformat()
+        wa_notify(f"⚠️ WhatsApp Channel bermasalah.\n{reason}\nPost auto ke WhatsApp tidak akan sampai. Sila buka dashboard Whapi dan sambung semula. Telegram & Facebook masih berjalan.")
+
+
 def send(text, image=None, label="post", closing=True):
     text = f"{text.rstrip()}\n\n{CLOSING}" if (closing and CLOSING) else text.rstrip()
     os.makedirs(OUT, exist_ok=True)
@@ -81,6 +142,7 @@ def send(text, image=None, label="post", closing=True):
             wa_note = "✅ Sudah dihantar ke WhatsApp Channel (auto)."
         except Exception as e:  # WhatsApp gagal -> Telegram tetap ada untuk hantar manual
             wa_note = f"⚠️ Gagal hantar ke WhatsApp Channel: {e}\nSila hantar manual."
+            wa_fail_alert(e)
     def push(target):
         # Gambar + caption dalam SATU mesej (supaya IFTTT -> FB Page bawa ayat sekali). Had caption Telegram 1024 aksara.
         if image and len(text) <= 1024:
@@ -298,6 +360,10 @@ def mode_alert(p, st):
     Tiada ayat penutup tambahan (skrip alert ada pautan sendiri)."""
     g, dt = st["gap"], now_my()
     fb_expiry_reminder(st, dt)
+    try:
+        wa_health_check(st)
+    except Exception as e:
+        print("Semak Whapi gagal:", e)
     price = p["gap_rm_per_gram"]
     thr = float(os.getenv("ALERT_THRESHOLD", "3"))
     update_range(st, price, dt.strftime("%Y-%m-%d"))
@@ -621,6 +687,7 @@ if __name__ == "__main__":
                           "high": {"price": 764, "date": "2026-01-29"}})
     seed_history(st)
     CURRENT_MODE = mode
+    _ST = st
     prices = pgfetch.get_prices() if mode in ("gap", "jewel", "alert") else {}
     MODES[mode](prices, st)
     if mode == "alert":

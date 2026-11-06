@@ -101,3 +101,32 @@ def post(text, image_path):
         last = p
         time.sleep(8)
     raise RuntimeError(f"Instagram publish {last.status_code}: {last.text[:300]}")
+
+
+
+def diag():
+    """Diagnosis token (tanpa dedah token): jenis token, skop, dan apa yang boleh dibaca. Pulangkan teks ringkas."""
+    import json
+    t = _tok()
+    out = []
+
+    def g(host, path, **p):
+        p["access_token"] = t
+        try:
+            r = requests.get(f"{host}/{path}", params=p, timeout=30)
+            return f"{r.status_code} {r.text[:350]}"
+        except Exception as e:
+            return f"ERR {e}"
+
+    fb = "https://graph.facebook.com/v21.0"
+    ig = "https://graph.instagram.com/v21.0"
+    try:
+        d = requests.get(f"{fb}/debug_token", params={"input_token": t, "access_token": t}, timeout=30).json().get("data", {})
+        out.append("debug: type=%s app=%s valid=%s exp=%s scopes=%s granular=%s" % (d.get("type"), d.get("application"), d.get("is_valid"), d.get("expires_at"), d.get("scopes"), json.dumps(d.get("granular_scopes"))[:400]))
+    except Exception as e:
+        out.append(f"debug ERR {e}")
+    out.append("fb /me: " + g(fb, "me", fields="id,name"))
+    out.append("fb /me/accounts: " + g(fb, "me/accounts", fields="id,name,instagram_business_account"))
+    out.append("ig /me: " + g(ig, "me", fields="id,user_id,username"))
+    out.append(f"fb /{DEFAULT_ID}: " + g(fb, DEFAULT_ID, fields="id,username"))
+    return "\n\n".join(out)

@@ -1,0 +1,32 @@
+name: Sync Google Drive
+on:
+  schedule:
+    - cron: "23 */6 * * *"
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: sync-gdrive
+  cancel-in-progress: false
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install gdown pillow
+      - run: python sync_gdrive.py
+      - run: |
+          git config user.name "gdrive-sync"
+          git config user.email "gdrive-sync@users.noreply.github.com"
+          git add ilmu_img
+          if git diff --cached --quiet; then
+            echo "Tiada perubahan"
+          else
+            git commit -m "Sync gambar dari Google Drive"
+            git pull --rebase
+            git push
+          fi

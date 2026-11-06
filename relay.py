@@ -109,26 +109,25 @@ def run(st, notify=print):
                     rs["fb_done"] = uid
                 dest += " + Facebook Page"
             # Threads + Instagram: teks panjang diringkaskan, sentiasa tamat dengan shukriee.com. Kegagalan di sini tidak mengulang langkah lain.
-            if vid:
-                dest += " (video tidak dihantar ke Threads/Instagram)"
-            else:
-                import threads, instagram
-                if threads.enabled():
-                    try:
-                        if rs.get("th_done") != uid:
-                            rs["th_done"] = uid
-                            threads.post(st, threads.summarize(text, 450), path)
-                        dest += " + Threads"
-                    except Exception as e:
-                        notify(f"⚠️ Gagal hantar posting manual ke Threads: {e}")
-                if instagram.enabled():
-                    try:
-                        if rs.get("ig_done") != uid:
-                            rs["ig_done"] = uid
-                            instagram.post(threads.summarize(text, 1200), path or instagram.fallback_image())
-                        dest += " + Instagram"
-                    except Exception as e:
-                        notify(f"⚠️ Gagal hantar posting manual ke Instagram: {e}")
+            import threads, instagram
+            if threads.enabled():
+                try:
+                    if rs.get("th_done") != uid:
+                        rs["th_done"] = uid
+                        tt = threads.summarize(text, 450)
+                        threads.post_video(st, tt, path) if vid else threads.post(st, tt, path)
+                    dest += " + Threads"
+                except Exception as e:
+                    notify(f"⚠️ Gagal hantar posting manual ke Threads: {e}")
+            if instagram.enabled():
+                try:
+                    if rs.get("ig_done") != uid:
+                        rs["ig_done"] = uid
+                        ic = threads.summarize(text, 1200)
+                        instagram.post_video(ic, path) if vid else instagram.post(ic, path or instagram.fallback_image())
+                    dest += " + Instagram"
+                except Exception as e:
+                    notify(f"⚠️ Gagal hantar posting manual ke Instagram: {e}")
             rs["offset"], rs["tries"] = uid + 1, 0
             notify(f"✅ Posting manual disalin ke {dest}.")
             done += 1

@@ -184,7 +184,7 @@ def summarise(a):
         'jumlah 30 hingga 60 patah perkataan. Ayat pendek, padat, bahasa harian yang layman mudah faham. '
         'Perenggan 1 = apa yang berlaku (harga naik/turun) dan sebab utama; perenggan 2 = perkara penting lain dalam berita atau apa yang pasaran sedang tunggu. '
         'Terangkan istilah teknikal dengan perkataan harian. Hanya fakta daripada artikel. Tanpa tajuk, tanpa emoji.\n'
-        '3) "threads": satu posting Threads 50 hingga 100 patah perkataan. Gaya santai, natural, berkongsi pendapat, BUKAN gaya laporan berita atau artikel akhbar. '
+        '3) "threads": satu posting Threads 50 hingga 80 patah perkataan, jumlah TIDAK melebihi 400 aksara. Susun dalam 3 hingga 4 perenggan pendek dipisahkan baris kosong (guna \\n\\n); jangan tulis shukriee.com. Gaya santai, natural, berkongsi pendapat, BUKAN gaya laporan berita atau artikel akhbar. '
         'Struktur: (a) hook atau persoalan menarik; (b) fakta utama daripada berita; (c) pandangan atau kesan berkaitan simpanan emas; '
         '(d) akhiri dengan satu soalan untuk menggalakkan perbincangan. Elakkan ayat terlalu formal dan terlalu menjual. '
         'Maksimum satu emoji jika benar-benar sesuai; tiada hashtag berlebihan (maksimum satu). Tiada pautan.\n\n'

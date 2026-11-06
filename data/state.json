@@ -87,7 +87,10 @@
       "https://www.kitco.com/news/article/2026-11-05/world-bank-sees-gold-holding-above-4000-through-2028-warns-silver-faces",
       "https://goldseek.com/article/why-gold-crashed-below-4000-and-what-feds-rate-pause-means-gold-and-silver"
     ],
-    "rot": 5
+    "rot": 5,
+    "imgs": [
+      "bar-bd-img-06.jpg"
+    ]
   },
   "bb_last": 1,
   "relay": {

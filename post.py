@@ -9,7 +9,7 @@ import json, os, random, sys
 from datetime import datetime
 from zoneinfo import ZoneInfo
 import requests
-import pgfetch, pgitems, card, items, whapi, relay, fb, threads
+import pgfetch, pgitems, card, items, whapi, relay, fb, threads, instagram
 
 TZ = ZoneInfo("Asia/Kuala_Lumpur")
 STATE = "data/state.json"
@@ -185,6 +185,23 @@ def send(text, image=None, label="post", closing=True):
             wa_note = (wa_note + "\n" if wa_note else "") + f"⚠️ Gagal hantar ke Threads: {e}"
             try:
                 send_email("⚠️ Alert Threads", f"Gagal hantar ke Threads (mod {CURRENT_MODE}): {str(e)[:300]}")
+            except Exception:
+                pass
+    if instagram.enabled() and not test_only and (label in ("harga-GAP", "berita", "testimoni") or (CURRENT_MODE == "pgitem" and now_my().hour >= 20)):  # Instagram: sama seperti Threads
+        try:
+            if not image:
+                wa_note = (wa_note + "\n" if wa_note else "") + "⚠️ Instagram: tiada gambar untuk post ini, tidak dihantar."
+            else:
+                itext = threads.gap_text(text) if label == "harga-GAP" else ((threads.PRESET or threads.casual(text) or "") if label == "berita" else text)
+                if itext:
+                    instagram.post(itext, image)
+                    wa_note = (wa_note + "\n" if wa_note else "") + "✅ Sudah dihantar ke Instagram (auto)."
+                else:
+                    wa_note = (wa_note + "\n" if wa_note else "") + "⚠️ Instagram: teks kosong, tidak dihantar."
+        except Exception as e:
+            wa_note = (wa_note + "\n" if wa_note else "") + f"⚠️ Gagal hantar ke Instagram: {e}"
+            try:
+                send_email("⚠️ Alert Instagram", f"Gagal hantar ke Instagram (mod {CURRENT_MODE}): {str(e)[:300]}")
             except Exception:
                 pass
     if wa_note:
@@ -765,7 +782,50 @@ def mode_gapthreads(p, st):
         tg_plain(f"⚠️ Gagal hantar harga GAP ke Threads: {e}")
 
 
-MODES = {"gapthreads-test": mode_gapthreads, "berita-threads": mode_beritathreads, "threads-casual-test": mode_threadscasual, "threads-test": mode_threadstest, "threads-check": mode_threadscheck, "fb-check": mode_fbcheck, "relay": mode_relay, "wa-channels": mode_wa_channels, "berita": mode_berita, "berita-test": mode_berita, "fizikal": mode_fizikal, "fizikal-test": mode_fizikal, "fizikal-alert-test": mode_fizikal_alert, "semangat": mode_semangat, "semangat-test": mode_semangat, "testimoni": mode_testimoni, "testimoni-test": mode_testimoni, "gap": mode_gap, "jewel": mode_jewel, "alert": mode_alert, "ilmu": mode_ilmu, "item": mode_item, "pgitem": mode_pgitem,
+def mode_igcheck(p, st):
+    """Semak token Instagram tanpa menghantar apa-apa."""
+    if not instagram.enabled():
+        tg_plain("⚠️ Instagram belum dikonfigurasi (IG_TOKEN tiada).")
+        return
+    try:
+        who = instagram.me()
+        tg_plain(f"✅ Instagram bersambung: @{who.get('username')} (id {who.get('id')}). Tiada apa dihantar.")
+    except Exception as e:
+        tg_plain(f"⚠️ Token Instagram bermasalah: {e}")
+
+
+def mode_gapig(p, st):
+    """Ujian: harga GAP ke Instagram SAHAJA (tiada perubahan state, tiada hantaran lain)."""
+    price = p["gap_rm_per_gram"]
+    prev = st["gap"].get("last_post") or price
+    text, img = gap_text_and_card(p, st, price - prev, fmt_dt(now_my()), base=prev)
+    try:
+        instagram.post(threads.gap_text(text), img)
+        tg_plain("✅ Harga GAP sudah dihantar ke Instagram sahaja.")
+    except Exception as e:
+        tg_plain(f"⚠️ Gagal hantar harga GAP ke Instagram: {e}")
+
+
+def mode_beritaig(p, st):
+    """Berita ke Instagram SAHAJA. Boleh beri url artikel."""
+    import news
+
+    def only_ig(text, image=None, label="post", closing=True):
+        t = threads.PRESET or threads.casual(text) or ""
+        if not t or not image:
+            tg_plain("⚠️ Instagram: teks atau gambar tiada, tidak dihantar.")
+            return
+        try:
+            instagram.post(t, image)
+            tg_plain("✅ Berita sudah dihantar ke Instagram sahaja.\n\n" + t)
+        except Exception as e:
+            tg_plain(f"⚠️ Gagal hantar ke Instagram: {e}")
+            raise
+
+    news.run(st, only_ig, now_my(), notify=tg_plain)
+
+
+MODES = {"gapig-test": mode_gapig, "berita-ig": mode_beritaig, "ig-check": mode_igcheck, "gapthreads-test": mode_gapthreads, "berita-threads": mode_beritathreads, "threads-casual-test": mode_threadscasual, "threads-test": mode_threadstest, "threads-check": mode_threadscheck, "fb-check": mode_fbcheck, "relay": mode_relay, "wa-channels": mode_wa_channels, "berita": mode_berita, "berita-test": mode_berita, "fizikal": mode_fizikal, "fizikal-test": mode_fizikal, "fizikal-alert-test": mode_fizikal_alert, "semangat": mode_semangat, "semangat-test": mode_semangat, "testimoni": mode_testimoni, "testimoni-test": mode_testimoni, "gap": mode_gap, "jewel": mode_jewel, "alert": mode_alert, "ilmu": mode_ilmu, "item": mode_item, "pgitem": mode_pgitem,
          "item-jewel": lambda p, st: mode_item(p, st, "jewel"),
          "item-mall": lambda p, st: mode_item(p, st, "mall")}
 
@@ -780,7 +840,7 @@ if __name__ == "__main__":
     seed_history(st)
     CURRENT_MODE = mode
     _ST = st
-    prices = pgfetch.get_prices() if mode in ("gap", "jewel", "alert", "gapthreads-test") else {}
+    prices = pgfetch.get_prices() if mode in ("gap", "jewel", "alert", "gapthreads-test", "gapig-test") else {}
     MODES[mode](prices, st)
     if mode == "alert":
         try:

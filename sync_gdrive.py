@@ -70,7 +70,7 @@ def main():
     os.makedirs(OUT, exist_ok=True)
     man = json.load(open(MAN)) if os.path.exists(MAN) else {}
     used = {v: k for k, v in man.items()}
-    files = gdown.download_folder(url=FOLDER, skip_download=True, quiet=True, remaining_ok=True) or []
+    files = gdown.download_folder(url=FOLDER, skip_download=True, quiet=True) or []
     print(f"Fail di Drive: {len(files)}; sudah diproses: {len(man)}")
     added = 0
     for f in files:

@@ -167,3 +167,50 @@ def summarize(text, limit=450):
         return out if out and len(out) <= limit else text
     except Exception:
         return text
+
+
+
+def _host_video(path):
+    """Video FB Page tidak diterbitkan -> URL awam video (tunggu siap diproses)."""
+    import fb
+    pid = os.environ["FB_PAGE_ID"]
+    tok = fb.page_token(pid, os.environ["FB_PAGE_TOKEN"])
+    with open(path, "rb") as f:
+        r = requests.post(f"{fb.GRAPH}/{pid}/videos", data={"published": "false", "access_token": tok}, files={"source": f}, timeout=(10, 600))
+    if r.status_code >= 300:
+        raise RuntimeError(f"Hos video {r.status_code}: {r.text[:200]}")
+    vid = r.json()["id"]
+    for _ in range(36):
+        g = requests.get(f"{fb.GRAPH}/{vid}", params={"fields": "source", "access_token": tok}, timeout=30)
+        if g.status_code < 300 and g.json().get("source"):
+            return g.json()["source"]
+        time.sleep(5)
+    raise RuntimeError("Hos video: URL video belum sedia")
+
+
+def post_video(st, text, video_path):
+    """Post video ke Threads (video dihos sebagai video FB Page tidak diterbitkan)."""
+    tok = token(st)
+    h = {"Authorization": f"Bearer {tok}"}
+    uid = me(tok)["id"]
+    url = _host_video(video_path)
+    r = requests.post(f"{API}/v1.0/{uid}/threads", data={"text": fmt(text), "media_type": "VIDEO", "video_url": url}, headers=h, timeout=60)
+    if r.status_code >= 300:
+        raise RuntimeError(f"Threads video {r.status_code}: {r.text[:300]}")
+    cid = r.json()["id"]
+    for _ in range(48):  # tunggu Threads siap memproses video
+        time.sleep(5)
+        g = requests.get(f"{API}/v1.0/{cid}", params={"fields": "status,error_message"}, headers=h, timeout=30)
+        s = g.json().get("status") if g.status_code < 300 else None
+        if s == "FINISHED":
+            break
+        if s == "ERROR":
+            raise RuntimeError("Threads video ERROR: " + str(g.json().get("error_message"))[:200])
+    last = None
+    for i in range(4):
+        p = requests.post(f"{API}/v1.0/{uid}/threads_publish", data={"creation_id": cid}, headers=h, timeout=60)
+        if p.status_code < 300:
+            return p.json()
+        last = p
+        time.sleep(8)
+    raise RuntimeError(f"Threads video publish {last.status_code}: {last.text[:300]}")

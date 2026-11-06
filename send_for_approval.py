@@ -1,9 +1,11 @@
 """Hantar video siap ke chat peribadi (DM) Shukri. Semua video dikumpul di sini dahulu, bukan di channel.
 
-Guna:  TELEGRAM_BOT_TOKEN=... TELEGRAM_CHAT_ID=... python send_for_approval.py video.mp4 "caption" [--auto]
+Guna:  TELEGRAM_BOT_TOKEN=... TELEGRAM_CHAT_ID=... python send_for_approval.py video.mp4 "caption" [--auto] [--tiktok slot|now|later|none]
   (tanpa --auto)  video ada butang Approve / Jadual / Tolak; tiada apa disiar sehingga butang ditekan.
   --auto          Shukri minta 'auto post / terus post / approve': video dihantar ke DM tanpa butang (ditanda
                   'Auto-push'), dimasukkan terus ke giliran siaran 5 platform (data/state.json, push ke GitHub).
+  --tiktok MODE   (dengan --auto) slot = TikTok dijadual di slot kosong seterusnya (lalai), now, later, none.
+                  TikTok dimuat naik oleh Claude dari Chrome Shukri (state relay.tiktok), bukan oleh bot cloud.
 Mesej dihantar oleh bot (bukan Shukri), jadi relay.py tidak menyiarkannya sendiri. Had: video <= 20 MB, caption <= 1024 aksara.
 """
 import os, sys, json, subprocess, time
@@ -22,7 +24,7 @@ def _probe(video):
         return {}
 
 
-def _enqueue(vid, caption, mid):
+def _enqueue(vid, caption, mid, tt="slot"):
     """Masukkan ke giliran siaran (due = sekarang) dalam data/state.json, push dengan cuba semula jika bertembung dengan bot."""
     here = os.path.dirname(os.path.abspath(__file__))
     git = lambda *a: subprocess.run(["git", *a], cwd=here, capture_output=True, text=True)
@@ -33,6 +35,8 @@ def _enqueue(vid, caption, mid):
         st = json.load(open(p))
         rs = st.setdefault("relay", {"offset": 0})
         rs.setdefault("pending", {})[f"a{mid}"] = {"vid": vid, "text": caption, "due": relay._now().isoformat(), "tries": 0, "mid": mid}
+        if tt != "none":
+            relay.tt_enqueue(rs, f"a{mid}", vid, caption, tt)
         json.dump(st, open(p, "w"), ensure_ascii=False, indent=2)
         git("add", "data/state.json")
         git("-c", "user.name=channel-bot", "-c", "user.email=bot@users.noreply.github.com", "commit", "-q", "-m", "auto-push video")
@@ -43,8 +47,16 @@ def _enqueue(vid, caption, mid):
 
 
 def main():
-    args = [a for a in sys.argv[1:] if a != "--auto"]
-    auto = "--auto" in sys.argv
+    argv = sys.argv[1:]
+    tt = "slot"
+    if "--tiktok" in argv:
+        i = argv.index("--tiktok")
+        tt = argv[i + 1]
+        del argv[i:i + 2]
+    if tt not in ("slot", "now", "later", "none"):
+        sys.exit("--tiktok mesti slot|now|later|none")
+    args = [a for a in argv if a != "--auto"]
+    auto = "--auto" in argv
     if len(args) < 2:
         sys.exit(__doc__)
     video, caption = args[0], args[1]
@@ -54,7 +66,7 @@ def main():
         sys.exit(f"Video {size / 1048576:.1f} MB melebihi 20 MB; kecilkan dahulu.")
     if len(caption) > 1024:
         sys.exit("Caption melebihi 1024 aksara.")
-    markup = {"inline_keyboard": [[{"text": "⚡ Auto-push: dalam giliran siaran", "callback_data": "noop"}]]} if auto else relay.approval_keyboard()
+    markup = {"inline_keyboard": [[{"text": "⚡ Auto-push: 5 platform" + ("" if tt == "none" else " + 🎵 TikTok"), "callback_data": "noop"}]]} if auto else relay.approval_keyboard()
     r = requests.post(f"https://api.telegram.org/bot{token}/sendVideo",
                       data={"chat_id": chat, "caption": caption, "supports_streaming": "true",
                             "reply_markup": json.dumps(markup), **_probe(video)},
@@ -63,7 +75,7 @@ def main():
     r.raise_for_status()
     if auto:
         m = r.json()["result"]
-        ok = _enqueue({"file_id": m["video"]["file_id"], "file_size": m["video"]["file_size"]}, caption, m["message_id"])
+        ok = _enqueue({"file_id": m["video"]["file_id"], "file_size": m["video"]["file_size"]}, caption, m["message_id"], tt)
         print("Giliran siaran:", "OK" if ok else "GAGAL push state")
 
 

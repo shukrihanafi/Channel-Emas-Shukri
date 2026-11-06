@@ -72,7 +72,7 @@ jobs:
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           TELEGRAM_CHANNEL: "@kenaliemas"
           TG_CHANNEL_ENABLED: "1"
-          ALERT_THRESHOLD: "3"
+          ALERT_THRESHOLD: "0.5"
           WHAPI_TOKEN: ${{ secrets.WHAPI_TOKEN }}
           FB_PAGE_TOKEN: ${{ secrets.FB_PAGE_TOKEN }}
           FB_PAGE_ID: ${{ secrets.FB_PAGE_ID }}

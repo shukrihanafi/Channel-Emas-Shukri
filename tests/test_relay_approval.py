@@ -86,4 +86,20 @@ relay.run(st, note)
 assert len([c for c in calls if c[0] == "sendMessage"]) == 2
 kb = relay.approval_keyboard()
 assert {b["callback_data"] for r in kb["inline_keyboard"] for b in r} >= {"ts", "ap", "n20", "m07", "hr", "rj"}
+# 9) /video dalam kumpulan: daftar chat video; orang lain tidak boleh; mesej biasa dalam kumpulan diabaikan
+calls.clear(); W.posted.clear()
+G = -100777
+updates[:] = [{"update_id": 30, "message": {"chat": {"id": G}, "from": {"id": 999}, "text": "/video"}},
+              {"update_id": 31, "message": {"chat": {"id": G}, "from": {"id": 42}, "text": "hello kumpulan"}},
+              {"update_id": 32, "message": {"chat": {"id": G}, "from": {"id": 42}, "text": "/video"}}]
+relay.run(st, note)
+assert st["relay"]["video_chat"] == G and not W.posted
+assert [c for c in calls if c[0] == "sendMessage" and c[1]["chat_id"] == G]
+# butang ditekan dalam kumpulan: peringatan TikTok balik ke kumpulan
+calls.clear()
+c = cb(33, "ts", mid=50); c["callback_query"]["message"]["chat"]["id"] = G
+updates[:] = [c]
+relay.run(st, note)
+sm = [x for x in calls if x[0] == "sendMessage"]
+assert len(sm) == 2 and all(x[1]["chat_id"] == G for x in sm), sm
 print("SEMUA UJIAN LULUS")

@@ -1,4 +1,4 @@
-"""Hantar video siap ke chat peribadi (DM) Shukri. Semua video dikumpul di sini dahulu, bukan di channel.
+"""Hantar video siap ke chat KHAS video Shukri (kumpulan peribadi didaftar dengan /video; jika belum didaftar, ke DM). Bukan ke channel.
 
 Guna:  TELEGRAM_BOT_TOKEN=... TELEGRAM_CHAT_ID=... python send_for_approval.py video.mp4 "caption" [--auto] [--tiktok none]
   (tanpa --auto)  video ada butang Approve / Jadual / Tolak; tiada apa disiar sehingga butang ditekan.
@@ -24,7 +24,7 @@ def _probe(video):
         return {}
 
 
-def _enqueue(vid, caption, mid, tt=True):
+def _enqueue(vid, caption, mid, tt=True, chat=None):
     """Masukkan ke giliran siaran (due = sekarang) dalam data/state.json, push dengan cuba semula jika bertembung dengan bot."""
     here = os.path.dirname(os.path.abspath(__file__))
     git = lambda *a: subprocess.run(["git", *a], cwd=here, capture_output=True, text=True)
@@ -34,7 +34,7 @@ def _enqueue(vid, caption, mid, tt=True):
         p = os.path.join(here, "data", "state.json")
         st = json.load(open(p))
         rs = st.setdefault("relay", {"offset": 0})
-        rs.setdefault("pending", {})[f"a{mid}"] = {"vid": vid, "text": caption, "due": relay._now().isoformat(), "tries": 0, "mid": mid, "tt": tt}
+        rs.setdefault("pending", {})[f"a{mid}"] = {"vid": vid, "text": caption, "due": relay._now().isoformat(), "tries": 0, "mid": mid, "tt": tt, "chat": chat}
         json.dump(st, open(p, "w"), ensure_ascii=False, indent=2)
         git("add", "data/state.json")
         git("-c", "user.name=channel-bot", "-c", "user.email=bot@users.noreply.github.com", "commit", "-q", "-m", "auto-push video")
@@ -42,6 +42,17 @@ def _enqueue(vid, caption, mid, tt=True):
             return True
         time.sleep(5)
     return False
+
+
+def _video_chat(default):
+    """Chat khas video (didaftar dengan /video dalam kumpulan) daripada state.json di origin/main; jika tiada, guna lalai (DM)."""
+    here = os.path.dirname(os.path.abspath(__file__))
+    try:
+        subprocess.run(["git", "fetch", "-q", "origin", "main"], cwd=here, capture_output=True)
+        o = subprocess.run(["git", "show", "origin/main:data/state.json"], cwd=here, capture_output=True, text=True, check=True).stdout
+        return str(json.loads(o).get("relay", {}).get("video_chat") or default)
+    except Exception:
+        return default
 
 
 def main():
@@ -58,7 +69,7 @@ def main():
     if len(args) < 2:
         sys.exit(__doc__)
     video, caption = args[0], args[1]
-    token, chat = os.environ["TELEGRAM_BOT_TOKEN"], os.environ["TELEGRAM_CHAT_ID"]
+    token, chat = os.environ["TELEGRAM_BOT_TOKEN"], _video_chat(os.environ["TELEGRAM_CHAT_ID"])
     size = os.path.getsize(video)
     if size > relay.MAX_VIDEO:
         sys.exit(f"Video {size / 1048576:.1f} MB melebihi 20 MB; kecilkan dahulu.")
@@ -73,7 +84,7 @@ def main():
     r.raise_for_status()
     if auto:
         m = r.json()["result"]
-        ok = _enqueue({"file_id": m["video"]["file_id"], "file_size": m["video"]["file_size"]}, caption, m["message_id"], tt)
+        ok = _enqueue({"file_id": m["video"]["file_id"], "file_size": m["video"]["file_size"]}, caption, m["message_id"], tt, chat)
         print("Giliran siaran:", "OK" if ok else "GAGAL push state")
 
 

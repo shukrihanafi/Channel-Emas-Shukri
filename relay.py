@@ -239,7 +239,7 @@ def _handle_callback(rs, cb, owner, base, notify):
         label, tt = f"⏰ Dijadual {due.astimezone(MYT):%d/%m %H:%M} + 🎵 peringatan TikTok", True
     else:
         return ans("Butang tidak dikenali.")
-    pend[key] = {"vid": vid, "text": text, "due": due.isoformat(), "tries": 0, "mid": mid, "tt": tt}
+    pend[key] = {"vid": vid, "text": text, "due": due.isoformat(), "tries": 0, "mid": mid, "tt": tt, "chat": chat}
     done.append(mid)
     rs["cbdone"] = done[-50:]
     mark({"inline_keyboard": [[{"text": label, "callback_data": "noop"}]]})
@@ -261,7 +261,7 @@ def _process_pending(st, rs, base, token, tg_channel, notify):
             notify(f"✅ Video lulus disiar ke {dest}.")
             n += 1
             if it.get("tt"):
-                tt_reminder(base, os.getenv("TELEGRAM_CHAT_ID", ""), it["text"], it.get("mid"), notify)
+                tt_reminder(base, it.get("chat") or os.getenv("TELEGRAM_CHAT_ID", ""), it["text"], it.get("mid"), notify)
         except Exception as e:
             it["tries"] = it.get("tries", 0) + 1
             if it["tries"] >= 5:
@@ -305,6 +305,13 @@ def run(st, notify=print):
             rs["offset"] = uid + 1
             continue
         from_channel = "channel_post" in u
+        # Daftar chat khas video: pemilik taip /video dalam kumpulan peribadi yang ada bot; video kelulusan dihantar ke situ
+        if not from_channel and (m.get("text") or "").strip().lower().split("@")[0] in ("/video", "/video_chat") \
+                and str(m.get("from", {}).get("id")) == owner and str(m["chat"]["id"]) != owner:
+            rs["video_chat"] = m["chat"]["id"]
+            rs["offset"] = uid + 1
+            _tg(base, "sendMessage", chat_id=m["chat"]["id"], text="✅ Chat ini didaftarkan untuk video kelulusan. Video siap edit akan sampai di sini dengan butang; hanya selepas tekan butang baru masuk ke channel dan platform lain.")
+            continue
         if from_channel:
             uname = "@" + (m["chat"].get("username") or "")
             if tg_channel and uname.lower() != tg_channel.lower():

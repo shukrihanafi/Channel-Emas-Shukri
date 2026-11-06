@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
     inputs:
       mode:
-        description: "Mod (gap / jewel / alert / ilmu / item / pgitem / berita / testimoni / fizikal / fb-check / wa-channels)"
+        description: "Mod (gap / jewel / alert / ilmu / item / pgitem / berita / testimoni / fizikal / semangat / fb-check / wa-channels)"
         required: true
         default: "gap"
       url:
@@ -82,7 +82,7 @@ jobs:
           # Suis WhatsApp auto: tukar "0" kepada "1" bila sudah bersedia. Tukar kembali "0" untuk berhenti.
           WA_ENABLED: "1"
           # Mod yang dihantar auto ke WhatsApp Channel.
-          WA_AUTO_MODES: "gap,jewel,alert,item,pgitem,ilmu,berita,testimoni,fizikal"
+          WA_AUTO_MODES: "gap,jewel,alert,item,pgitem,ilmu,berita,testimoni,fizikal,semangat"
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           NEWS_URL: ${{ github.event.inputs.url }}
         run: python post.py ${{ steps.m.outputs.mode }}

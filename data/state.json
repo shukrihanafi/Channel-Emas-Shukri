@@ -102,16 +102,17 @@
   },
   "bb_last": 1,
   "relay": {
-    "offset": 991464028,
-    "wa_done": 991464024,
+    "offset": 991464029,
+    "wa_done": "a231",
     "tries": 0,
-    "tg_done": 991464024,
-    "fb_done": 991464024,
-    "th_done": 991464024,
-    "ig_done": 991464024,
+    "tg_done": "a231",
+    "fb_done": "a231",
+    "th_done": "a231",
+    "ig_done": "a231",
     "pending": {},
     "cbdone": [
-      228
+      228,
+      231
     ]
   },
   "testi": {

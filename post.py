@@ -172,7 +172,7 @@ def send(text, image=None, label="post", closing=True):
             wa_note = (wa_note + "\n" if wa_note else "") + "✅ Sudah dihantar ke Facebook Page (auto)."
         except Exception as e:
             wa_note = (wa_note + "\n" if wa_note else "") + f"⚠️ Gagal hantar ke Facebook Page: {e}"
-    if threads.enabled() and not test_only and (label in ("harga-GAP", "berita", "testimoni") or (CURRENT_MODE == "pgitem" and now_my().hour >= 20)):  # Threads: harga GAP harian & berita emas sahaja
+    if threads.enabled() and not test_only and (label in ("harga-GAP", "berita", "testimoni") or (CURRENT_MODE == "pgitem-all" or (CURRENT_MODE == "pgitem" and now_my().hour >= 20))):  # Threads: harga GAP harian & berita emas sahaja
         try:
             st_ = globals().get("_ST") or {}
             ttext = threads.gap_text(text) if label == "harga-GAP" else ((threads.PRESET or threads.casual(text) or "") if label == "berita" else text)
@@ -187,8 +187,9 @@ def send(text, image=None, label="post", closing=True):
                 send_email("⚠️ Alert Threads", f"Gagal hantar ke Threads (mod {CURRENT_MODE}): {str(e)[:300]}")
             except Exception:
                 pass
-    if instagram.enabled() and not test_only and (label in ("harga-GAP", "berita", "testimoni") or (CURRENT_MODE == "pgitem" and now_my().hour >= 20)):  # Instagram: sama seperti Threads
+    if instagram.enabled() and not test_only and (label in ("harga-GAP", "berita", "testimoni") or (CURRENT_MODE == "pgitem-all" or (CURRENT_MODE == "pgitem" and now_my().hour >= 20))):  # Instagram: sama seperti Threads
         try:
+            image = image or instagram.fallback_image()
             if not image:
                 wa_note = (wa_note + "\n" if wa_note else "") + "⚠️ Instagram: tiada gambar untuk post ini, tidak dihantar."
             else:
@@ -833,7 +834,7 @@ def mode_igdiag(p, st):
         tg_plain(f"⚠️ Diagnosis gagal: {e}")
 
 
-MODES = {"ig-diag": mode_igdiag, "gapig-test": mode_gapig, "berita-ig": mode_beritaig, "ig-check": mode_igcheck, "gapthreads-test": mode_gapthreads, "berita-threads": mode_beritathreads, "threads-casual-test": mode_threadscasual, "threads-test": mode_threadstest, "threads-check": mode_threadscheck, "fb-check": mode_fbcheck, "relay": mode_relay, "wa-channels": mode_wa_channels, "berita": mode_berita, "berita-test": mode_berita, "fizikal": mode_fizikal, "fizikal-test": mode_fizikal, "fizikal-alert-test": mode_fizikal_alert, "semangat": mode_semangat, "semangat-test": mode_semangat, "testimoni": mode_testimoni, "testimoni-test": mode_testimoni, "gap": mode_gap, "jewel": mode_jewel, "alert": mode_alert, "ilmu": mode_ilmu, "item": mode_item, "pgitem": mode_pgitem,
+MODES = {"ig-diag": mode_igdiag, "gapig-test": mode_gapig, "berita-ig": mode_beritaig, "ig-check": mode_igcheck, "gapthreads-test": mode_gapthreads, "berita-threads": mode_beritathreads, "threads-casual-test": mode_threadscasual, "threads-test": mode_threadstest, "threads-check": mode_threadscheck, "fb-check": mode_fbcheck, "relay": mode_relay, "wa-channels": mode_wa_channels, "berita": mode_berita, "berita-test": mode_berita, "fizikal": mode_fizikal, "fizikal-test": mode_fizikal, "fizikal-alert-test": mode_fizikal_alert, "semangat": mode_semangat, "semangat-test": mode_semangat, "testimoni": mode_testimoni, "testimoni-test": mode_testimoni, "gap": mode_gap, "jewel": mode_jewel, "alert": mode_alert, "ilmu": mode_ilmu, "item": mode_item, "pgitem": mode_pgitem, "pgitem-all": mode_pgitem,
          "item-jewel": lambda p, st: mode_item(p, st, "jewel"),
          "item-mall": lambda p, st: mode_item(p, st, "mall")}
 

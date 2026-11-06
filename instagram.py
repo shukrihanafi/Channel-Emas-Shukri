@@ -129,4 +129,14 @@ def diag():
     out.append("fb /me/accounts: " + g(fb, "me/accounts", fields="id,name,instagram_business_account"))
     out.append("ig /me: " + g(ig, "me", fields="id,user_id,username"))
     out.append(f"fb /{DEFAULT_ID}: " + g(fb, DEFAULT_ID, fields="id,username"))
+    try:  # token Facebook Page sedia ada: adakah ia nampak Instagram yang dipautkan?
+        import fb as fbm
+        pid = os.environ["FB_PAGE_ID"]
+        pt = fbm.page_token(pid, os.environ["FB_PAGE_TOKEN"])
+        r = requests.get(f"{fb}/{pid}", params={"fields": "instagram_business_account{id,username}", "access_token": pt}, timeout=30)
+        out.append(f"page->ig: {r.status_code} {r.text[:300]}")
+        d2 = requests.get(f"{fb}/debug_token", params={"input_token": pt, "access_token": pt}, timeout=30).json().get("data", {})
+        out.append("page token scopes: %s" % (d2.get("scopes"),))
+    except Exception as e:
+        out.append(f"page->ig ERR {str(e)[:200]}")
     return "\n\n".join(out)

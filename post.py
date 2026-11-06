@@ -9,7 +9,7 @@ import json, os, random, sys
 from datetime import datetime
 from zoneinfo import ZoneInfo
 import requests
-import pgfetch, pgitems, card, items, whapi, relay, fb
+import pgfetch, pgitems, card, items, whapi, relay, fb, threads
 
 TZ = ZoneInfo("Asia/Kuala_Lumpur")
 STATE = "data/state.json"
@@ -172,6 +172,19 @@ def send(text, image=None, label="post", closing=True):
             wa_note = (wa_note + "\n" if wa_note else "") + "✅ Sudah dihantar ke Facebook Page (auto)."
         except Exception as e:
             wa_note = (wa_note + "\n" if wa_note else "") + f"⚠️ Gagal hantar ke Facebook Page: {e}"
+    if threads.enabled() and not test_only and label in ("harga-GAP", "berita"):  # Threads: harga GAP harian & berita emas sahaja
+        try:
+            st_ = globals().get("_ST") or {}
+            ttext = threads.gap_text(text) if label == "harga-GAP" else (threads.casual(text) or "")
+            if ttext:
+                threads.post(st_, ttext, image)
+                wa_note = (wa_note + "\n" if wa_note else "") + "✅ Sudah dihantar ke Threads (auto)."
+        except Exception as e:
+            wa_note = (wa_note + "\n" if wa_note else "") + f"⚠️ Gagal hantar ke Threads: {e}"
+            try:
+                send_email("⚠️ Alert Threads", f"Gagal hantar ke Threads (mod {CURRENT_MODE}): {str(e)[:300]}")
+            except Exception:
+                pass
     if wa_note:
         tg_plain(wa_note)
 
@@ -673,7 +686,20 @@ def mode_relay(p, st):
     print(f"Relay: {n} posting disalin.")
 
 
-MODES = {"fb-check": mode_fbcheck, "relay": mode_relay, "wa-channels": mode_wa_channels, "berita": mode_berita, "berita-test": mode_berita, "fizikal": mode_fizikal, "fizikal-test": mode_fizikal, "fizikal-alert-test": mode_fizikal_alert, "semangat": mode_semangat, "semangat-test": mode_semangat, "testimoni": mode_testimoni, "testimoni-test": mode_testimoni, "gap": mode_gap, "jewel": mode_jewel, "alert": mode_alert, "ilmu": mode_ilmu, "item": mode_item, "pgitem": mode_pgitem,
+def mode_threadscheck(p, st):
+    """Semak token Threads tanpa menghantar apa-apa; sambung token."""
+    if not threads.enabled():
+        tg_plain("⚠️ Threads belum dikonfigurasi (THREADS_TOKEN tiada).")
+        return
+    try:
+        who = threads.me(threads.token(st))
+        info = threads.refresh(st, force=True)
+        tg_plain(f"✅ Threads bersambung: @{who.get('username')} ({info}). Tiada apa dihantar.")
+    except Exception as e:
+        tg_plain(f"⚠️ Token Threads bermasalah: {e}")
+
+
+MODES = {"threads-check": mode_threadscheck, "fb-check": mode_fbcheck, "relay": mode_relay, "wa-channels": mode_wa_channels, "berita": mode_berita, "berita-test": mode_berita, "fizikal": mode_fizikal, "fizikal-test": mode_fizikal, "fizikal-alert-test": mode_fizikal_alert, "semangat": mode_semangat, "semangat-test": mode_semangat, "testimoni": mode_testimoni, "testimoni-test": mode_testimoni, "gap": mode_gap, "jewel": mode_jewel, "alert": mode_alert, "ilmu": mode_ilmu, "item": mode_item, "pgitem": mode_pgitem,
          "item-jewel": lambda p, st: mode_item(p, st, "jewel"),
          "item-mall": lambda p, st: mode_item(p, st, "mall")}
 
@@ -696,6 +722,13 @@ if __name__ == "__main__":
         except Exception as e:
             print("Relay gagal:", e)
         watchdog(prices, st)
+        if threads.enabled():
+            try:
+                threads.refresh(st)
+            except Exception as e:
+                if st.get("threads_err") != now_my().strftime("%Y-%m-%d"):
+                    st["threads_err"] = now_my().strftime("%Y-%m-%d")
+                    wa_notify(f"⚠️ Token Threads gagal disambung: {e}\nJika berterusan, jana token baharu dan kemas kini THREADS_TOKEN di GitHub.")
     elif not mode.endswith("-test") and mode != "wa-channels":
         mark_slot(st, mode, now_my())
     save(STATE, st)

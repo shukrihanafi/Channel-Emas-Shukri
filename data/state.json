@@ -92,7 +92,7 @@
   },
   "bb_last": 1,
   "relay": {
-    "offset": 991464032,
+    "offset": 991464037,
     "wa_done": 991464029,
     "tries": 0,
     "tg_done": "a231",
@@ -102,7 +102,8 @@
     "pending": {},
     "cbdone": [
       228,
-      231
+      231,
+      247
     ],
     "redo": {},
     "video_chat": -5400572231

@@ -734,7 +734,26 @@ def mode_threadscasual(p, st):
         tg_plain(f"⚠️ Ujian penulisan semula gagal: {str(e)[:400]}")
 
 
-MODES = {"threads-casual-test": mode_threadscasual, "threads-test": mode_threadstest, "threads-check": mode_threadscheck, "fb-check": mode_fbcheck, "relay": mode_relay, "wa-channels": mode_wa_channels, "berita": mode_berita, "berita-test": mode_berita, "fizikal": mode_fizikal, "fizikal-test": mode_fizikal, "fizikal-alert-test": mode_fizikal_alert, "semangat": mode_semangat, "semangat-test": mode_semangat, "testimoni": mode_testimoni, "testimoni-test": mode_testimoni, "gap": mode_gap, "jewel": mode_jewel, "alert": mode_alert, "ilmu": mode_ilmu, "item": mode_item, "pgitem": mode_pgitem,
+def mode_beritathreads(p, st):
+    """Berita ke Threads SAHAJA (tiada WhatsApp / Telegram Channel / Facebook). Boleh beri url artikel."""
+    import news
+
+    def only_threads(text, image=None, label="post", closing=True):
+        t = threads.PRESET or threads.casual(text) or ""
+        if not t:
+            tg_plain("⚠️ Threads: teks santai kosong, tidak dihantar.")
+            return
+        try:
+            threads.post(st, t, image)
+            tg_plain("✅ Berita sudah dihantar ke Threads sahaja.\n\n" + t)
+        except Exception as e:
+            tg_plain(f"⚠️ Gagal hantar ke Threads: {e}")
+            raise
+
+    news.run(st, only_threads, now_my(), notify=tg_plain)
+
+
+MODES = {"berita-threads": mode_beritathreads, "threads-casual-test": mode_threadscasual, "threads-test": mode_threadstest, "threads-check": mode_threadscheck, "fb-check": mode_fbcheck, "relay": mode_relay, "wa-channels": mode_wa_channels, "berita": mode_berita, "berita-test": mode_berita, "fizikal": mode_fizikal, "fizikal-test": mode_fizikal, "fizikal-alert-test": mode_fizikal_alert, "semangat": mode_semangat, "semangat-test": mode_semangat, "testimoni": mode_testimoni, "testimoni-test": mode_testimoni, "gap": mode_gap, "jewel": mode_jewel, "alert": mode_alert, "ilmu": mode_ilmu, "item": mode_item, "pgitem": mode_pgitem,
          "item-jewel": lambda p, st: mode_item(p, st, "jewel"),
          "item-mall": lambda p, st: mode_item(p, st, "mall")}
 

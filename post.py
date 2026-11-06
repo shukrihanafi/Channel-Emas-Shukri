@@ -175,7 +175,7 @@ def send(text, image=None, label="post", closing=True):
     if threads.enabled() and not test_only and label in ("harga-GAP", "berita"):  # Threads: harga GAP harian & berita emas sahaja
         try:
             st_ = globals().get("_ST") or {}
-            ttext = threads.gap_text(text) if label == "harga-GAP" else (threads.casual(text) or "")
+            ttext = threads.gap_text(text) if label == "harga-GAP" else (threads.PRESET or threads.casual(text) or "")
             if ttext:
                 threads.post(st_, ttext, image)
                 wa_note = (wa_note + "\n" if wa_note else "") + "✅ Sudah dihantar ke Threads (auto)."

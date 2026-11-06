@@ -172,10 +172,10 @@ def send(text, image=None, label="post", closing=True):
             wa_note = (wa_note + "\n" if wa_note else "") + "✅ Sudah dihantar ke Facebook Page (auto)."
         except Exception as e:
             wa_note = (wa_note + "\n" if wa_note else "") + f"⚠️ Gagal hantar ke Facebook Page: {e}"
-    if threads.enabled() and not test_only and label in ("harga-GAP", "berita"):  # Threads: harga GAP harian & berita emas sahaja
+    if threads.enabled() and not test_only and (label in ("harga-GAP", "berita", "testimoni") or (CURRENT_MODE == "pgitem" and now_my().hour >= 20)):  # Threads: harga GAP harian & berita emas sahaja
         try:
             st_ = globals().get("_ST") or {}
-            ttext = threads.gap_text(text) if label == "harga-GAP" else (threads.PRESET or threads.casual(text) or "")
+            ttext = threads.gap_text(text) if label == "harga-GAP" else ((threads.PRESET or threads.casual(text) or "") if label == "berita" else text)
             if ttext:
                 threads.post(st_, ttext, image)
                 wa_note = (wa_note + "\n" if wa_note else "") + "✅ Sudah dihantar ke Threads (auto)."
@@ -753,7 +753,19 @@ def mode_beritathreads(p, st):
     news.run(st, only_threads, now_my(), notify=tg_plain)
 
 
-MODES = {"berita-threads": mode_beritathreads, "threads-casual-test": mode_threadscasual, "threads-test": mode_threadstest, "threads-check": mode_threadscheck, "fb-check": mode_fbcheck, "relay": mode_relay, "wa-channels": mode_wa_channels, "berita": mode_berita, "berita-test": mode_berita, "fizikal": mode_fizikal, "fizikal-test": mode_fizikal, "fizikal-alert-test": mode_fizikal_alert, "semangat": mode_semangat, "semangat-test": mode_semangat, "testimoni": mode_testimoni, "testimoni-test": mode_testimoni, "gap": mode_gap, "jewel": mode_jewel, "alert": mode_alert, "ilmu": mode_ilmu, "item": mode_item, "pgitem": mode_pgitem,
+def mode_gapthreads(p, st):
+    """Ujian: harga GAP ke Threads SAHAJA (tiada perubahan state, tiada hantaran lain)."""
+    price = p["gap_rm_per_gram"]
+    prev = st["gap"].get("last_post") or price
+    text, img = gap_text_and_card(p, st, price - prev, fmt_dt(now_my()), base=prev)
+    try:
+        threads.post(st, threads.gap_text(text), img)
+        tg_plain("✅ Harga GAP sudah dihantar ke Threads sahaja.")
+    except Exception as e:
+        tg_plain(f"⚠️ Gagal hantar harga GAP ke Threads: {e}")
+
+
+MODES = {"gapthreads-test": mode_gapthreads, "berita-threads": mode_beritathreads, "threads-casual-test": mode_threadscasual, "threads-test": mode_threadstest, "threads-check": mode_threadscheck, "fb-check": mode_fbcheck, "relay": mode_relay, "wa-channels": mode_wa_channels, "berita": mode_berita, "berita-test": mode_berita, "fizikal": mode_fizikal, "fizikal-test": mode_fizikal, "fizikal-alert-test": mode_fizikal_alert, "semangat": mode_semangat, "semangat-test": mode_semangat, "testimoni": mode_testimoni, "testimoni-test": mode_testimoni, "gap": mode_gap, "jewel": mode_jewel, "alert": mode_alert, "ilmu": mode_ilmu, "item": mode_item, "pgitem": mode_pgitem,
          "item-jewel": lambda p, st: mode_item(p, st, "jewel"),
          "item-mall": lambda p, st: mode_item(p, st, "mall")}
 
@@ -768,7 +780,7 @@ if __name__ == "__main__":
     seed_history(st)
     CURRENT_MODE = mode
     _ST = st
-    prices = pgfetch.get_prices() if mode in ("gap", "jewel", "alert") else {}
+    prices = pgfetch.get_prices() if mode in ("gap", "jewel", "alert", "gapthreads-test") else {}
     MODES[mode](prices, st)
     if mode == "alert":
         try:

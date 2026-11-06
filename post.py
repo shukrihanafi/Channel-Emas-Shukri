@@ -125,6 +125,11 @@ def wa_health_check(st):
 
 
 def send(text, image=None, label="post", closing=True):
+    if image is None and label == "berita":  # berita tiada gambar: guna gambar sandaran repo
+        try:
+            image = instagram.fallback_image()
+        except Exception:
+            image = None
     text = f"{text.rstrip()}\n\n{CLOSING}" if (closing and CLOSING) else text.rstrip()
     os.makedirs(OUT, exist_ok=True)
     stamp = now_my().strftime("%Y%m%d-%H%M%S")
@@ -478,7 +483,7 @@ def mode_ilmu(p, st):
     t = items[(n - 1) % len(items)]            # lepas 365 pusing balik ke entri 1
     st["ilmu_n"] = n
     # skrip sudah ada ayat ajakan sendiri di hujung, jadi tak tambah CLOSING
-    send(f"💡 ILMU #{n} - {t['tajuk']}\n\n{t['isi']}", instagram.fallback_image(), "ilmu-emas", closing=False)
+    send(f"💡 ILMU #{n} - {t['tajuk']}\n\n{t['isi']}", instagram.ilmu_image((n - 1) % len(items) + 1), "ilmu-emas", closing=False)
 
 
 USE_MALL = False  # PG Mall menyekat GitHub (403). Tukar kepada True jika akses PG Mall sudah ada.

@@ -478,7 +478,7 @@ def mode_ilmu(p, st):
     t = items[(n - 1) % len(items)]            # lepas 365 pusing balik ke entri 1
     st["ilmu_n"] = n
     # skrip sudah ada ayat ajakan sendiri di hujung, jadi tak tambah CLOSING
-    send(f"💡 ILMU #{n} - {t['tajuk']}\n\n{t['isi']}", None, "ilmu-emas", closing=False)
+    send(f"💡 ILMU #{n} - {t['tajuk']}\n\n{t['isi']}", instagram.fallback_image(), "ilmu-emas", closing=False)
 
 
 USE_MALL = False  # PG Mall menyekat GitHub (403). Tukar kepada True jika akses PG Mall sudah ada.

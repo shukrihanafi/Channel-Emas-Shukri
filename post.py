@@ -514,6 +514,14 @@ def mode_berita(p, st):
 def mode_fizikal(p, st):
     """Harga emas fizikal (Gold Bar + Dinar) daripada website Public Gold: gambar + caption."""
     import fizikal
+    if CURRENT_MODE == "fizikal":  # langkau jika alert fizikal baru dihantar (elak jadual berganda)
+        try:
+            last = st.get("fz_alert_at")
+            if last and (now_my() - datetime.fromisoformat(last)).total_seconds() < 3600:
+                print("Dilangkau: alert fizikal dihantar kurang 60 minit lalu")
+                return
+        except Exception as e:
+            print("Semak alert fizikal gagal:", e)
     data = fizikal.get_prices()
     ts = fmt_dt(now_my())
     os.makedirs(OUT, exist_ok=True)
@@ -537,6 +545,8 @@ def mode_fizikal_alert(p, st):
     img = f"{OUT}/fizikal_alert.png"
     fizikal.make_card(img, data, ts)
     send(text, img, "alert-fizikal", closing=False)
+    if not CURRENT_MODE.endswith("-test"):
+        st["fz_alert_at"] = now_my().isoformat()
 
 
 def mode_semangat(p, st):

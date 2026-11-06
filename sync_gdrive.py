@@ -3,7 +3,7 @@ Gambar disalin (dikecilkan ke 1600px); video: diambil satu frame yang sesuai (ta
 Fail yang sudah diproses direkod dalam ilmu_img/.synced.json supaya tidak dimuat turun semula."""
 import os, re, json, subprocess, tempfile
 import gdown
-from PIL import Image, ImageFilter, ImageStat
+from PIL import Image, ImageFilter, ImageStat, ImageOps
 
 FOLDER = "https://drive.google.com/drive/folders/1vtoBFhizVA8tvO023Pvgtrk-LTdYVqoA"
 OUT = "ilmu_img"
@@ -27,7 +27,7 @@ def free_name(base, fid, used):
 
 
 def save_image(src, dst):
-    im = Image.open(src).convert("RGB")
+    im = ImageOps.exif_transpose(Image.open(src)).convert("RGB")  # betulkan arah gambar (EXIF)
     im.thumbnail((1600, 1600))
     im.save(dst, "JPEG", quality=88)
 

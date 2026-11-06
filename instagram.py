@@ -169,3 +169,33 @@ def ilmu_image(k, n=None):
     if not pool:
         return fallback_image()
     return pool[((n or k) - 1) % len(pool)]
+
+
+
+def post_video(text, video_path):
+    """Post video sebagai Reel Instagram (video dihos sebagai video FB Page tidak diterbitkan)."""
+    import threads
+    uid = me()["id"]
+    url = threads._host_video(video_path)
+    r = requests.post(f"{GRAPH}/{uid}/media", data={"media_type": "REELS", "video_url": url, "caption": fmt(text), "share_to_feed": "true", "access_token": _tok()}, timeout=60)
+    if r.status_code >= 300:
+        raise RuntimeError(f"Instagram reel {r.status_code}: {r.text[:300]}")
+    cid = r.json()["id"]
+    for _ in range(60):  # tunggu Instagram siap memproses video
+        time.sleep(5)
+        try:
+            s = _get(cid, fields="status_code").get("status_code")
+        except Exception:
+            s = None
+        if s == "FINISHED":
+            break
+        if s in ("ERROR", "EXPIRED"):
+            raise RuntimeError("Instagram reel " + s)
+    last = None
+    for i in range(4):
+        p = requests.post(f"{GRAPH}/{uid}/media_publish", data={"creation_id": cid, "access_token": _tok()}, timeout=60)
+        if p.status_code < 300:
+            return p.json()
+        last = p
+        time.sleep(8)
+    raise RuntimeError(f"Instagram reel publish {last.status_code}: {last.text[:300]}")

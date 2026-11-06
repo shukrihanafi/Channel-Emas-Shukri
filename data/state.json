@@ -76,7 +76,9 @@
     ]
   },
   "alert_n": 6,
-  "slots": {},
+  "slots": {
+    "2026-11-07|07:09": "07:10"
+  },
   "news": {
     "posted": [
       "https://theedgemalaysia.com/node/824618",
@@ -133,9 +135,10 @@
       "3081#0"
     ]
   },
-  "sm_n": 1,
+  "sm_n": 2,
   "sm_recent": [
-    17
+    17,
+    19
   ],
   "fz_alert_n": 1,
   "fz_alert_at": "2026-11-06T11:17:42.382503+08:00",

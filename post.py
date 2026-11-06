@@ -140,7 +140,7 @@ def gap_text_and_card(p, st, diff, ts, base=None):
     """Teks kad GAP + imej kad (kongsi antara mode gap dan alert)."""
     g, price = st["gap"], p["gap_rm_per_gram"]
     text = (
-        f"Harga GAP {'🔄 Tidak Berubah' if diff == 0 else ('🔴 Naik RM%d' % diff if diff > 0 else '🟢 Turun RM%d' % abs(diff))}\n\n"
+        f"Harga GAP {'Tidak Berubah 🔄' if diff == 0 else ('Naik RM%d 🟢' % diff if diff > 0 else 'Turun RM%d 🔴' % abs(diff))}\n\n"
         f"HARGA GAP PUBLIC GOLD\n"
         f"RM 100 = {p['gap_gram_per_rm100']} gram\n"
         f"RM {price:,.0f} = 1.0000 gram\n\n"
@@ -208,34 +208,34 @@ def mode_jewel(p, st):
 
 
 ALERT_UP = [
-    "🔴‼️HARGA GAP NAIK! ‼️🔴\n\n"
+    "🟢 HARGA GAP NAIK! 🟢\n\n"
     "Harga GAP sekarang RM{p} segram. Sebelum ini RM{b}, naik sebanyak RM{d}.\n\n"
     "Sentiasa ON notification channel ini untuk pantau harga emas terkini.\n\n"
     "Klik link di bawah panduan simpan emas\n"
     "https://shukriee.com/beliemas",
-    "🔴‼️ UPDATE TERKINI HARGA GAP ‼️🔴\n\n"
+    "🟢 UPDATE TERKINI HARGA GAP 🟢\n\n"
     "Harga GAP naik RM{d} segram. Daripada RM{b} kepada RM{p}.\n\n"
     "Tahniah kepada anda yang menyimpan emas kerana nilai simpanan anda kini turut meningkat mengikut harga emas semasa.\n\n"
     "Nak konsisten simpan emas? Klik link di bawah\n"
     "https://shukriee.com/beliemas",
-    "🔴‼️ HARGA EMAS BERUBAH LAGI! 🔴‼️\n\n"
+    "🟢 HARGA EMAS BERUBAH LAGI! 🟢\n\n"
     "Harga GAP kini RM{p} segram.\n\n"
     "Ada kenaikan sebanyak RM{d} berbanding harga sebelum ini.\n\n"
     "Kongsikan link channel ini kepada circle anda untuk mereka tahu harga emas terkini.\n"
     "http://shukriee.com/channel",
 ]
 ALERT_DOWN = [
-    "🟢✅ HARGA GAP TURUN! 🟢✅\n\n"
+    "🔴 HARGA GAP TURUN! 🔴\n\n"
     "Harga GAP sekarang RM{p} segram. Sebelum ini RM{b}, turun sebanyak RM{d}.\n\n"
     "Ini lah peluang untuk anda topup simpanan emas!\n\n"
     "Klik link di bawah panduan simpan emas\n"
     "https://shukriee.com/beliemas",
-    "🟢✅ PELUANG TOPUP SIMPANAN EMAS 🟢✅\n\n"
+    "🔴 PELUANG TOPUP SIMPANAN EMAS 🔴\n\n"
     "Harga GAP turun RM{d} segram. Daripada RM{b} kepada RM{p}.\n\n"
     "Sekarang RM{p} segram, berbanding RM{b} sebelum ini.\n\n"
     "Anda ada bajet lebih? Jom simpan emas sekarang!\n"
     "Panduan di https://shukriee.com/beliemas",
-    "🟢✅ YEAY! HARGA EMAS TURUN! 🟢✅\n\n"
+    "🔴 YEAY! HARGA EMAS TURUN! 🔴\n\n"
     "Harga GAP kini RM{p} segram.\n\n"
     "Ada penurunan sebanyak RM{d} berbanding harga sebelum ini.\n\n"
     "Jom topup simpanan emas anda!\n\n"
@@ -539,6 +539,13 @@ def mode_fizikal_alert(p, st):
     send(text, img, "alert-fizikal", closing=False)
 
 
+def mode_semangat(p, st):
+    """Kata semangat harian 7:09 pagi: skrip 1-100 berputar + pose Shukri (tiada AI)."""
+    import semangat
+    os.makedirs(OUT, exist_ok=True)
+    semangat.run(st, send, OUT, test=CURRENT_MODE.endswith("-test"))
+
+
 def mode_testimoni(p, st):
     import testimoni
     testimoni.run(st, send, now_my(), notify=tg_plain)
@@ -546,7 +553,7 @@ def mode_testimoni(p, st):
 
 # Jadual tetap (waktu Malaysia). Alert 20-minit juga menjadi "pengawas": jika hantaran tertinggal (run tersekat di GitHub),
 # ia dijalankan semula sendiri dalam tempoh 150 minit selepas masa asal.
-SLOTS = [("08:09", "gap"), ("08:39", "fizikal"), ("10:09", "pgitem"), ("13:09", "berita"), ("15:09", "testimoni"), ("16:09", "jewel"),
+SLOTS = [("07:09", "semangat"), ("08:09", "gap"), ("08:39", "fizikal"), ("10:09", "pgitem"), ("13:09", "berita"), ("15:09", "testimoni"), ("16:09", "jewel"),
          ("18:09", "item"), ("20:09", "gap"), ("21:09", "ilmu"), ("22:39", "pgitem")]
 
 
@@ -590,7 +597,7 @@ def mode_relay(p, st):
     print(f"Relay: {n} posting disalin.")
 
 
-MODES = {"fb-check": mode_fbcheck, "relay": mode_relay, "wa-channels": mode_wa_channels, "berita": mode_berita, "berita-test": mode_berita, "fizikal": mode_fizikal, "fizikal-test": mode_fizikal, "fizikal-alert-test": mode_fizikal_alert, "testimoni": mode_testimoni, "testimoni-test": mode_testimoni, "gap": mode_gap, "jewel": mode_jewel, "alert": mode_alert, "ilmu": mode_ilmu, "item": mode_item, "pgitem": mode_pgitem,
+MODES = {"fb-check": mode_fbcheck, "relay": mode_relay, "wa-channels": mode_wa_channels, "berita": mode_berita, "berita-test": mode_berita, "fizikal": mode_fizikal, "fizikal-test": mode_fizikal, "fizikal-alert-test": mode_fizikal_alert, "semangat": mode_semangat, "semangat-test": mode_semangat, "testimoni": mode_testimoni, "testimoni-test": mode_testimoni, "gap": mode_gap, "jewel": mode_jewel, "alert": mode_alert, "ilmu": mode_ilmu, "item": mode_item, "pgitem": mode_pgitem,
          "item-jewel": lambda p, st: mode_item(p, st, "jewel"),
          "item-mall": lambda p, st: mode_item(p, st, "mall")}
 

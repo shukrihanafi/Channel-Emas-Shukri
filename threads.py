@@ -105,11 +105,30 @@ def _host_image(path):
     return g.json()["images"][0]["source"]
 
 
+def _recent_same(h, uid, text, minutes=30):
+    """Benar jika Threads sudah ada post dengan teks sama dalam {minutes} minit lalu (elak siaran dua kali). Best-effort."""
+    try:
+        r = requests.get(f"{API}/v1.0/{uid}/threads", params={"fields": "text,timestamp", "limit": 10}, headers=h, timeout=30)
+        if r.status_code >= 300:
+            return False
+        now = datetime.now(timezone.utc)
+        for it in r.json().get("data", []):
+            ts = datetime.strptime(it["timestamp"], "%Y-%m-%dT%H:%M:%S%z")
+            if (it.get("text") or "").strip() == text.strip() and (now - ts).total_seconds() < minutes * 60:
+                return True
+    except Exception:
+        pass
+    return False
+
+
 def post(st, text, image_path=None):
     tok = token(st)
     h = {"Authorization": f"Bearer {tok}"}
     uid = me(tok)["id"]
     text = fmt(text)
+    if _recent_same(h, uid, text):
+        print("Threads: post sama sudah ada, dilangkau.")
+        return {"skipped": True}
     data = {"text": text, "media_type": "TEXT"}
     if image_path and os.path.exists(image_path):
         data = {"text": text, "media_type": "IMAGE", "image_url": _host_image(image_path)}
@@ -246,6 +265,9 @@ def post_video(st, text, video_path):
     tok = token(st)
     h = {"Authorization": f"Bearer {tok}"}
     uid = me(tok)["id"]
+    if _recent_same(h, uid, fmt(text)):
+        print("Threads: post sama sudah ada, dilangkau.")
+        return {"skipped": True}
     errs = []
     for label, host in video_hosts(video_path):
         try:

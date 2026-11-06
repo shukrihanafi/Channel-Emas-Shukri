@@ -73,11 +73,29 @@ def _jpeg(path):
     return out
 
 
+def _recent_same(uid, text, minutes=30):
+    """Benar jika IG sudah ada media dengan caption sama dalam {minutes} minit lalu. Best-effort (perlukan kebenaran baca media)."""
+    try:
+        from datetime import datetime, timezone
+        j = _get(f"{uid}/media", fields="caption,timestamp", limit=10)
+        now = datetime.now(timezone.utc)
+        for it in j.get("data", []):
+            ts = datetime.strptime(it["timestamp"], "%Y-%m-%dT%H:%M:%S%z")
+            if (it.get("caption") or "").strip() == fmt(text).strip() and (now - ts).total_seconds() < minutes * 60:
+                return True
+    except Exception:
+        pass
+    return False
+
+
 def post(text, image_path):
     if not image_path or not os.path.exists(image_path):
         raise RuntimeError("Instagram perlukan gambar; tiada gambar untuk post ini")
     import threads
     uid = me()["id"]
+    if _recent_same(uid, text):
+        print("Instagram: post sama sudah ada, dilangkau.")
+        return {"skipped": True}
     url = threads._host_image(_jpeg(image_path))
     r = requests.post(f"{GRAPH}/{uid}/media", data={"image_url": url, "caption": fmt(text), "access_token": _tok()}, timeout=60)
     if r.status_code >= 300:
@@ -236,6 +254,9 @@ def _reel_url(uid, text, video_path, host=None):
 def post_video(text, video_path):
     """Post video sebagai Reel Instagram: cuba muat naik terus dahulu, jika gagal guna URL video yang dihos di FB Page."""
     uid = me()["id"]
+    if _recent_same(uid, text):
+        print("Instagram: reel sama sudah ada, dilangkau.")
+        return {"skipped": True}
     errs = []
     import threads
     tries = [("muat naik terus", _reel_resumable)] + [(f"URL {n}", _reel_url_with(h)) for n, h in threads.video_hosts(video_path)]

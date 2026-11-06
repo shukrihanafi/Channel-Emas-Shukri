@@ -2,13 +2,32 @@
 Token Threads sah 60 hari; bot menyambungnya (refresh) sendiri setiap 7 hari. Token baharu disimpan
 dalam data/state.json dalam bentuk TERSULIT (kunci diterbitkan daripada secret peribadi), jadi repo awam tetap selamat.
 Gambar: diunggah sebagai foto Facebook Page yang TIDAK diterbitkan, untuk mendapat URL awam yang Threads boleh muat turun."""
-import base64, hashlib, os, time
+import base64, hashlib, os, re, time
 from datetime import datetime, timezone
 import requests
 
 API = "https://graph.threads.net"
 MAX = 500
 PRESET = ""  # teks Threads siap (dijana bersama ringkasan berita); jika ada, tidak perlu panggilan AI kedua
+
+
+def fmt(body):
+    """Susun teks Threads: perenggan kemas, ringkas jika melebihi 500 aksara (buang perenggan hujung), dan sentiasa tamat dengan shukriee.com."""
+    tail = "\n\nshukriee.com"
+    room = MAX - len(tail)
+    lines = [l.rstrip() for l in (body or "").replace("\r", "").split("\n") if "shukriee.com" not in l.lower()]
+    ps = [p.strip() for p in re.split(r"\n\s*\n", "\n".join(lines).strip()) if p.strip()]
+    out = []
+    for p in ps:
+        if len("\n\n".join(out + [p])) <= room:
+            out.append(p)
+            continue
+        if not out:  # perenggan pertama pun terlalu panjang: potong pada hujung ayat
+            cut = p[:room]
+            k = max(cut.rfind(". "), cut.rfind("! "), cut.rfind("? "), cut.rfind("\n"))
+            out.append(cut[:k + 1] if k > room * 0.4 else cut.rsplit(" ", 1)[0] + "…")
+        break
+    return "\n\n".join(out) + tail
 
 
 def enabled():
@@ -87,9 +106,7 @@ def post(st, text, image_path=None):
     tok = token(st)
     h = {"Authorization": f"Bearer {tok}"}
     uid = me(tok)["id"]
-    text = text.strip()
-    if len(text) > MAX:
-        text = text[:MAX - 1].rstrip() + "…"
+    text = fmt(text)
     data = {"text": text, "media_type": "TEXT"}
     if image_path and os.path.exists(image_path):
         data = {"text": text, "media_type": "IMAGE", "image_url": _host_image(image_path)}
@@ -112,9 +129,9 @@ def casual(text):
     key = os.getenv("ANTHROPIC_API_KEY")
     if not key:
         return None
-    prompt = ("Tulis semula berita emas ini sebagai satu post Threads dalam Bahasa Melayu santai, 50-100 patah perkataan.\n"
+    prompt = ("Tulis semula berita emas ini sebagai satu post Threads dalam Bahasa Melayu santai, 50-80 patah perkataan, jumlah TIDAK melebihi 400 aksara.\n"
               "Struktur: ayat pembuka yang menarik perhatian (hook), fakta utama berita, sudut pandang orang yang simpan emas, "
-              "dan satu soalan penutup kepada pembaca. Maksimum SATU emoji. Tiada hashtag, tiada pautan. Jangan reka fakta.\n"
+              "dan satu soalan penutup kepada pembaca. Maksimum SATU emoji. Susun dalam 3 hingga 4 perenggan pendek dipisahkan baris kosong. Tiada hashtag, tiada pautan, jangan tulis shukriee.com. Jangan reka fakta.\n"
               "Beri teks post sahaja.\n\nBERITA:\n" + text[:3000])
     r = requests.post("https://api.anthropic.com/v1/messages", timeout=90,
                       headers={"x-api-key": key, "anthropic-version": "2023-06-01", "content-type": "application/json"},

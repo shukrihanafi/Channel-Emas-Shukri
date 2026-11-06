@@ -192,7 +192,7 @@ def send(text, image=None, label="post", closing=True):
             if not image:
                 wa_note = (wa_note + "\n" if wa_note else "") + "⚠️ Instagram: tiada gambar untuk post ini, tidak dihantar."
             else:
-                itext = threads.gap_text(text) if label == "harga-GAP" else ((threads.PRESET or threads.casual(text) or "") if label == "berita" else text)
+                itext = text  # Instagram: teks penuh sama seperti Telegram/WhatsApp/Facebook (had 2200 aksara)
                 if itext:
                     instagram.post(itext, image)
                     wa_note = (wa_note + "\n" if wa_note else "") + "✅ Sudah dihantar ke Instagram (auto)."
@@ -800,7 +800,7 @@ def mode_gapig(p, st):
     prev = st["gap"].get("last_post") or price
     text, img = gap_text_and_card(p, st, price - prev, fmt_dt(now_my()), base=prev)
     try:
-        instagram.post(threads.gap_text(text), img)
+        instagram.post(text, img)
         tg_plain("✅ Harga GAP sudah dihantar ke Instagram sahaja.")
     except Exception as e:
         tg_plain(f"⚠️ Gagal hantar harga GAP ke Instagram: {e}")
@@ -811,7 +811,7 @@ def mode_beritaig(p, st):
     import news
 
     def only_ig(text, image=None, label="post", closing=True):
-        t = threads.PRESET or threads.casual(text) or ""
+        t = text
         if not t or not image:
             tg_plain("⚠️ Instagram: teks atau gambar tiada, tidak dihantar.")
             return

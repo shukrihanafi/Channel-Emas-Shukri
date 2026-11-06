@@ -104,7 +104,7 @@
   },
   "bb_last": 1,
   "relay": {
-    "offset": 991464030,
+    "offset": 991464032,
     "wa_done": 991464029,
     "tries": 0,
     "tg_done": "a231",
@@ -116,7 +116,8 @@
       228,
       231
     ],
-    "redo": {}
+    "redo": {},
+    "video_chat": -5400572231
   },
   "testi": {
     "used": [

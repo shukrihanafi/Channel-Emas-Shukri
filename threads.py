@@ -8,6 +8,7 @@ import requests
 
 API = "https://graph.threads.net"
 MAX = 500
+PRESET = ""  # teks Threads siap (dijana bersama ringkasan berita); jika ada, tidak perlu panggilan AI kedua
 
 
 def enabled():
@@ -117,7 +118,7 @@ def casual(text):
               "Beri teks post sahaja.\n\nBERITA:\n" + text[:3000])
     r = requests.post("https://api.anthropic.com/v1/messages", timeout=90,
                       headers={"x-api-key": key, "anthropic-version": "2023-06-01", "content-type": "application/json"},
-                      json={"model": "claude-haiku-5-5", "max_tokens": 600, "messages": [{"role": "user", "content": prompt}]})
+                      json={"model": "claude-haiku-5-5", "max_tokens": 8000, "messages": [{"role": "user", "content": prompt}]})
     r.raise_for_status()
     return "".join(b.get("text", "") for b in r.json()["content"]).strip()
 

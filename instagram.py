@@ -142,8 +142,26 @@ def diag():
     return "\n\n".join(out)
 
 
+def _imgs(folder, pats):
+    import glob
+    base = os.path.join(os.path.dirname(os.path.abspath(__file__)), folder)
+    out = []
+    for p in pats:
+        out += glob.glob(os.path.join(base, p))
+    return sorted(out)
+
+
 def fallback_image():
-    """Gambar sandaran dari repo (news_img/bar-*) jika post tiada gambar; bertukar mengikut hari."""
-    import glob, datetime
-    fs = sorted(glob.glob(os.path.join(os.path.dirname(os.path.abspath(__file__)), "news_img", "bar-*.jpg")))
+    """Gambar sandaran dari repo: utamakan folder ilmu_img, jika kosong guna news_img/bar-*; bertukar mengikut hari."""
+    import datetime
+    fs = _imgs("ilmu_img", ["*.jpg", "*.jpeg", "*.png"]) or _imgs("news_img", ["bar-*.jpg"])
     return fs[datetime.date.today().toordinal() % len(fs)] if fs else None
+
+
+def ilmu_image(k):
+    """Gambar untuk ilmu nombor k (ilmu_img/k.jpg atau .jpeg/.png); jika tiada guna gambar sandaran."""
+    for ext in ("jpg", "jpeg", "png"):
+        fs = _imgs("ilmu_img", [f"{k}.{ext}"])
+        if fs:
+            return fs[0]
+    return fallback_image()

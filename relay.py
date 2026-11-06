@@ -108,6 +108,27 @@ def run(st, notify=print):
                     fb.post(text, video_path=path) if vid else fb.post(text, path)
                     rs["fb_done"] = uid
                 dest += " + Facebook Page"
+            # Threads + Instagram: teks panjang diringkaskan, sentiasa tamat dengan shukriee.com. Kegagalan di sini tidak mengulang langkah lain.
+            if vid:
+                dest += " (video tidak dihantar ke Threads/Instagram)"
+            else:
+                import threads, instagram
+                if threads.enabled():
+                    try:
+                        if rs.get("th_done") != uid:
+                            rs["th_done"] = uid
+                            threads.post(st, threads.summarize(text, 450), path)
+                        dest += " + Threads"
+                    except Exception as e:
+                        notify(f"⚠️ Gagal hantar posting manual ke Threads: {e}")
+                if instagram.enabled():
+                    try:
+                        if rs.get("ig_done") != uid:
+                            rs["ig_done"] = uid
+                            instagram.post(threads.summarize(text, 1200), path or instagram.fallback_image())
+                        dest += " + Instagram"
+                    except Exception as e:
+                        notify(f"⚠️ Gagal hantar posting manual ke Instagram: {e}")
             rs["offset"], rs["tries"] = uid + 1, 0
             notify(f"✅ Posting manual disalin ke {dest}.")
             done += 1

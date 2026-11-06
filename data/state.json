@@ -109,6 +109,9 @@
     "fails": 0
   },
   "threads": {
-    "src": "24a290ce6f8b"
+    "src": "24a290ce6f8b",
+    "enc": "gAAAAABq7XNu8nzbw9Yn59C2a02r9v5IUGiYnkRQc38TwFsZ3-8ZV_iqpghu11sCxBTItVE87aPN2TOe68jjdHCnqU9YC-qEJh1foBv6Q60ehawbakC3RS3w4R7fZcfzgefz07IvY6OPmc4LMU-8D2tUCQLNlvE3ASNIiDGCrsPrJx6h_Bknqs0ngVT85Iq0H0xTNMRmKzsacx-CZapZDiofN2TdYgMkP18amBYcGyOakZAX1BQAk12GxGEUyU49JkkGBXga7Sft86RGh9zCZx3Fh8w-T_h1HEL8MLeoOne8tFp8fZfzstjwDKXZYNKKEQMxPuhUhFzC",
+    "refreshed": "2026-11-06T06:27:58.518520+00:00",
+    "expires_in_days": 59
   }
 }

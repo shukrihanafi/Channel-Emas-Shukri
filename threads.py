@@ -56,8 +56,7 @@ def refresh(st, force=False):
         if age < 7:
             return f"token disambung {age} hari lalu"
     tok = token(st)
-    r = requests.get(f"{API}/refresh_access_token", params={"grant_type": "th_refresh_token"},
-                     headers={"Authorization": f"Bearer {tok}"}, timeout=30)
+    r = requests.get(f"{API}/refresh_access_token", params={"grant_type": "th_refresh_token", "access_token": tok}, timeout=30)
     if r.status_code >= 300:
         raise RuntimeError(f"Sambung token Threads gagal {r.status_code}: {r.text[:300]}")
     j = r.json()

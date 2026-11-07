@@ -414,6 +414,40 @@ def _process_pending(st, rs, base, token, tg_channel, notify):
     return n
 
 
+def _sched_text(rs):
+    now = _now()
+    items = sorted((it for it in rs.get("pending", {}).values() if datetime.fromisoformat(it["due"]) > now + timedelta(minutes=2)),
+                   key=lambda it: it["due"])
+    lines = ["#AllSchedule", "VIDEO POSTING SCHEDULE", ""]
+    if not items:
+        lines.append("Tiada video dijadual buat masa ini.")
+    for n, it in enumerate(items, 1):
+        t = datetime.fromisoformat(it["due"]).astimezone(MYT)
+        link = _msg_link(it.get("chat"), it.get("mid"))
+        lines.append(f"{n}. ⏰ {t:%d/%m} ({DAYS[t.weekday()]}) {t:%H:%M}\n    Video : {link or 'dalam kumpulan VIDEO APPROVAL'}")
+    if items:
+        lines += ["", f"Jumlah: {len(items)} video dalam jadual"]
+    return "\n".join(lines)
+
+
+def _sync_schedule(rs, base, owner):
+    """Satu mesej laporan senarai semua video dijadual (#AllSchedule); disunting di tempat bila jadual berubah."""
+    text = _sched_text(rs)
+    if rs.get("sched_text") == text:
+        return
+    mid = rs.get("sched_msg")
+    if mid:
+        resp = _tg(base, "editMessageText", chat_id=owner, message_id=mid, text=text, disable_web_page_preview="true")
+        if resp is not None and resp.status_code < 300:
+            rs["sched_text"] = text
+            return
+    resp = _tg(base, "sendMessage", chat_id=owner, text=text, disable_web_page_preview="true")
+    try:
+        rs["sched_msg"], rs["sched_text"] = resp.json()["result"]["message_id"], text
+    except Exception:
+        pass
+
+
 def run(st, notify=print, poll=0):
     token, owner = os.getenv("TELEGRAM_BOT_TOKEN"), str(os.getenv("TELEGRAM_CHAT_ID", ""))
     if not token or not owner or not whapi.enabled():
@@ -496,4 +530,8 @@ def run(st, notify=print, poll=0):
         _process_redo(st, rs, base, token, notify)
     except Exception as e:
         notify(f"⚠️ Gagal cuba semula Threads/Instagram: {e}")
+    try:
+        _sync_schedule(rs, base, owner)
+    except Exception as e:
+        print("Laporan jadual gagal:", e)
     return done

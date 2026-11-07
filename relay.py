@@ -544,12 +544,12 @@ def _dash_text(rs):
     sched.sort(key=lambda x: x[:2])
     pend.sort()
     tk.sort(key=lambda x: x[:2])
-    L = ["<b>STATUS MEDIA POSTING</b>", ""]
+    L = ["<b>STATUS MEDIA POSTING</b>", "", "<b>ON SCHEDULE:</b>", ""]
     for n, x in enumerate(sched, 1):
         L += [f"{n}. {x[2]}", ""]
     if not sched:
         L += ["Tiada posting dijadualkan.", ""]
-    L += ["<b>PENDING POST</b>", ""]
+    L += ["<b>PENDING POST:</b>", ""]
     for n, x in enumerate(pend, 1):
         L += [f"{n}. {x[1]}", ""]
     if not pend:
@@ -558,11 +558,11 @@ def _dash_text(rs):
         L += ["<b>TIKTOK POST</b>", ""]
         for n, x in enumerate(tk, 1):
             L += [f"{n}. {x[2]}", ""]
-    leg = lambda ic, name, c, empty: f"{ic} {name} (" + (f"Jumlah: {count(c)}" if c else empty) + ")"
-    L += ["<b>LEGEND:</b>", "", leg("🔴", "VIDEO @ 5 PLATFORM", vcnt, "Tiada video dalam proses."),
-          leg("🟡", "VIDEO @ TIKTOK", tcnt, "Tiada video TikTok dalam senarai."),
-          leg("🟢", "NON VIDEO @ 5 PLATFORM", ncnt, "Tiada gambar / ayat dalam senarai."),
-          "", "<b>HASHTAG SEARCH:</b>", "", "#BelumPost", "#Schedule", "#TikTok_Belum", "#TikTok_Done"]
+    leg = lambda ic, name, c, empty: [f"{ic} {name}", f"Jumlah: {count(c)}" if c else empty, ""]
+    L += ["<b>LEGEND:</b>", ""] + leg("🔴", "VIDEO @ 5 PLATFORM", vcnt, "Tiada video dalam proses.") \
+        + leg("🟡", "VIDEO @ TIKTOK", tcnt, "Tiada video TikTok dalam senarai.") \
+        + leg("🟢", "NON VIDEO @ 5 PLATFORM", ncnt, "Tiada gambar / ayat dalam senarai.") \
+        + ["<b>HASHTAG SEARCH:</b>", "", "#Schedule", "#BelumPost", "#Approve", "#TikTok_Belum", "#TikTok_Done"]
     return "\n".join(L)
 
 

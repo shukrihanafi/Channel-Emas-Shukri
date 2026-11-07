@@ -59,10 +59,13 @@ def _now():
 TAGS = ("#BelumPost", "#Approve", "#Tolak")
 
 
-def tag_caption(caption, tag="#BelumPost"):
-    """Caption + hashtag status di baris sendiri (untuk tapis dalam Telegram). Hashtag dibuang sebelum disiar ke platform."""
-    caption = strip_tag(caption)
-    return caption[:1024 - len(tag) - 2].rstrip() + "\n\n" + tag
+def send_status(base, chat, tag="#BelumPost"):
+    """Mesej status berasingan (hashtag sahaja) dihantar SEBELUM video; video dibalas pada mesej ini. Caption video kekal bersih."""
+    resp = _tg(base, "sendMessage", chat_id=chat, text=tag)
+    try:
+        return resp.json()["result"]["message_id"]
+    except Exception:
+        return None
 
 
 def strip_tag(caption):
@@ -245,7 +248,10 @@ def _video_to_approval(rs, m, base, notify):
         return
     is_video = bool(m.get("video"))
     method, field = ("sendVideo", "video") if is_video else ("sendDocument", "document")
-    data = {"chat_id": chat, field: v["file_id"], "caption": tag_caption(caption), "reply_markup": json.dumps(approval_keyboard()), "reply_to_message_id": mid}
+    data = {"chat_id": chat, field: v["file_id"], "caption": caption, "reply_markup": json.dumps(approval_keyboard())}
+    sid = send_status(base, chat)
+    if sid:
+        data["reply_to_message_id"] = sid
     if is_video:
         data["supports_streaming"] = "true"
     resp = _tg(base, method, **data)
@@ -287,7 +293,12 @@ def _handle_callback(rs, cb, owner, base, notify):
     if key in pend or mid in done:
         return ans("Sudah diproses.")
     text = strip_tag((m.get("caption") or "").strip())
-    retag = lambda tag, markup: _tg(base, "editMessageCaption", chat_id=chat, message_id=mid, caption=tag_caption(text, tag), reply_markup=json.dumps(markup))
+    sid = (m.get("reply_to_message") or {}).get("message_id")
+
+    def retag(tag, markup):  # tukar hashtag pada mesej status berasingan, dan kemas kini butang video
+        if sid:
+            _tg(base, "editMessageText", chat_id=chat, message_id=sid, text=tag)
+        mark(markup)
     if data == "rj":
         done.append(mid)
         rs["cbdone"] = done[-50:]

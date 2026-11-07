@@ -424,7 +424,7 @@ def _sched_text(rs):
     for n, it in enumerate(items, 1):
         t = datetime.fromisoformat(it["due"]).astimezone(MYT)
         link = _msg_link(it.get("chat"), it.get("mid"))
-        lines.append(f"{n}. ⏰ {t:%d/%m} ({DAYS[t.weekday()]}) {t:%H:%M}\n    Video : {link or 'dalam kumpulan VIDEO APPROVAL'}")
+        lines.append(f"{n}. ⏰ {t:%d/%m} ({DAYS[t.weekday()]}) {t:%H:%M} Video : {link or 'dalam kumpulan VIDEO APPROVAL'}")
     if items:
         lines += ["", f"Jumlah: {len(items)} video dalam jadual"]
     return "\n".join(lines)

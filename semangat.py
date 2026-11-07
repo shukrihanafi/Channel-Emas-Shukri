@@ -76,6 +76,14 @@ def _wrap(d, text, font, maxw):
     return lines
 
 
+def paras(quote):
+    """Pecahkan ayat motivasi kepada perenggan pendek (satu ayat setiap perenggan; jika lebih 3 ayat, dua ayat setiap perenggan)."""
+    ss = [x.strip() for x in re.split(r"(?<=[.!?])\s+", quote.strip()) if x.strip()]
+    if len(ss) > 3:
+        ss = [" ".join(ss[i:i + 2]) for i in range(0, len(ss), 2)]
+    return ss or [quote.strip()]
+
+
 def make_card(path, n, quote, question, pose):
     question = re.sub(r"[^\w\s.,!?'\-]", "", question).strip()
     im, d = card._bg(H=H, W=W)
@@ -91,28 +99,33 @@ def make_card(path, n, quote, question, pose):
         pw = 470; ph = int(p.height * 470 / p.width); p = p.resize((pw, ph), Image.LANCZOS)
     im.paste(p, (36, H - 33 - ph), p)
     d = card.ImageDraw.Draw(im)
-    # teks
+    # teks: Amboi... + perenggan pendek + soalan
     maxw = X1 - X0
+    ps = paras(quote)
     size = 46
-    while size >= 28:
+    while size >= 26:
         fo = f(B, size)
-        lines = _wrap(d, quote, fo, maxw)
-        lh = int(size * 1.38)
+        lh = int(size * 1.34)
+        gap = int(size * 0.62)
         qs = f(B, size - 4)
+        qh = int((size - 4) * 1.35)
+        blocks = [_wrap(d, p, fo, maxw) for p in ps]
         ql = _wrap(d, question, qs, maxw)
-        total = 70 + 28 + len(lines) * lh + 34 + len(ql) * int((size - 4) * 1.35)
-        if total <= 640:
+        total = 98 + sum(len(b) * lh for b in blocks) + gap * (len(blocks) - 1) + 40 + len(ql) * qh
+        if total <= 800:
             break
         size -= 2
-    blk = 98 + len(lines) * lh + 34 + len(ql) * int((size - 4) * 1.35)
-    y = max(100, 80 + (780 - blk) // 2)
+    y = max(90, 80 + (800 - total) // 2)
     d.text((X0, y), "Amboi...", font=f(B, 64), fill=GOLD)
     y += 98
-    for ln in lines:
-        d.text((X0, y), ln, font=fo, fill=WHITE); y += lh
-    y += 34
+    for i, b in enumerate(blocks):
+        for ln in b:
+            d.text((X0, y), ln, font=fo, fill=WHITE); y += lh
+        if i < len(blocks) - 1:
+            y += gap
+    y += 40
     for ln in ql:
-        d.text((X0, y), ln, font=qs, fill=GOLD_L); y += int((size - 4) * 1.35)
+        d.text((X0, y), ln, font=qs, fill=GOLD_L); y += qh
     # label nombor + pill
     pill_w, pill_h = 300, 64
     px, py = X0 + (maxw - pill_w) / 2, H - 33 - 96
@@ -131,7 +144,7 @@ def run(st, send, out_dir, test=False):
     pose = pick_pose(quote, question, recent)
     os.makedirs(out_dir, exist_ok=True)
     img = make_card(f"{out_dir}/semangat.png", k + 1, quote, question, pose)
-    text = f"Amboi...\n\n{quote}\n\n{question}\n\nshukriee.com"
+    text = "Amboi...\n\n" + "\n\n".join(paras(quote)) + f"\n\n{question}\n\nshukriee.com"
     print(f"Semangat #{k+1}/{len(scripts)}, pose {pose}")
     send(text, img, "semangat", closing=False)
     if not test:

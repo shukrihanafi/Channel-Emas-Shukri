@@ -470,7 +470,7 @@ def _process_pending(st, rs, base, token, tg_channel, notify):
         try:
             dest = _deliver(st, rs, key, it["text"], it.get("vid"), it.get("photo"), False, notify, base, token, tg_channel)
             del pend[key]
-            pass
+            notify(f"✅ {'Video' if it.get('vid') else 'Posting'} lulus disiar ke {dest}.")
             n += 1
             rec = _vrec(rs, it.get("chat"), it.get("mid"))
             rec["delivered"] = True

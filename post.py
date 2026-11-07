@@ -707,12 +707,12 @@ def watchdog(p, st):
 
 
 def mode_relay(p, st):
-    """Larian relay menunggu aktif ~45 saat (long polling) supaya butang kelulusan dijawab dalam beberapa saat."""
+    """Larian relay menunggu aktif ~10 saat (sengaja pendek: larian panjang menyebabkan larian slot jadual lain dibatalkan oleh GitHub) supaya butang kelulusan dijawab dalam beberapa saat."""
     import time
     t0, n = time.time(), 0
     while True:
-        n += relay.run(st, tg_plain, poll=8)
-        if time.time() - t0 > 45:
+        n += relay.run(st, tg_plain, poll=3)
+        if time.time() - t0 > 10:
             break
     print(f"Relay: {n} posting disalin.")
 

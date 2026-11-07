@@ -82,7 +82,8 @@
     "2026-11-07|07:09": "07:10",
     "2026-11-07|08:09": "08:10",
     "2026-11-07|08:39": "08:39",
-    "2026-11-07|10:09": "10:09"
+    "2026-11-07|10:09": "10:09",
+    "2026-11-07|13:09": "13:11"
   },
   "news": {
     "posted": [
@@ -90,9 +91,10 @@
       "https://www.bernama.com/bm/pasaran/news.php?id=2630148",
       "https://www.kitco.com/news/article/2026-11-05/world-bank-sees-gold-holding-above-4000-through-2028-warns-silver-faces",
       "https://goldseek.com/article/why-gold-crashed-below-4000-and-what-feds-rate-pause-means-gold-and-silver",
-      "https://theedgemalaysia.com/node/824799"
+      "https://theedgemalaysia.com/node/824799",
+      "https://www.bernama.com/bm/pasaran/news.php?id=2631223"
     ],
-    "rot": 1,
+    "rot": 2,
     "imgs": [
       "bar-bd-img-06.jpg"
     ]

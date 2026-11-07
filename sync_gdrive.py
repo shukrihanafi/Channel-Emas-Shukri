@@ -87,25 +87,44 @@ def auto_caption(video):
     key = os.getenv("ANTHROPIC_API_KEY")
     if not key:
         return base
-    try:
+    import requests, base64
+    rule = ("Format tetap: baris pertama bermula tepat dengan 'Amboi...' (hook menarik), kemudian isi dalam perenggan pendek dipisahkan baris kosong, "
+            "dan baris terakhir 'shukriee.com'. Kira-kira 400 aksara, MAKSIMUM 900. Jangan reka fakta/angka yang tiada dalam sumber. Beri caption sahaja.")
+
+    def ask(content):
+        r = requests.post("https://api.anthropic.com/v1/messages", timeout=120,
+                          headers={"x-api-key": key, "anthropic-version": "2023-06-01", "content-type": "application/json"},
+                          json={"model": "claude-haiku-5-5", "max_tokens": 1000, "messages": [{"role": "user", "content": content}]})
+        r.raise_for_status()
+        out = "".join(b.get("text", "") for b in r.json()["content"]).strip()
+        return out if out.startswith("Amboi...") and out.endswith("shukriee.com") and len(out) <= 1024 else None
+
+    text = ""
+    try:  # 1) suara
         wav = video + ".wav"
         subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", video, "-vn", "-ac", "1", "-ar", "16000", wav], check=True, timeout=600)
         from faster_whisper import WhisperModel
         segs, _ = WhisperModel("small", device="cpu", compute_type="int8").transcribe(wav, language="ms", vad_filter=True)
         text = " ".join(s.text.strip() for s in segs)[:6000]
-        if len(text) < 20:
-            return base
-        import requests
-        prompt = ("Tulis caption siaran (Bahasa Melayu, kira-kira 400 aksara, MAKSIMUM 900) untuk video emas Shukri berdasarkan transkrip di bawah. "
-                  "Format tetap: baris pertama bermula tepat dengan 'Amboi...' (hook menarik), kemudian isi dalam perenggan pendek dipisahkan baris kosong, "
-                  "dan baris terakhir 'shukriee.com'. Jangan reka fakta/angka yang tiada dalam transkrip. Beri caption sahaja.\n\nTRANSKRIP:\n" + text)
-        r = requests.post("https://api.anthropic.com/v1/messages", timeout=90,
-                          headers={"x-api-key": key, "anthropic-version": "2023-06-01", "content-type": "application/json"},
-                          json={"model": "claude-haiku-5-5", "max_tokens": 1000, "messages": [{"role": "user", "content": prompt}]})
-        r.raise_for_status()
-        out = "".join(b.get("text", "") for b in r.json()["content"]).strip()
-        if out.startswith("Amboi...") and out.endswith("shukriee.com") and len(out) <= 1024:
-            return out
+    except Exception as e:
+        print("Transkrip gagal:", str(e)[:200])
+    try:
+        if len(text) >= 20:
+            out = ask("Tulis caption siaran (Bahasa Melayu) untuk video emas Shukri berdasarkan transkrip suara ini. " + rule + "\n\nTRANSKRIP:\n" + text)
+            if out:
+                return out
+        else:  # 2) tiada suara: baca teks pada skrin daripada beberapa frame
+            d = duration(video) or 20
+            parts = []
+            for i, fr in enumerate((0.08, 0.22, 0.36, 0.5, 0.64, 0.78, 0.92)):
+                p = f"{video}.f{i}.jpg"
+                subprocess.run(["ffmpeg", "-v", "error", "-y", "-ss", str(d * fr), "-i", video, "-frames:v", "1", "-vf", "scale=720:-2", p], check=True, timeout=120)
+                parts.append({"type": "image", "source": {"type": "base64", "media_type": "image/jpeg", "data": base64.b64encode(open(p, "rb").read()).decode()}})
+            parts.append({"type": "text", "text": "Ini frame berurutan daripada video emas Shukri yang tiada suara; mesejnya ada pada teks di skrin. "
+                          "Baca semua perkataan pada frame, fahami mesej video, kemudian tulis caption siaran (Bahasa Melayu) yang sesuai. " + rule})
+            out = ask(parts)
+            if out:
+                return out
     except Exception as e:
         print("Auto caption gagal:", str(e)[:200])
     return base

@@ -90,7 +90,7 @@ def approval_keyboard(page="main"):
             row = []
             for hh, mm in ((11, 15), (23, 15)):
                 if d.replace(hour=hh, minute=mm, second=0, microsecond=0) > now:
-                    row.append({"text": f"{('Today', 'Esok', 'Lusa')[i]} {DAYS[d.weekday()]}@{hh}{mm:02d}", "callback_data": f"sm{i}_{hh:02d}_{mm:02d}"})
+                    row.append({"text": f"{('Today', 'Esok', 'Lusa')[i]} @ {hh}{mm:02d}", "callback_data": f"sm{i}_{hh:02d}_{mm:02d}"})
             if row:
                 rows.append(row)
         rows.append(back("bk"))

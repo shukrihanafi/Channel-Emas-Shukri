@@ -56,6 +56,22 @@ def _now():
     return datetime.now(timezone.utc)
 
 
+TAGS = ("#BelumPost", "#Approve", "#Tolak")
+
+
+def tag_caption(caption, tag="#BelumPost"):
+    """Caption + hashtag status di baris sendiri (untuk tapis dalam Telegram). Hashtag dibuang sebelum disiar ke platform."""
+    caption = strip_tag(caption)
+    return caption[:1024 - len(tag) - 2].rstrip() + "\n\n" + tag
+
+
+def strip_tag(caption):
+    lines = (caption or "").rstrip().split("\n")
+    if lines and lines[-1].strip() in TAGS:
+        lines.pop()
+    return "\n".join(lines).rstrip()
+
+
 def approval_keyboard(page="main"):
     """Papan butang untuk video menunggu kelulusan. callback_data: ts / ap / n20 / m07 / hr / h{HH} / bk / rj / noop.
     TikTok ialah MANUAL oleh Shukri di telefon: pilihan dengan 📣 (ts, n20, m07, h{HH}) menyebabkan bot hantar peringatan + caption siap salin
@@ -229,7 +245,7 @@ def _video_to_approval(rs, m, base, notify):
         return
     is_video = bool(m.get("video"))
     method, field = ("sendVideo", "video") if is_video else ("sendDocument", "document")
-    data = {"chat_id": chat, field: v["file_id"], "caption": caption, "reply_markup": json.dumps(approval_keyboard()), "reply_to_message_id": mid}
+    data = {"chat_id": chat, field: v["file_id"], "caption": tag_caption(caption), "reply_markup": json.dumps(approval_keyboard()), "reply_to_message_id": mid}
     if is_video:
         data["supports_streaming"] = "true"
     resp = _tg(base, method, **data)
@@ -270,11 +286,12 @@ def _handle_callback(rs, cb, owner, base, notify):
         return ans("Mesej ini bukan video kelulusan.")
     if key in pend or mid in done:
         return ans("Sudah diproses.")
-    text = (m.get("caption") or "").strip()
+    text = strip_tag((m.get("caption") or "").strip())
+    retag = lambda tag, markup: _tg(base, "editMessageCaption", chat_id=chat, message_id=mid, caption=tag_caption(text, tag), reply_markup=json.dumps(markup))
     if data == "rj":
         done.append(mid)
         rs["cbdone"] = done[-50:]
-        mark({"inline_keyboard": [[{"text": "❌ Ditolak (tidak disiar)", "callback_data": "noop"}]]})
+        retag("#Tolak", {"inline_keyboard": [[{"text": "❌ Ditolak (tidak disiar)", "callback_data": "noop"}]]})
         return ans("Ditolak, tiada apa disiar.")
     if (vid.get("file_size") or 0) > MAX_VIDEO:
         ans("Video melebihi 20 MB.")
@@ -297,7 +314,7 @@ def _handle_callback(rs, cb, owner, base, notify):
     pend[key] = {"vid": vid, "text": text, "due": due.isoformat(), "tries": 0, "mid": mid, "tt": tt, "chat": chat}
     done.append(mid)
     rs["cbdone"] = done[-50:]
-    mark({"inline_keyboard": [[{"text": label, "callback_data": "noop"}]]})
+    retag("#Approve", {"inline_keyboard": [[{"text": label, "callback_data": "noop"}]]})
     ans(label)
     notify(f"{label}. Video akan disiar ke 5 platform pada semakan seterusnya (setiap ~3-20 minit)."
            + (" Peringatan TikTok akan dihantar selepas itu." if tt else ""))

@@ -77,7 +77,7 @@ def main():
         sys.exit("Caption melebihi 1024 aksara.")
     markup = {"inline_keyboard": [[{"text": "⚡ Auto-push: 5 platform" + (" + 📣 peringatan TikTok" if tt else ""), "callback_data": "noop"}]]} if auto else relay.approval_keyboard()
     r = requests.post(f"https://api.telegram.org/bot{token}/sendVideo",
-                      data={"chat_id": chat, "caption": caption, "supports_streaming": "true",
+                      data={"chat_id": chat, "caption": (caption if auto else relay.tag_caption(caption)), "supports_streaming": "true",
                             "reply_markup": json.dumps(markup), **_probe(video)},
                       files={"video": open(video, "rb")}, timeout=(10, 600))
     print(r.status_code, r.text[:200])

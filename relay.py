@@ -538,9 +538,9 @@ def _dash_text(rs):
         else:
             pend.append((v["mid"], f"{ic} #BelumPost {typ} : {link(v)}"))
     for v in vids.values():
-        if v.get("tt"):
-            tcnt.append(v["tt"])
-            tk.append((v["tt"] == "Done", v["mid"], f"🟡 #TikTok_{v['tt']} Video : {link(v)}"))
+        if v.get("tt") == "Belum":  # yang sudah Done tidak perlu dalam laporan
+            tcnt.append("Belum")
+            tk.append((False, v["mid"], f"🟡 Video #TikTok_Belum\nLink : {link(v)}"))
     sched.sort(key=lambda x: x[:2])
     pend.sort()
     tk.sort(key=lambda x: x[:2])
@@ -555,7 +555,7 @@ def _dash_text(rs):
     if not pend:
         L += ["Tiada posting menunggu kelulusan.", ""]
     if tk:
-        L += ["<b>TIKTOK POST</b>", ""]
+        L += ["<b>TIKTOK POST:</b>", ""]
         for n, x in enumerate(tk, 1):
             L += [f"{n}. {x[2]}", ""]
     leg = lambda ic, name, c, empty: [f"{ic} {name}", f"Jumlah: {count(c)}" if c else empty, ""]

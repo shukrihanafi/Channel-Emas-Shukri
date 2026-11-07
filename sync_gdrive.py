@@ -81,6 +81,36 @@ def compress(src, dst, target_mb=18.5):
     raise RuntimeError("video terlalu panjang untuk dikecilkan ke bawah 20 MB")
 
 
+def auto_caption(video):
+    """Caption automatik: transkrip suara (Whisper kecil, BM) -> Claude Haiku tulis caption format Shukri. Gagal -> caption asas."""
+    base = "Amboi...\n\nshukriee.com"
+    key = os.getenv("ANTHROPIC_API_KEY")
+    if not key:
+        return base
+    try:
+        wav = video + ".wav"
+        subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", video, "-vn", "-ac", "1", "-ar", "16000", wav], check=True, timeout=600)
+        from faster_whisper import WhisperModel
+        segs, _ = WhisperModel("small", device="cpu", compute_type="int8").transcribe(wav, language="ms", vad_filter=True)
+        text = " ".join(s.text.strip() for s in segs)[:6000]
+        if len(text) < 20:
+            return base
+        import requests
+        prompt = ("Tulis caption siaran (Bahasa Melayu, kira-kira 400 aksara, MAKSIMUM 900) untuk video emas Shukri berdasarkan transkrip di bawah. "
+                  "Format tetap: baris pertama bermula tepat dengan 'Amboi...' (hook menarik), kemudian isi dalam perenggan pendek dipisahkan baris kosong, "
+                  "dan baris terakhir 'shukriee.com'. Jangan reka fakta/angka yang tiada dalam transkrip. Beri caption sahaja.\n\nTRANSKRIP:\n" + text)
+        r = requests.post("https://api.anthropic.com/v1/messages", timeout=90,
+                          headers={"x-api-key": key, "anthropic-version": "2023-06-01", "content-type": "application/json"},
+                          json={"model": "claude-haiku-5-5", "max_tokens": 1000, "messages": [{"role": "user", "content": prompt}]})
+        r.raise_for_status()
+        out = "".join(b.get("text", "") for b in r.json()["content"]).strip()
+        if out.startswith("Amboi...") and out.endswith("shukriee.com") and len(out) <= 1024:
+            return out
+    except Exception as e:
+        print("Auto caption gagal:", str(e)[:200])
+    return base
+
+
 def send_video_for_approval(f, files):
     """Video dalam folder Drive 'video-approval': muat turun, kecilkan jika perlu, hantar ke kumpulan VIDEO APPROVAL dengan butang."""
     ext = os.path.splitext(f.path)[1].lower()
@@ -88,13 +118,15 @@ def send_video_for_approval(f, files):
     src = os.path.join(work, "src" + ext)
     if not gdown.download(id=f.id, output=src, quiet=True):
         raise RuntimeError("muat turun video gagal")
-    caption = "Amboi...\n\nshukriee.com"
+    caption = None
     stem = os.path.splitext(f.path)[0]
     for g in files:  # caption: fail .txt bernama sama dalam folder yang sama
         if g.path.lower().endswith(".txt") and os.path.splitext(g.path)[0] == stem:
             tp = os.path.join(work, "cap.txt")
             if gdown.download(id=g.id, output=tp, quiet=True):
                 caption = open(tp, encoding="utf-8").read().strip()[:1024] or caption
+    if not caption:
+        caption = auto_caption(src)
     out = src
     if os.path.getsize(src) > 19.5 * 1024 * 1024:
         out = compress(src, os.path.join(work, "small.mp4"))

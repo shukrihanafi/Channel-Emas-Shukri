@@ -101,7 +101,7 @@
   },
   "bb_last": 1,
   "relay": {
-    "offset": 991464091,
+    "offset": 991464092,
     "wa_done": "a6",
     "tries": 0,
     "tg_done": "a6",
@@ -184,7 +184,27 @@
     "redo": {},
     "video_chat": -1004451110392,
     "sched_msg": 276,
-    "sched_text": "#AllSchedule\nVIDEO POSTING SCHEDULE\n\n1. ⏰ 08/11 (Sun) 11:45 Video : https://t.me/c/4451110392/18\n2. ⏰ 09/11 (Mon) 23:15 Video : https://t.me/c/4451110392/32\n\nJumlah: 2 video dalam jadual"
+    "sched_text": "#AllSchedule\nVIDEO POSTING SCHEDULE\n\n1. ⏰ 08/11 (Sun) 11:45 Video : https://t.me/c/4451110392/18\n2. ⏰ 09/11 (Mon) 23:15 Video : https://t.me/c/4451110392/32\n\nJumlah: 2 video dalam jadual",
+    "sched_gone": true,
+    "vids": {
+      "18": {
+        "chat": -1004451110392,
+        "mid": 18,
+        "status": "Schedule",
+        "due": "2026-11-08T03:45:00+00:00"
+      },
+      "32": {
+        "chat": -1004451110392,
+        "mid": 32,
+        "status": "Schedule",
+        "due": "2026-11-09T15:15:00+00:00"
+      }
+    },
+    "dash": {
+      "chat": -1004451110392,
+      "mid": 33,
+      "text": "<b><u>STATUS VIDEO POSTING SCHEDULE</u></b>\n\n1. ⏰ 08/11 (Sun) 11:45 Video : https://t.me/c/4451110392/18\n2. ⏰ 09/11 (Mon) 23:15 Video : https://t.me/c/4451110392/32\n\nJumlah: 2 Schedule\n\n<b><u>TIKTOK POST</u></b>\n\nTiada video TikTok dalam senarai.\n\nLegend :\n#BelumPost\n#Approve\n#Schedule\n#TikTok_Belum\n#TikTok_Done"
+    }
   },
   "testi": {
     "used": [

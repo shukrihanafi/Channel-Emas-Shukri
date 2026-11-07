@@ -558,7 +558,7 @@ def _sweep_deleted(rs, base, owner, notify):
     """Sync laporan bila Shukri padam posting asal: buang rekod (dan jadual) yang mesejnya sudah tiada. Sahkan 2 kali berturut-turut."""
     now = _now()
     last = rs.get("sweep_at")
-    if last and now - datetime.fromisoformat(last) < timedelta(seconds=90):
+    if last and now - datetime.fromisoformat(last) < timedelta(seconds=3):
         return
     rs["sweep_at"] = now.isoformat()
     vids = rs.get("vids", {})

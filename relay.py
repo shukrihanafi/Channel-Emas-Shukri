@@ -159,6 +159,21 @@ def _tg(base, method, **data):
         return None
 
 
+def _report(base, owner, text):
+    """Hantar laporan ke chat bot, pulangkan message_id supaya boleh dipadam bila jadual dibatal / posting dipadam."""
+    resp = _tg(base, "sendMessage", chat_id=owner, text=text, disable_web_page_preview="true")
+    try:
+        return resp.json()["result"]["message_id"]
+    except Exception:
+        return None
+
+
+def _unreport(base, owner, rec):
+    mid = rec.pop("rep", None)
+    if mid:
+        _tg(base, "deleteMessage", chat_id=owner, message_id=mid)
+
+
 def _deliver(st, rs, key, text, vid, photo, from_channel, notify, base, token, tg_channel):
     """Hantar satu posting ke semua platform. vid/photo = objek Telegram (ada file_id) atau None. Pulangkan senarai destinasi.
     key = id unik (update_id atau id kelulusan) untuk bendera elak-hantar-dua-kali apabila diulang."""
@@ -351,8 +366,7 @@ def _handle_callback(rs, cb, owner, base, notify):
             rec = _vrec(rs, chat, mid)
             rec["status"] = "BelumPost"
             rec.pop("due", None)
-            link = _msg_link(chat, mid)
-            notify(f"#BelumPost Jadual dibatalkan. {typ} kembali menunggu kelulusan.\n\n" + (f"{typ} : {link}" if link else f"{typ} : dalam kumpulan MEDIA APPROVAL"))
+            _unreport(base, owner, rec)
             return ans("Jadual dibatalkan")
         return ans("Sudah disiar, tidak boleh dibatalkan.")
     if data in ("ttd", "ttu"):  # status TikTok manual: dah post / batal
@@ -436,13 +450,14 @@ def _handle_callback(rs, cb, owner, base, notify):
     rows = [[{"text": label, "callback_data": "noop"}]] + ([[{"text": "❌ Batal jadual", "callback_data": "cx"}]] if sched else [])
     retag("#Schedule" if sched else "#Approve", {"inline_keyboard": rows})
     ans(label)
+    _unreport(base, owner, rec)
     if sched:
         link = _msg_link(chat, mid)
-        notify(f"#Schedule {typ} {label}.\n\n{typ} akan post ke 5 platform pada waktu jadual.\n" + ("Peringatan TikTok akan dihantar selepas itu.\n" if tt else "") + "\n"
-               + (f"{typ} : {link}" if link else f"{typ} : dalam kumpulan MEDIA APPROVAL (tapis #Schedule)"))
+        rec["rep"] = _report(base, owner, f"#Schedule {typ} {label}.\n\n{typ} akan post ke 5 platform pada waktu jadual.\n" + ("Peringatan TikTok akan dihantar selepas itu.\n" if tt else "") + "\n"
+                             + (f"{typ} : {link}" if link else f"{typ} : dalam kumpulan MEDIA APPROVAL (tapis #Schedule)"))
     else:
-        notify(f"{label}. {typ} akan disiar ke 5 platform sebentar lagi."
-               + (" Peringatan TikTok akan dihantar selepas itu." if tt else ""))
+        rec["rep"] = _report(base, owner, f"{label}. {typ} akan disiar ke 5 platform sebentar lagi."
+                             + (" Peringatan TikTok akan dihantar selepas itu." if tt else ""))
 
 
 def _process_pending(st, rs, base, token, tg_channel, notify):
@@ -455,7 +470,7 @@ def _process_pending(st, rs, base, token, tg_channel, notify):
         try:
             dest = _deliver(st, rs, key, it["text"], it.get("vid"), it.get("photo"), False, notify, base, token, tg_channel)
             del pend[key]
-            notify(f"✅ {'Video' if it.get('vid') else 'Posting'} lulus disiar ke {dest}.")
+            pass
             n += 1
             rec = _vrec(rs, it.get("chat"), it.get("mid"))
             rec["delivered"] = True
@@ -573,8 +588,8 @@ def _sweep_deleted(rs, base, owner, notify):
             continue
         for pk in [pk for pk, it in rs.get("pending", {}).items() if str(it.get("mid")) == str(v["mid"]) and it.get("chat") == v["chat"]]:
             del rs["pending"][pk]
+        _unreport(base, owner, v)
         del vids[k]
-        notify(f"🗑️ {v.get('type', 'Video')} dipadam dari MEDIA APPROVAL: dibuang daripada laporan{' dan jadual dibatalkan' if v.get('status') == 'Schedule' else ''}.")
 
 
 def _sync_schedule(rs, base, owner):

@@ -524,27 +524,45 @@ def _dash_text(rs):
             cnt[s] = cnt.get(s, 0) + 1
         return " , ".join(f"{cnt[s]} {s}" for s in ("Schedule", "Approve", "BelumPost", "Done", "Belum") if s in cnt)
 
-    rows, vcnt, ncnt, tcnt = [], [], [], []
+    sched, pend, tk = [], [], []
+    vcnt, ncnt, tcnt = [], [], []
     for v in vids.values():
         isv = v.get("type", "Video") == "Video"
-        if isv and v.get("delivered"):
-            continue
-        k = "Done" if v.get("delivered") else v["status"]
-        (vcnt if isv else ncnt).append(k)
-        head = when(v) if v.get("due") else "#BelumPost"
-        rows.append((0 if v.get("due") else 1, v.get("due", ""), v["mid"], f"{'🔴' if isv else '🟢'} {head} {v.get('type', 'Video')} : {link(v)}" + (" ✅" if v.get("delivered") else "")))
+        typ = v.get("type", "Video")
+        ic = "🔴" if isv else "🟢"
+        if v.get("delivered") or v["status"] == "Approve":
+            continue  # Approve terus siar: rujuk laporan Channel Emas Shukri
+        (vcnt if isv else ncnt).append(v["status"])
+        if v["status"] == "Schedule" and v.get("due"):
+            sched.append((v["due"], v["mid"], f"{ic} {typ} {when(v)}\nLink : {link(v)}"))
+        else:
+            pend.append((v["mid"], f"{ic} #BelumPost {typ} : {link(v)}"))
     for v in vids.values():
         if v.get("tt"):
             tcnt.append(v["tt"])
-            rows.append((2, "", v["mid"], f"🟡 #TikTok_{v['tt']} Video : {link(v)}"))
-    rows.sort(key=lambda x: x[:3])
+            tk.append((v["tt"] == "Done", v["mid"], f"🟡 #TikTok_{v['tt']} Video : {link(v)}"))
+    sched.sort(key=lambda x: x[:2])
+    pend.sort()
+    tk.sort(key=lambda x: x[:2])
     L = ["<b>STATUS MEDIA POSTING</b>", ""]
-    L += [f"{n}. {x[3]}" for n, x in enumerate(rows, 1)] or ["Tiada media dalam senarai."]
+    for n, x in enumerate(sched, 1):
+        L += [f"{n}. {x[2]}", ""]
+    if not sched:
+        L += ["Tiada posting dijadualkan.", ""]
+    L += ["<b>PENDING POST</b>", ""]
+    for n, x in enumerate(pend, 1):
+        L += [f"{n}. {x[1]}", ""]
+    if not pend:
+        L += ["Tiada posting menunggu kelulusan.", ""]
+    if tk:
+        L += ["<b>TIKTOK POST</b>", ""]
+        for n, x in enumerate(tk, 1):
+            L += [f"{n}. {x[2]}", ""]
     leg = lambda ic, name, c, empty: f"{ic} {name} (" + (f"Jumlah: {count(c)}" if c else empty) + ")"
-    L += ["", "<b>LEGEND:</b>", leg("🔴", "VIDEO @ 5 PLATFORM", vcnt, "Tiada video dalam proses."),
+    L += ["<b>LEGEND:</b>", "", leg("🔴", "VIDEO @ 5 PLATFORM", vcnt, "Tiada video dalam proses."),
           leg("🟡", "VIDEO @ TIKTOK", tcnt, "Tiada video TikTok dalam senarai."),
           leg("🟢", "NON VIDEO @ 5 PLATFORM", ncnt, "Tiada gambar / ayat dalam senarai."),
-          "", "<b>HASHTAG SEARCH</b>", "", "#BelumPost", "#Approve", "#Schedule", "#TikTok_Belum", "#TikTok_Done"]
+          "", "<b>HASHTAG SEARCH:</b>", "", "#BelumPost", "#Schedule", "#TikTok_Belum", "#TikTok_Done"]
     return "\n".join(L)
 
 

@@ -58,7 +58,7 @@ def _now():
 
 def approval_keyboard(page="main"):
     """Papan butang untuk video menunggu kelulusan. callback_data: ts / ap / n20 / m07 / hr / h{HH} / bk / rj / noop.
-    TikTok ialah MANUAL oleh Shukri di telefon: pilihan dengan 🎵 (ts, n20, m07, h{HH}) menyebabkan bot hantar peringatan + caption siap salin
+    TikTok ialah MANUAL oleh Shukri di telefon: pilihan dengan 📣 (ts, n20, m07, h{HH}) menyebabkan bot hantar peringatan + caption siap salin
     ke DM selepas video disiar ke 5 platform. ap = 5 platform sahaja."""
     if page == "hours":
         rows, row = [], []
@@ -72,16 +72,16 @@ def approval_keyboard(page="main"):
         rows.append([{"text": "⬅️ Kembali", "callback_data": "bk"}])
         return {"inline_keyboard": rows}
     return {"inline_keyboard": [
-        [{"text": "✅ Approve 5 sekarang + 🎵 TikTok manual", "callback_data": "ts"}],
-        [{"text": "🌙 Malam ini 8:09 + 🎵", "callback_data": "n20"}, {"text": "🌅 Esok 7:09 + 🎵", "callback_data": "m07"}],
-        [{"text": "🕒 Pilih masa lain (+ 🎵)", "callback_data": "hr"}],
-        [{"text": "📵 5 sahaja (tiada TikTok)", "callback_data": "ap"}],
+        [{"text": "✅ Approve 5 sekarang + 📣 TikTok manual", "callback_data": "ts"}],
+        [{"text": "🌙 Malam ini 8:09 + 📣", "callback_data": "n20"}, {"text": "🌅 Esok 7:09 + 📣", "callback_data": "m07"}],
+        [{"text": "🕒 Pilih masa lain (+ 📣)", "callback_data": "hr"}],
+        [{"text": "5️⃣ 5 sahaja (tiada TikTok)", "callback_data": "ap"}],
         [{"text": "❌ Tolak", "callback_data": "rj"}]]}
 
 
 def tt_reminder(base, owner, text, mid, notify=print):
     """Peringatan TikTok manual: hantar caption siap salin ke DM (balas pada video kelulusan). Tanpa Claude."""
-    body = ("🎵 TikTok (manual di telefon)\n"
+    body = ("📣 TikTok (manual di telefon)\n"
             "1) Simpan video di atas ke galeri (tekan lama > Simpan)\n"
             "2) Buka TikTok > Upload > tampal caption di bawah (tekan caption untuk salin)\n"
             "3) Siar sekarang, atau jadual jika app menyediakannya (TikTok Studio web ada jadual sehingga ~30 hari)")
@@ -265,7 +265,7 @@ def _handle_callback(rs, cb, owner, base, notify):
     if data == "ap":
         due, label = _now(), "✅ 5 platform sekarang (tiada TikTok)"
     elif data == "ts":
-        due, label, tt = _now(), "✅ 5 platform sekarang + 🎵 peringatan TikTok", True
+        due, label, tt = _now(), "✅ 5 platform sekarang + 📣 peringatan TikTok", True
     elif data == "n20" or data == "m07" or (data.startswith("h") and data[1:].isdigit()):
         if data == "n20":
             due = _next_slot(20)
@@ -273,7 +273,7 @@ def _handle_callback(rs, cb, owner, base, notify):
             due = _next_slot(7, tomorrow=True)
         else:
             due = _next_slot(int(data[1:]))
-        label, tt = f"⏰ Dijadual {due.astimezone(MYT):%d/%m %H:%M} + 🎵 peringatan TikTok", True
+        label, tt = f"⏰ Dijadual {due.astimezone(MYT):%d/%m %H:%M} + 📣 peringatan TikTok", True
     else:
         return ans("Butang tidak dikenali.")
     pend[key] = {"vid": vid, "text": text, "due": due.isoformat(), "tries": 0, "mid": mid, "tt": tt, "chat": chat}

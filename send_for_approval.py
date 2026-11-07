@@ -75,7 +75,7 @@ def main():
         sys.exit(f"Video {size / 1048576:.1f} MB melebihi 20 MB; kecilkan dahulu.")
     if len(caption) > 1024:
         sys.exit("Caption melebihi 1024 aksara.")
-    markup = {"inline_keyboard": [[{"text": "⚡ Auto-push: 5 platform" + (" + 🎵 peringatan TikTok" if tt else ""), "callback_data": "noop"}]]} if auto else relay.approval_keyboard()
+    markup = {"inline_keyboard": [[{"text": "⚡ Auto-push: 5 platform" + (" + 📣 peringatan TikTok" if tt else ""), "callback_data": "noop"}]]} if auto else relay.approval_keyboard()
     r = requests.post(f"https://api.telegram.org/bot{token}/sendVideo",
                       data={"chat_id": chat, "caption": caption, "supports_streaming": "true",
                             "reply_markup": json.dumps(markup), **_probe(video)},

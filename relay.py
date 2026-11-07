@@ -78,7 +78,7 @@ def strip_tag(caption):
 DAYS = ("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
 
 
-def approval_keyboard(page="main"):
+def approval_keyboard(page="main", kind="video"):
     """Papan butang kelulusan, hanya 2 pilihan: Approve sekarang (ts) atau Schedule (sc) -> pilih tarikh (sd{off}) -> jam (sh{off}_{HH}) -> minit (sm{off}_{HH}_{MM}).
     Kedua-duanya menyebabkan bot hantar peringatan TikTok manual selepas siaran. (Callback lama ap/n20/m07/hr/h{HH}/rj masih diproses untuk mesej lama.)"""
     back = lambda cb: [{"text": "⬅️ Kembali", "callback_data": cb}]
@@ -110,6 +110,10 @@ def approval_keyboard(page="main"):
         rows = [[{"text": f"{hh}:{m}", "callback_data": f"sm{off}_{hh}_{m}"} for m in ("00", "15", "30", "45")]]
         rows.append(back(f"sd{off}"))
         return {"inline_keyboard": rows}
+    if kind != "video":  # gambar / ayat: tiada TikTok
+        return {"inline_keyboard": [
+            [{"text": "✅ Approve 5 (Now)", "callback_data": "ts"}],
+            [{"text": "⏰ Schedule 5", "callback_data": "sc"}]]}
     return {"inline_keyboard": [
         [{"text": "✅ Approve 5 (Now) + TikTok Manual", "callback_data": "ts"}],
         [{"text": "⏰ Schedule + TikTok Manual", "callback_data": "sc"}]]}
@@ -248,7 +252,7 @@ def _vid_obj(m):
 
 
 def _video_to_approval(rs, m, base, notify):
-    """Shukri hantar video terus dalam kumpulan VIDEO APPROVAL: bot hantar semula video itu (guna file_id, tanpa muat turun)
+    """Shukri hantar video terus dalam kumpulan MEDIA APPROVAL: bot hantar semula video itu (guna file_id, tanpa muat turun)
     dengan butang Approve / Jadual / Tolak. Video lebih 20 MB tidak boleh dimuat turun bot Telegram: beri panduan (jalan Google Drive)."""
     v = _vid_obj(m)
     if not v:
@@ -280,6 +284,31 @@ def _video_to_approval(rs, m, base, notify):
         notify(f"⚠️ Gagal sediakan butang kelulusan untuk video dalam kumpulan: {(resp.text[:200] if resp is not None else 'tiada jawapan')}")
 
 
+def _media_to_approval(rs, m, base, notify):
+    """Mesej Shukri dalam kumpulan MEDIA APPROVAL: video, gambar atau ayat. Bot hantar semula dengan butang kelulusan."""
+    if _vid_obj(m):
+        return _video_to_approval(rs, m, base, notify)
+    chat = m["chat"]["id"]
+    photo, text = m.get("photo"), (m.get("text") or "").strip()
+    if photo:
+        method, typ = "sendPhoto", "Image"
+        data = {"photo": photo[-1]["file_id"], "caption": (m.get("caption") or "").strip()[:1024]}
+    elif text and not text.startswith("/"):
+        method, typ = "sendMessage", "Ayat"
+        data = {"text": text[:4096], "disable_web_page_preview": "true"}
+    else:
+        return
+    data.update(chat_id=chat, reply_markup=json.dumps(approval_keyboard("main", "other")))
+    sid = send_status(base, chat)
+    if sid:
+        data["reply_to_message_id"] = sid
+    resp = _tg(base, method, **data)
+    try:
+        _vrec(rs, chat, resp.json()["result"]["message_id"])["type"] = typ
+    except Exception:
+        notify(f"⚠️ Gagal sediakan butang kelulusan untuk {typ} dalam kumpulan: {(resp.text[:200] if resp is not None else 'tiada jawapan')}")
+
+
 def _msg_link(chat, mid):
     """Pautan terus ke mesej di kumpulan peribadi (hanya ada untuk supergroup, id bermula -100)."""
     s = str(chat)
@@ -293,6 +322,10 @@ def _handle_callback(rs, cb, owner, base, notify):
         return
     m = cb.get("message") or {}
     vid, data = _vid_obj(m), cb.get("data", "")
+    photo = m.get("photo")
+    kind = "video" if vid else "other"
+    typ = "Video" if vid else ("Image" if photo else "Ayat")
+    kb = lambda page="main": approval_keyboard(page, kind)
     chat, mid = m.get("chat", {}).get("id"), m.get("message_id")
     ans = lambda t: _tg(base, "answerCallbackQuery", callback_query_id=cb["id"], text=t)
     mark = lambda markup: _tg(base, "editMessageReplyMarkup", chat_id=chat, message_id=mid, reply_markup=json.dumps(markup))
@@ -312,12 +345,12 @@ def _handle_callback(rs, cb, owner, base, notify):
             del pend[key]
             if mid in done:
                 done.remove(mid)
-            retag("#BelumPost", approval_keyboard())
+            retag("#BelumPost", kb())
             rec = _vrec(rs, chat, mid)
             rec["status"] = "BelumPost"
             rec.pop("due", None)
             link = _msg_link(chat, mid)
-            notify("#BelumPost Jadual dibatalkan. Video kembali menunggu kelulusan.\n\n" + (f"Video : {link}" if link else "Video : dalam kumpulan VIDEO APPROVAL"))
+            notify(f"#BelumPost Jadual dibatalkan. {typ} kembali menunggu kelulusan.\n\n" + (f"{typ} : {link}" if link else f"{typ} : dalam kumpulan MEDIA APPROVAL"))
             return ans("Jadual dibatalkan")
         return ans("Sudah disiar, tidak boleh dibatalkan.")
     if data in ("ttd", "ttu"):  # status TikTok manual: dah post / batal
@@ -336,31 +369,31 @@ def _handle_callback(rs, cb, owner, base, notify):
                 rec["done_at"] = _now().isoformat()
         return ans("Ditanda: sudah post ✅" if isdone else "Ditanda: belum post")
     if data == "hr":
-        mark(approval_keyboard("dates"))
+        mark(kb("dates"))
         return ans("Pilih tarikh")
     if data == "sc":
-        mark(approval_keyboard("dates"))
+        mark(kb("dates"))
         return ans("Pilih tarikh")
     if re.fullmatch(r"sd\d+", data):
-        mark(approval_keyboard("hrs" + data[2:]))
+        mark(kb("hrs" + data[2:]))
         return ans("Pilih jam (waktu Malaysia)")
     if re.fullmatch(r"sh\d+_\d\d", data):
-        mark(approval_keyboard("min" + data[2:]))
+        mark(kb("min" + data[2:]))
         return ans("Pilih minit")
     if data == "bk":
-        mark(approval_keyboard())
+        mark(kb())
         return ans("")
-    if not vid:
-        return ans("Mesej ini bukan video kelulusan.")
+    if not (vid or photo or m.get("text")):
+        return ans("Mesej ini bukan media kelulusan.")
     if key in pend or mid in done:
         return ans("Sudah diproses.")
-    text = strip_tag((m.get("caption") or "").strip())
+    text = strip_tag((m.get("caption") or m.get("text") or "").strip())
     if data == "rj":
         done.append(mid)
         rs["cbdone"] = done[-50:]
         retag("#Tolak", {"inline_keyboard": [[{"text": "❌ Ditolak (tidak disiar)", "callback_data": "noop"}]]})
         return ans("Ditolak, tiada apa disiar.")
-    if (vid.get("file_size") or 0) > MAX_VIDEO:
+    if vid and (vid.get("file_size") or 0) > MAX_VIDEO:
         ans("Video melebihi 20 MB.")
         return notify(f"⚠️ Video {vid['file_size'] / 1048576:.0f} MB melebihi had 20 MB bot Telegram, tidak boleh disiar auto. Sila post manual.")
     tt = False
@@ -372,7 +405,7 @@ def _handle_callback(rs, cb, owner, base, notify):
         off, hh, mm = data[2:].split("_")
         t = (_now().astimezone(MYT) + timedelta(days=int(off))).replace(hour=int(hh), minute=int(mm), second=0, microsecond=0)
         if t <= _now().astimezone(MYT):
-            mark(approval_keyboard("dates"))
+            mark(kb("dates"))
             return ans("Masa itu sudah lalu, pilih semula.")
         due, tt = t.astimezone(timezone.utc), True
         label = f"⏰ Dijadual {t:%d/%m %H:%M} + 📣 peringatan TikTok"
@@ -386,21 +419,24 @@ def _handle_callback(rs, cb, owner, base, notify):
         label, tt = f"⏰ Dijadual {due.astimezone(MYT):%d/%m %H:%M} + 📣 peringatan TikTok", True
     else:
         return ans("Butang tidak dikenali.")
-    pend[key] = {"vid": vid, "text": text, "due": due.isoformat(), "tries": 0, "mid": mid, "tt": tt, "chat": chat}
+    if not vid:  # gambar / ayat: tiada peringatan TikTok
+        tt = False
+        label = label.replace(" + 📣 peringatan TikTok", "")
+    pend[key] = {"vid": vid, "photo": photo, "text": text, "due": due.isoformat(), "tries": 0, "mid": mid, "tt": tt, "chat": chat}
     done.append(mid)
     rs["cbdone"] = done[-50:]
     sched = data not in ("ap", "ts")
     rec = _vrec(rs, chat, mid)
-    rec["status"], rec["due"] = ("Schedule" if sched else "Approve"), due.isoformat()
+    rec["status"], rec["due"], rec["type"] = ("Schedule" if sched else "Approve"), due.isoformat(), typ
     rows = [[{"text": label, "callback_data": "noop"}]] + ([[{"text": "❌ Batal jadual", "callback_data": "cx"}]] if sched else [])
     retag("#Schedule" if sched else "#Approve", {"inline_keyboard": rows})
     ans(label)
     if sched:
         link = _msg_link(chat, mid)
-        notify(f"#Schedule Video {label}.\n\nVideo akan post ke 5 platform pada waktu jadual.\nPeringatan TikTok akan dihantar selepas itu.\n\n"
-               + (f"Video : {link}" if link else "Video : dalam kumpulan VIDEO APPROVAL (tapis #Schedule)"))
+        notify(f"#Schedule {typ} {label}.\n\n{typ} akan post ke 5 platform pada waktu jadual.\n" + ("Peringatan TikTok akan dihantar selepas itu.\n" if tt else "") + "\n"
+               + (f"{typ} : {link}" if link else f"{typ} : dalam kumpulan MEDIA APPROVAL (tapis #Schedule)"))
     else:
-        notify(f"{label}. Video akan disiar ke 5 platform sebentar lagi."
+        notify(f"{label}. {typ} akan disiar ke 5 platform sebentar lagi."
                + (" Peringatan TikTok akan dihantar selepas itu." if tt else ""))
 
 
@@ -412,12 +448,13 @@ def _process_pending(st, rs, base, token, tg_channel, notify):
         if datetime.fromisoformat(it["due"]) > _now():
             continue
         try:
-            dest = _deliver(st, rs, key, it["text"], it["vid"], None, False, notify, base, token, tg_channel)
+            dest = _deliver(st, rs, key, it["text"], it.get("vid"), it.get("photo"), False, notify, base, token, tg_channel)
             del pend[key]
-            notify(f"✅ Video lulus disiar ke {dest}.")
+            notify(f"✅ {'Video' if it.get('vid') else 'Posting'} lulus disiar ke {dest}.")
             n += 1
             rec = _vrec(rs, it.get("chat"), it.get("mid"))
             rec["delivered"] = True
+            rec["done_at"] = _now().isoformat()
             if it.get("tt"):
                 tt_reminder(base, it.get("chat") or os.getenv("TELEGRAM_CHAT_ID", ""), it["text"], it.get("mid"), notify)
                 rec["tt"] = "Belum"
@@ -434,59 +471,82 @@ def _process_pending(st, rs, base, token, tg_channel, notify):
 
 
 def _vrec(rs, chat, mid):
-    """Rekod status satu video dalam kumpulan VIDEO APPROVAL (untuk laporan pusat)."""
-    return rs.setdefault("vids", {}).setdefault(str(mid), {"chat": chat, "mid": mid, "status": "BelumPost"})
+    """Rekod status satu video dalam kumpulan MEDIA APPROVAL (untuk laporan pusat)."""
+    return rs.setdefault("vids", {}).setdefault(str(mid), {"chat": chat, "mid": mid, "status": "BelumPost", "type": "Video"})
 
 
 def _dash_text(rs):
     now = _now()
     vids = rs.setdefault("vids", {})
-    for key, it in rs.get("pending", {}).items():  # pastikan video dalam giliran ada rekod
+    for key, it in rs.get("pending", {}).items():  # pastikan item dalam giliran ada rekod
         rec = _vrec(rs, it.get("chat"), it.get("mid"))
+        if not it.get("vid") and rec.get("type") == "Video":
+            rec["type"] = "Image" if it.get("photo") else "Ayat"
         if rec["status"] == "BelumPost" or "due" not in rec:
             rec["status"] = "Schedule" if datetime.fromisoformat(it["due"]) > now + timedelta(minutes=2) else "Approve"
             rec["due"] = it["due"]
-    for k in [k for k, v in vids.items() if v.get("tt") == "Done" and now - datetime.fromisoformat(v["done_at"]) > timedelta(hours=48)
-              or (v.get("delivered") and not v.get("tt"))]:
+    old = lambda v, h: v.get("done_at") and now - datetime.fromisoformat(v["done_at"]) > timedelta(hours=h)
+    for k in [k for k, v in vids.items() if (v.get("tt") == "Done" and old(v, 48))
+              or (v.get("type", "Video") == "Video" and v.get("delivered") and not v.get("tt"))
+              or (v.get("type", "Video") != "Video" and v.get("delivered") and old(v, 48))]:
         del vids[k]
-    link = lambda v: _msg_link(v.get("chat"), v.get("mid")) or "(VIDEO APPROVAL)"
-    prog = [v for v in vids.values() if not v.get("delivered")]
-    prog.sort(key=lambda v: (v["status"] != "Schedule", v.get("due", ""), v["mid"]))
-    lines = ["<b><u>STATUS VIDEO POSTING SCHEDULE</u></b>", ""]
-    for n, v in enumerate(prog, 1):
+    link = lambda v: _msg_link(v.get("chat"), v.get("mid")) or "(MEDIA APPROVAL)"
+
+    def line(n, v, label):
         if v["status"] == "Schedule" and v.get("due"):
             t = datetime.fromisoformat(v["due"]).astimezone(MYT)
-            lines.append(f"{n}. ⏰ {t:%d/%m} ({DAYS[t.weekday()]}) {t:%H:%M} Video : {link(v)}")
+            head = f"⏰ {t:%d/%m} ({DAYS[t.weekday()]}) {t:%H:%M}"
         else:
-            lines.append(f"{n}. #{v['status']} Video : {link(v)}")
+            head = f"#{v['status']}"
+        return f"{n}. {head} {label} : {link(v)}" + (" ✅" if v.get("delivered") and label != "Video" else "")
+
+    order = lambda v: (v["status"] != "Schedule", v.get("due", ""), v["mid"])
+    L = ["<b>STATUS MEDIA POSTING</b>", "", "<b>🟡 VIDEO @ 5 PLATFORM</b>", ""]
+    prog = sorted((v for v in vids.values() if v.get("type", "Video") == "Video" and not v.get("delivered")), key=order)
+    for n, v in enumerate(prog, 1):
+        L += [line(n, v, "Video"), ""]
     if not prog:
-        lines.append("Tiada video dalam proses.")
+        L += ["Tiada video dalam proses.", ""]
     else:
         cnt = {}
         for v in prog:
             cnt[v["status"]] = cnt.get(v["status"], 0) + 1
-        lines += ["", "Jumlah: " + " , ".join(f"{cnt[s]} {s}" for s in ("Schedule", "Approve", "BelumPost") if s in cnt)]
+        L += ["✅ Jumlah: " + " , ".join(f"{cnt[s]} {s}" for s in ("Schedule", "Approve", "BelumPost") if s in cnt), ""]
+    L += ["", "<b>🔵 VIDEO @ TIKTOK</b>", ""]
     tk = sorted((v for v in vids.values() if v.get("tt")), key=lambda v: (v["tt"] == "Done", v["mid"]))
-    lines += ["", "<b><u>TIKTOK POST</u></b>", ""]
     for n, v in enumerate(tk, 1):
-        lines.append(f"{n}. #TikTok_{v['tt']} Video : {link(v)}")
+        L += [f"{n}. #TikTok_{v['tt']} Video : {link(v)}", ""]
     if not tk:
-        lines.append("Tiada video TikTok dalam senarai.")
+        L += ["Tiada video TikTok dalam senarai.", ""]
     else:
         d = sum(1 for v in tk if v["tt"] == "Done")
-        lines += ["", f"Jumlah: {d} Done , {len(tk) - d} Belum"]
-    lines += ["", "Legend :", "#BelumPost", "#Approve", "#Schedule", "#TikTok_Belum", "#TikTok_Done"]
-    return "\n".join(lines)
+        L += [f"✅ Jumlah: {d} Done , {len(tk) - d} Belum", ""]
+    L += ["", "<b>🔴 NON VIDEO @ 5 PLATFORM</b>", ""]
+    nv = sorted((v for v in vids.values() if v.get("type", "Video") != "Video"), key=lambda v: (bool(v.get("delivered")),) + order(v))
+    for n, v in enumerate(nv, 1):
+        L += [line(n, v, v["type"]), ""]
+    if not nv:
+        L += ["Tiada gambar / ayat dalam senarai.", ""]
+    else:
+        d = sum(1 for v in nv if v.get("delivered"))
+        L += [f"✅ Jumlah: {d} Done , {len(nv) - d} Belum", ""]
+    L += ["", "Legend Status :", "#BelumPost", "#Approve", "#Schedule", "#TikTok_Belum", "#TikTok_Done"]
+    return "\n".join(L)
 
 
 def _sync_schedule(rs, base, owner):
-    """Satu mesej laporan pusat di kumpulan VIDEO APPROVAL; disunting di tempat bila status berubah (boleh di-pin)."""
+    """Satu mesej laporan pusat di kumpulan MEDIA APPROVAL; disunting di tempat bila status berubah (boleh di-pin)."""
     chat = rs.get("video_chat")
     if not chat:
         return
     if rs.get("sched_msg") and not rs.get("sched_gone"):  # padam laporan lama di chat bot
         _tg(base, "deleteMessage", chat_id=owner, message_id=rs["sched_msg"])
         rs["sched_gone"] = True
+    if not rs.get("title_try"):  # tukar nama kumpulan kepada MEDIA APPROVAL (perlu bot admin dengan kebenaran tukar maklumat kumpulan)
+        rs["title_try"] = True
+        resp = _tg(base, "setChatTitle", chat_id=chat, title="MEDIA APPROVAL")
+        if resp is None or resp.status_code >= 300:
+            _tg(base, "sendMessage", chat_id=owner, text="ℹ️ Bot tidak dapat tukar nama kumpulan secara automatik. Sila tukar sendiri kepada MEDIA APPROVAL (Edit nama kumpulan).")
     text = _dash_text(rs)
     d = rs.setdefault("dash", {})
     if d.get("text") == text and d.get("chat") == chat:
@@ -544,11 +604,11 @@ def run(st, notify=print, poll=0):
             rs["offset"] = uid + 1
             _tg(base, "sendMessage", chat_id=m["chat"]["id"], text="✅ Chat ini didaftarkan untuk video kelulusan. Video siap edit akan sampai di sini dengan butang; hanya selepas tekan butang baru masuk ke channel dan platform lain.")
             continue
-        if not from_channel and rs.get("video_chat") and m["chat"]["id"] == rs["video_chat"]:  # kumpulan VIDEO APPROVAL
+        if not from_channel and rs.get("video_chat") and m["chat"]["id"] == rs["video_chat"]:  # kumpulan MEDIA APPROVAL
             rs["offset"] = uid + 1
             if str(m.get("from", {}).get("id")) == owner:
                 try:
-                    _video_to_approval(rs, m, base, notify)
+                    _media_to_approval(rs, m, base, notify)
                 except Exception as e:
                     notify(f"⚠️ Gagal proses video dalam kumpulan kelulusan: {e}")
             continue

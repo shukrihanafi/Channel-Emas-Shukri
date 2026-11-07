@@ -131,7 +131,7 @@ def auto_caption(video):
 
 
 def send_video_for_approval(f, files):
-    """Video dalam folder Drive 'video-approval': muat turun, kecilkan jika perlu, hantar ke kumpulan VIDEO APPROVAL dengan butang."""
+    """Video dalam folder Drive 'video-approval': muat turun, kecilkan jika perlu, hantar ke kumpulan MEDIA APPROVAL dengan butang."""
     ext = os.path.splitext(f.path)[1].lower()
     work = tempfile.mkdtemp()
     src = os.path.join(work, "src" + ext)

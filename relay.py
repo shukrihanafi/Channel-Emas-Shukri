@@ -7,7 +7,7 @@ Video disokong sehingga 20 MB (had muat turun bot Telegram). Mesej bermula denga
 C) Video siap edit: dihantar ke chat peribadi OLEH BOT (send_for_approval.py) dengan butang. Tiada apa disiar sehingga Shukri tekan
    Approve sekarang / pilih jadual. Butang diproses di sini (callback_query); item dijadual disimpan dalam state["relay"]["pending"].
 """
-import os, tempfile, json
+import os, re, tempfile, json
 from datetime import datetime, timedelta, timezone
 import requests
 import whapi, fb
@@ -75,27 +75,46 @@ def strip_tag(caption):
     return "\n".join(lines).rstrip()
 
 
+HARI = ("Isn", "Sel", "Rab", "Kha", "Jum", "Sab", "Aha")
+
+
 def approval_keyboard(page="main"):
-    """Papan butang untuk video menunggu kelulusan. callback_data: ts / ap / n20 / m07 / hr / h{HH} / bk / rj / noop.
-    TikTok ialah MANUAL oleh Shukri di telefon: pilihan dengan 📣 (ts, n20, m07, h{HH}) menyebabkan bot hantar peringatan + caption siap salin
-    ke DM selepas video disiar ke 5 platform. ap = 5 platform sahaja."""
-    if page == "hours":
+    """Papan butang kelulusan, hanya 2 pilihan: Approve sekarang (ts) atau Schedule (sc) -> pilih tarikh (sd{off}) -> jam (sh{off}_{HH}) -> minit (sm{off}_{HH}_{MM}).
+    Kedua-duanya menyebabkan bot hantar peringatan TikTok manual selepas siaran. (Callback lama ap/n20/m07/hr/h{HH}/rj masih diproses untuk mesej lama.)"""
+    back = lambda cb: [{"text": "⬅️ Kembali", "callback_data": cb}]
+    if page == "dates":
+        today = _now().astimezone(MYT)
         rows, row = [], []
-        for h in range(7, 24):
-            row.append({"text": f"{h}:09", "callback_data": f"h{h:02d}"})
-            if len(row) == 4:
+        for i in range(0, 14):
+            d = today + timedelta(days=i)
+            lbl = "Hari ini" if i == 0 else ("Esok" if i == 1 else HARI[d.weekday()])
+            row.append({"text": f"{lbl} {d:%d/%m}", "callback_data": f"sd{i}"})
+            if len(row) == 2:
                 rows.append(row)
                 row = []
         if row:
             rows.append(row)
-        rows.append([{"text": "⬅️ Kembali", "callback_data": "bk"}])
+        rows.append(back("bk"))
+        return {"inline_keyboard": rows}
+    if page.startswith("hrs"):
+        off = page[3:]
+        rows, row = [], []
+        for h in range(24):
+            row.append({"text": f"{h:02d}", "callback_data": f"sh{off}_{h:02d}"})
+            if len(row) == 6:
+                rows.append(row)
+                row = []
+        rows.append(back("sc"))
+        return {"inline_keyboard": rows}
+    if page.startswith("min"):
+        off, hh = page[3:].split("_")
+        mins = ("00", "09", "15", "20", "30", "40", "45", "50")
+        rows = [[{"text": f"{hh}:{m}", "callback_data": f"sm{off}_{hh}_{m}"} for m in mins[i:i + 4]] for i in (0, 4)]
+        rows.append(back(f"sd{off}"))
         return {"inline_keyboard": rows}
     return {"inline_keyboard": [
         [{"text": "✅ Approve 5 sekarang + 📣 TikTok manual", "callback_data": "ts"}],
-        [{"text": "🌙 Malam ini 8:09 + 📣", "callback_data": "n20"}, {"text": "🌅 Esok 7:09 + 📣", "callback_data": "m07"}],
-        [{"text": "🕒 Pilih masa lain (+ 📣)", "callback_data": "hr"}],
-        [{"text": "5️⃣ 5 sahaja (tiada TikTok)", "callback_data": "ap"}],
-        [{"text": "❌ Tolak", "callback_data": "rj"}]]}
+        [{"text": "⏰ Schedule + 📣 TikTok manual", "callback_data": "sc"}]]}
 
 
 def _tt_status_text(done, text=""):
@@ -283,8 +302,17 @@ def _handle_callback(rs, cb, owner, base, notify):
         _tg(base, "editMessageText", chat_id=chat, message_id=mid, text=txt, reply_markup=json.dumps(_tt_keyboard(isdone)))
         return ans("Ditanda: sudah post ✅" if isdone else "Ditanda: belum post")
     if data == "hr":
-        mark(approval_keyboard("hours"))
+        mark(approval_keyboard("dates"))
+        return ans("Pilih tarikh")
+    if data == "sc":
+        mark(approval_keyboard("dates"))
+        return ans("Pilih tarikh")
+    if re.fullmatch(r"sd\d+", data):
+        mark(approval_keyboard("hrs" + data[2:]))
         return ans("Pilih jam (waktu Malaysia)")
+    if re.fullmatch(r"sh\d+_\d\d", data):
+        mark(approval_keyboard("min" + data[2:]))
+        return ans("Pilih minit")
     if data == "bk":
         mark(approval_keyboard())
         return ans("")
@@ -312,6 +340,14 @@ def _handle_callback(rs, cb, owner, base, notify):
         due, label = _now(), "✅ 5 platform sekarang (tiada TikTok)"
     elif data == "ts":
         due, label, tt = _now(), "✅ 5 platform sekarang + 📣 peringatan TikTok", True
+    elif re.fullmatch(r"sm\d+_\d\d_\d\d", data):
+        off, hh, mm = data[2:].split("_")
+        t = (_now().astimezone(MYT) + timedelta(days=int(off))).replace(hour=int(hh), minute=int(mm), second=0, microsecond=0)
+        if t <= _now().astimezone(MYT):
+            mark(approval_keyboard("dates"))
+            return ans("Masa itu sudah lalu, pilih semula.")
+        due, tt = t.astimezone(timezone.utc), True
+        label = f"⏰ Dijadual {t:%d/%m %H:%M} + 📣 peringatan TikTok"
     elif data == "n20" or data == "m07" or (data.startswith("h") and data[1:].isdigit()):
         if data == "n20":
             due = _next_slot(20)

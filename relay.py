@@ -75,25 +75,24 @@ def strip_tag(caption):
     return "\n".join(lines).rstrip()
 
 
-HARI = ("Isn", "Sel", "Rab", "Kha", "Jum", "Sab", "Aha")
+DAYS = ("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
 
 
 def approval_keyboard(page="main"):
     """Papan butang kelulusan, hanya 2 pilihan: Approve sekarang (ts) atau Schedule (sc) -> pilih tarikh (sd{off}) -> jam (sh{off}_{HH}) -> minit (sm{off}_{HH}_{MM}).
     Kedua-duanya menyebabkan bot hantar peringatan TikTok manual selepas siaran. (Callback lama ap/n20/m07/hr/h{HH}/rj masih diproses untuk mesej lama.)"""
     back = lambda cb: [{"text": "⬅️ Kembali", "callback_data": cb}]
-    if page == "dates":
-        today = _now().astimezone(MYT)
-        rows, row = [], []
-        for i in range(0, 14):
-            d = today + timedelta(days=i)
-            lbl = "Hari ini" if i == 0 else ("Esok" if i == 1 else HARI[d.weekday()])
-            row.append({"text": f"{lbl} {d:%d/%m}", "callback_data": f"sd{i}"})
-            if len(row) == 2:
+    if page == "dates":  # tarikh + jam sekali: 3 hari bermula hari ini, jam 11:15 dan 23:15 (slot yang sudah lalu disembunyikan)
+        now = _now().astimezone(MYT)
+        rows = []
+        for i in range(3):
+            d = now + timedelta(days=i)
+            row = []
+            for hh, mm in ((11, 15), (23, 15)):
+                if d.replace(hour=hh, minute=mm, second=0, microsecond=0) > now:
+                    row.append({"text": f"{DAYS[d.weekday()]} {d:%d/%m} @ {hh}:{mm:02d}", "callback_data": f"sm{i}_{hh:02d}_{mm:02d}"})
+            if row:
                 rows.append(row)
-                row = []
-        if row:
-            rows.append(row)
         rows.append(back("bk"))
         return {"inline_keyboard": rows}
     if page.startswith("hrs"):
@@ -277,6 +276,12 @@ def _video_to_approval(rs, m, base, notify):
         notify(f"⚠️ Gagal sediakan butang kelulusan untuk video dalam kumpulan: {(resp.text[:200] if resp is not None else 'tiada jawapan')}")
 
 
+def _msg_link(chat, mid):
+    """Pautan terus ke mesej di kumpulan peribadi (hanya ada untuk supergroup, id bermula -100)."""
+    s = str(chat)
+    return f"https://t.me/c/{s[4:]}/{mid}" if s.startswith("-100") and mid else None
+
+
 def _handle_callback(rs, cb, owner, base, notify):
     """Proses satu tekanan butang kelulusan. Tiada penyiaran di sini: hanya masukkan ke giliran 'pending' (due = sekarang atau jadual)."""
     if str(cb.get("from", {}).get("id")) != owner:
@@ -360,10 +365,16 @@ def _handle_callback(rs, cb, owner, base, notify):
     pend[key] = {"vid": vid, "text": text, "due": due.isoformat(), "tries": 0, "mid": mid, "tt": tt, "chat": chat}
     done.append(mid)
     rs["cbdone"] = done[-50:]
-    retag("#Approve", {"inline_keyboard": [[{"text": label, "callback_data": "noop"}]]})
+    sched = data not in ("ap", "ts")
+    retag("#Schedule" if sched else "#Approve", {"inline_keyboard": [[{"text": label, "callback_data": "noop"}]]})
     ans(label)
-    notify(f"{label}. Video akan disiar ke 5 platform pada semakan seterusnya (setiap ~3-20 minit)."
-           + (" Peringatan TikTok akan dihantar selepas itu." if tt else ""))
+    if sched:
+        link = _msg_link(chat, mid)
+        notify(f"#Schedule Video {label}.\n\nVideo akan post ke 5 platform pada waktu jadual.\nPeringatan TikTok akan dihantar selepas itu.\n\n"
+               + (f"Video : {link}" if link else "Video : dalam kumpulan VIDEO APPROVAL (tapis #Schedule)"))
+    else:
+        notify(f"{label}. Video akan disiar ke 5 platform sebentar lagi."
+               + (" Peringatan TikTok akan dihantar selepas itu." if tt else ""))
 
 
 def _process_pending(st, rs, base, token, tg_channel, notify):
@@ -392,15 +403,15 @@ def _process_pending(st, rs, base, token, tg_channel, notify):
     return n
 
 
-def run(st, notify=print):
+def run(st, notify=print, poll=0):
     token, owner = os.getenv("TELEGRAM_BOT_TOKEN"), str(os.getenv("TELEGRAM_CHAT_ID", ""))
     if not token or not owner or not whapi.enabled():
         return 0
     base = f"https://api.telegram.org/bot{token}"
     first = "relay" not in st
     rs = st.setdefault("relay", {"offset": 0})
-    r = _retry(lambda: requests.get(f"{base}/getUpdates", params={"offset": rs["offset"], "timeout": 0,
-                     "allowed_updates": '["message","channel_post","callback_query"]'}, timeout=(10, 60)))
+    r = _retry(lambda: requests.get(f"{base}/getUpdates", params={"offset": rs["offset"], "timeout": poll,
+                     "allowed_updates": '["message","channel_post","callback_query"]'}, timeout=(10, 60 + poll)))
     r.raise_for_status()
     if first:  # larian pertama: abaikan mesej lama, mula dari sekarang (elak siar mesej lama ke saluran awam)
         ups = r.json().get("result", [])

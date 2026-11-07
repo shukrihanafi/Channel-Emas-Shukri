@@ -101,20 +101,53 @@
   },
   "bb_last": 1,
   "relay": {
-    "offset": 991464063,
+    "offset": 991464069,
     "wa_done": "a6",
     "tries": 0,
     "tg_done": "a6",
     "fb_done": "a6",
     "th_done": "a6",
     "ig_done": "a6",
-    "pending": {},
+    "pending": {
+      "a18": {
+        "vid": {
+          "duration": 18,
+          "width": 720,
+          "height": 1136,
+          "mime_type": "video/mp4",
+          "thumbnail": {
+            "file_id": "AAMCBQADIQUAAwEJTo34AAMHau6pKs8flH3OM5bgpypWQSgtikQAApcgAAI8rHlXpn6xiIZplNUBAAdtAAM9BA",
+            "file_unique_id": "AQADlyAAAjyseVdy",
+            "file_size": 13205,
+            "width": 203,
+            "height": 320
+          },
+          "thumb": {
+            "file_id": "AAMCBQADIQUAAwEJTo34AAMHau6pKs8flH3OM5bgpypWQSgtikQAApcgAAI8rHlXpn6xiIZplNUBAAdtAAM9BA",
+            "file_unique_id": "AQADlyAAAjyseVdy",
+            "file_size": 13205,
+            "width": 203,
+            "height": 320
+          },
+          "file_id": "BAACAgUAAyEFAAMBCU6N-AADB2ruqSrPH5R9zjOW4KcqVkEoLYpEAAKXIAACPKx5V6Z-sYiGaZTVPQQ",
+          "file_unique_id": "AgADlyAAAjyseVc",
+          "file_size": 6041542
+        },
+        "text": "Amboi...\n\nBila waktu terbaik simpan emas?\nTengok video sini ok.\n\nAjom klik shukriee.com untuk simpan emas!",
+        "due": "2026-11-08T03:45:00+00:00",
+        "tries": 0,
+        "mid": 18,
+        "tt": true,
+        "chat": -1004451110392
+      }
+    },
     "cbdone": [
       228,
       231,
       247,
       250,
-      6
+      6,
+      18
     ],
     "redo": {},
     "video_chat": -1004451110392

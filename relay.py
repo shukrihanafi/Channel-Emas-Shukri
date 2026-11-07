@@ -511,49 +511,40 @@ def _dash_text(rs):
               or (v.get("type", "Video") != "Video" and v.get("delivered") and old(v, 48))]:
         del vids[k]
     link = lambda v: _msg_link(v.get("chat"), v.get("mid")) or "(MEDIA APPROVAL)"
+    today = now.astimezone(MYT).date()
 
-    def line(n, v, label):
-        if v["status"] == "Schedule" and v.get("due"):
-            t = datetime.fromisoformat(v["due"]).astimezone(MYT)
-            head = f"⏰ {t:%d/%m} ({DAYS[t.weekday()]}) {t:%H:%M}"
-        else:
-            head = f"#{v['status']}"
-        return f"{n}. {head} {label} : {link(v)}" + (" ✅" if v.get("delivered") and label != "Video" else "")
+    def when(v):
+        t = datetime.fromisoformat(v["due"]).astimezone(MYT)
+        rel = {0: "Today ", 1: "Esok ", 2: "Lusa "}.get((t.date() - today).days, "")
+        return f"{rel}{t:%d/%m} ({DAYS[t.weekday()]}) {t:%H:%M}"
 
-    order = lambda v: (v["status"] != "Schedule", v.get("due", ""), v["mid"])
-    L = ["<b>STATUS MEDIA POSTING</b>", "", "<b>🟡 VIDEO @ 5 PLATFORM</b>", ""]
-    prog = sorted((v for v in vids.values() if v.get("type", "Video") == "Video" and not v.get("delivered")), key=order)
-    for n, v in enumerate(prog, 1):
-        L += [line(n, v, "Video"), ""]
-    if not prog:
-        L += ["Tiada video dalam proses.", ""]
-    else:
+    def count(items):
         cnt = {}
-        for v in prog:
-            cnt[v["status"]] = cnt.get(v["status"], 0) + 1
-        L += ["✅ Jumlah: " + " , ".join(f"{cnt[s]} {s}" for s in ("Schedule", "Approve", "BelumPost") if s in cnt), ""]
-    L += ["", "<b>🔵 VIDEO @ TIKTOK</b>", ""]
-    tk = sorted((v for v in vids.values() if v.get("tt")), key=lambda v: (v["tt"] == "Done", v["mid"]))
-    for n, v in enumerate(tk, 1):
-        L += [f"{n}. #TikTok_{v['tt']} Video : {link(v)}", ""]
-    if not tk:
-        L += ["Tiada video TikTok dalam senarai.", ""]
-    else:
-        d = sum(1 for v in tk if v["tt"] == "Done")
-        L += [f"✅ Jumlah: {d} Done , {len(tk) - d} Belum", ""]
-    L += ["", "<b>🔴 NON VIDEO @ 5 PLATFORM</b>", ""]
-    nv = sorted((v for v in vids.values() if v.get("type", "Video") != "Video"), key=lambda v: (bool(v.get("delivered")),) + order(v))
-    for n, v in enumerate(nv, 1):
-        L += [line(n, v, v["type"]), ""]
-    if not nv:
-        L += ["Tiada gambar / ayat dalam senarai.", ""]
-    else:
-        cnt = {}
-        for v in nv:
-            k = "Done" if v.get("delivered") else v["status"]
-            cnt[k] = cnt.get(k, 0) + 1
-        L += ["✅ Jumlah: " + " , ".join(f"{cnt[s]} {s}" for s in ("Schedule", "Approve", "BelumPost", "Done") if s in cnt), ""]
-    L += ["", "Legend Status :", "#BelumPost", "#Approve", "#Schedule", "#TikTok_Belum", "#TikTok_Done"]
+        for s in items:
+            cnt[s] = cnt.get(s, 0) + 1
+        return " , ".join(f"{cnt[s]} {s}" for s in ("Schedule", "Approve", "BelumPost", "Done", "Belum") if s in cnt)
+
+    rows, vcnt, ncnt, tcnt = [], [], [], []
+    for v in vids.values():
+        isv = v.get("type", "Video") == "Video"
+        if isv and v.get("delivered"):
+            continue
+        k = "Done" if v.get("delivered") else v["status"]
+        (vcnt if isv else ncnt).append(k)
+        head = when(v) if v.get("due") else "#BelumPost"
+        rows.append((0 if v.get("due") else 1, v.get("due", ""), v["mid"], f"{'🔴' if isv else '🟢'} {head} {v.get('type', 'Video')} : {link(v)}" + (" ✅" if v.get("delivered") else "")))
+    for v in vids.values():
+        if v.get("tt"):
+            tcnt.append(v["tt"])
+            rows.append((2, "", v["mid"], f"🟡 #TikTok_{v['tt']} Video : {link(v)}"))
+    rows.sort(key=lambda x: x[:3])
+    L = ["<b>STATUS MEDIA POSTING</b>", ""]
+    L += [f"{n}. {x[3]}" for n, x in enumerate(rows, 1)] or ["Tiada media dalam senarai."]
+    leg = lambda ic, name, c, empty: f"{ic} {name} (" + (f"Jumlah: {count(c)}" if c else empty) + ")"
+    L += ["", "<b>LEGEND:</b>", leg("🔴", "VIDEO @ 5 PLATFORM", vcnt, "Tiada video dalam proses."),
+          leg("🟡", "VIDEO @ TIKTOK", tcnt, "Tiada video TikTok dalam senarai."),
+          leg("🟢", "NON VIDEO @ 5 PLATFORM", ncnt, "Tiada gambar / ayat dalam senarai."),
+          "", "<b>HASHTAG SEARCH</b>", "", "#BelumPost", "#Approve", "#Schedule", "#TikTok_Belum", "#TikTok_Done"]
     return "\n".join(L)
 
 

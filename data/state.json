@@ -97,7 +97,7 @@
   },
   "bb_last": 1,
   "relay": {
-    "offset": 991464096,
+    "offset": 991464097,
     "wa_done": "a6",
     "tries": 0,
     "tg_done": "a6",
@@ -194,12 +194,18 @@
         "mid": 32,
         "status": "Schedule",
         "due": "2026-11-09T15:15:00+00:00"
+      },
+      "38": {
+        "chat": -1004451110392,
+        "mid": 38,
+        "status": "BelumPost",
+        "type": "Image"
       }
     },
     "dash": {
       "chat": -1004451110392,
       "mid": 33,
-      "text": "<b>STATUS MEDIA POSTING</b>\n\n<b>🟡 VIDEO @ 5 PLATFORM</b>\n\n1. ⏰ 08/11 (Sun) 11:45 Video : https://t.me/c/4451110392/18\n\n2. ⏰ 09/11 (Mon) 23:15 Video : https://t.me/c/4451110392/32\n\n✅ Jumlah: 2 Schedule\n\n\n<b>🔵 VIDEO @ TIKTOK</b>\n\nTiada video TikTok dalam senarai.\n\n\n<b>🔴 NON VIDEO @ 5 PLATFORM</b>\n\nTiada gambar / ayat dalam senarai.\n\n\nLegend Status :\n#BelumPost\n#Approve\n#Schedule\n#TikTok_Belum\n#TikTok_Done"
+      "text": "<b>STATUS MEDIA POSTING</b>\n\n<b>🟡 VIDEO @ 5 PLATFORM</b>\n\n1. ⏰ 08/11 (Sun) 11:45 Video : https://t.me/c/4451110392/18\n\n2. ⏰ 09/11 (Mon) 23:15 Video : https://t.me/c/4451110392/32\n\n✅ Jumlah: 2 Schedule\n\n\n<b>🔵 VIDEO @ TIKTOK</b>\n\nTiada video TikTok dalam senarai.\n\n\n<b>🔴 NON VIDEO @ 5 PLATFORM</b>\n\n1. #BelumPost Image : https://t.me/c/4451110392/38\n\n✅ Jumlah: 0 Done , 1 Belum\n\n\nLegend Status :\n#BelumPost\n#Approve\n#Schedule\n#TikTok_Belum\n#TikTok_Done"
     },
     "title_try": true
   },

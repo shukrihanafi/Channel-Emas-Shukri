@@ -108,8 +108,7 @@ def approval_keyboard(page="main"):
         return {"inline_keyboard": rows}
     if page.startswith("min"):
         off, hh = page[3:].split("_")
-        mins = ("00", "09", "15", "20", "30", "40", "45", "50")
-        rows = [[{"text": f"{hh}:{m}", "callback_data": f"sm{off}_{hh}_{m}"} for m in mins[i:i + 4]] for i in (0, 4)]
+        rows = [[{"text": f"{hh}:{m}", "callback_data": f"sm{off}_{hh}_{m}"} for m in ("00", "15", "30", "45")]]
         rows.append(back(f"sd{off}"))
         return {"inline_keyboard": rows}
     return {"inline_keyboard": [

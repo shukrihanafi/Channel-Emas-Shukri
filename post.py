@@ -696,12 +696,20 @@ def watchdog(p, st):
         if f"{today}|{slot}" in done or not (12 <= _since(slot, dt) <= 150):
             continue
         print(f"Pengawas: slot {slot} ({m}) belum dijalankan, jalankan sekarang")
+        try:
+            tg_plain(f"⚠️ Auto push {slot} ({m}) tidak berjalan pada masanya. Pengawas menjalankannya semula sekarang secara automatik.")
+        except Exception:
+            pass
         done[f"{today}|{slot}"] = dt.strftime("%H:%M") + " (pengawas)"
         CURRENT_MODE = m
         try:
             MODES[m](p, st)
         except Exception as e:
             print(f"Pengawas: {m} gagal: {e}")
+            try:
+                tg_plain(f"❌ Pengawas gagal menjalankan semula {slot} ({m}): {str(e)[:200]}")
+            except Exception:
+                pass
         finally:
             CURRENT_MODE = "alert"
 

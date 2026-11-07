@@ -79,13 +79,23 @@ def approval_keyboard(page="main"):
         [{"text": "❌ Tolak", "callback_data": "rj"}]]}
 
 
+def _tt_status_text(done, text=""):
+    """Teks status TikTok yang boleh ditapis: ketik #TikTok_Belum atau #TikTok_Done dalam Telegram untuk senarai semua yang berkenaan."""
+    first = next((l.strip() for l in (text or "").splitlines() if l.strip() and not l.strip().lower().startswith(("amboi", "shukriee"))), "")
+    head = ("✅ TikTok: SUDAH POST\n#TikTok_Done" if done else "⏳ TikTok: BELUM POST\n#TikTok_Belum")
+    return head + (f"\n🎬 {first[:60]}" if first else "")
+
+
+def _tt_keyboard(done):
+    return {"inline_keyboard": [[{"text": "↩️ Batal (belum post)", "callback_data": "ttu"}] if done else
+                                [{"text": "✅ Dah post di TikTok", "callback_data": "ttd"}]]}
+
+
 def tt_reminder(base, owner, text, mid, notify=print):
-    """Peringatan TikTok manual: hantar caption siap salin ke DM (balas pada video kelulusan). Tanpa Claude."""
-    body = ("📣 TikTok (manual di telefon)\n"
-            "1) Simpan video di atas ke galeri (tekan lama > Simpan)\n"
-            "2) Buka TikTok > Upload > tampal caption di bawah (tekan caption untuk salin)\n"
-            "3) Siar sekarang, atau jadual jika app menyediakannya (TikTok Studio web ada jadual sehingga ~30 hari)")
-    _tg(base, "sendMessage", chat_id=owner, text=body, reply_to_message_id=mid)
+    """Peringatan TikTok manual: mesej status (#TikTok_Belum) dengan butang 'Dah post', diikuti caption siap salin. Tanpa Claude."""
+    _tg(base, "sendMessage", chat_id=owner, text=_tt_status_text(False, text) + "\n\n"
+        "1) Simpan video di atas ke galeri\n2) TikTok > Upload > tampal caption di bawah\n3) Siar atau jadual, kemudian tekan butang di bawah",
+        reply_to_message_id=mid, reply_markup=json.dumps(_tt_keyboard(False)))
     cap = (text or "").replace("`", "'")
     _tg(base, "sendMessage", chat_id=owner, text=f"```\n{cap}\n```", parse_mode="Markdown", reply_to_message_id=mid)
 
@@ -242,6 +252,14 @@ def _handle_callback(rs, cb, owner, base, notify):
     key = f"a{mid}"
     if data == "noop":
         return ans("Sudah diproses.")
+    if data in ("ttd", "ttu"):  # status TikTok manual: dah post / batal
+        isdone = data == "ttd"
+        body = (m.get("text") or "")
+        first = next((l[2:].strip() for l in body.splitlines() if l.startswith("🎬")), "")
+        steps = body.split("\n\n", 1)[1] if "\n\n" in body else ""
+        txt = _tt_status_text(isdone, first) + ("\n\n" + steps if steps else "")
+        _tg(base, "editMessageText", chat_id=chat, message_id=mid, text=txt, reply_markup=json.dumps(_tt_keyboard(isdone)))
+        return ans("Ditanda: sudah post ✅" if isdone else "Ditanda: belum post")
     if data == "hr":
         mark(approval_keyboard("hours"))
         return ans("Pilih jam (waktu Malaysia)")

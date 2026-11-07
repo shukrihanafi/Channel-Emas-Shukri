@@ -98,32 +98,13 @@
   "bb_last": 1,
   "relay": {
     "offset": 991464043,
-    "wa_done": 991464042,
+    "wa_done": "a250",
     "tries": 0,
-    "tg_done": "a231",
-    "fb_done": 991464042,
-    "th_done": 991464042,
-    "ig_done": 991464042,
-    "pending": {
-      "a250": {
-        "vid": {
-          "duration": 0,
-          "width": 320,
-          "height": 320,
-          "file_name": "video.mp4",
-          "mime_type": "video/mp4",
-          "file_id": "BAACAgUAAxkDAAP6au4c10oxh7ZEcwlbYbqzWRVDpHQAAn8lAAIXSHFX5fUpN0YFOPY9BA",
-          "file_unique_id": "AgADfyUAAhdIcVc",
-          "file_size": 18411362
-        },
-        "text": "Amboi... sampai bila nak tunggu harga emas?\n\nYang tunggu-tunggu ni, akhirnya langsung tak simpan emas. Rugi masa, rugi duit.\n\nDuit yang kita simpan makin lama makin inflasi. Tapi duit yang ditukar jadi emas, makin lama makin bernilai.\n\nTak perlu tunggu lagi. Boleh mula serendah RM100 di akaun GAP Public Gold. Jom simpan emas sama-sama.\n\nKlik link bio sekarang.\nshukriee.com",
-        "due": "2026-11-07T01:09:00+00:00",
-        "tries": 0,
-        "mid": 250,
-        "tt": true,
-        "chat": -5400572231
-      }
-    },
+    "tg_done": "a250",
+    "fb_done": "a250",
+    "th_done": "a250",
+    "ig_done": "a250",
+    "pending": {},
     "cbdone": [
       228,
       231,

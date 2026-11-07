@@ -1,7 +1,7 @@
 name: Sync Google Drive
 on:
   schedule:
-    - cron: "23 */6 * * *"
+    - cron: "7,37 * * * *"
   workflow_dispatch:
 permissions:
   contents: write
@@ -17,8 +17,12 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-      - run: pip install gdown pillow
-      - run: python sync_gdrive.py
+      - run: pip install gdown pillow requests
+      - name: Sync
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python sync_gdrive.py
       - run: |
           git config user.name "gdrive-sync"
           git config user.email "gdrive-sync@users.noreply.github.com"

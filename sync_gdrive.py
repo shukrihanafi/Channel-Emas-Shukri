@@ -1,7 +1,7 @@
 """Sync gambar dari folder Google Drive awam (broll-library/emas) ke ilmu_img/.
 Gambar disalin (dikecilkan ke 1600px); video: diambil satu frame yang sesuai (tajam, tidak gelap/terlalu cerah).
 Fail yang sudah diproses direkod dalam ilmu_img/.synced.json supaya tidak dimuat turun semula."""
-import os, re, json, subprocess, tempfile
+import os, re, sys, json, subprocess, tempfile
 import gdown
 from PIL import Image, ImageFilter, ImageStat, ImageOps
 
@@ -66,6 +66,42 @@ def best_frame(video, dst):
     save_image(pick, dst)
 
 
+def compress(src, dst, target_mb=18.5):
+    """Kecilkan video supaya di bawah ~19 MB (had 20 MB bot Telegram): bitrate dikira daripada tempoh; cuba semula lebih rendah jika masih besar."""
+    d = duration(src) or 30
+    for factor in (1.0, 0.8, 0.6):
+        vbr = int(max(250_000, target_mb * factor * 8 * 1024 * 1024 / d - 128_000))
+        cmd = ["ffmpeg", "-v", "error", "-y", "-i", src, "-vf", "scale='min(1080,iw)':-2", "-c:v", "libx264", "-preset", "veryfast",
+               "-b:v", str(vbr), "-maxrate", str(int(vbr * 1.25)), "-bufsize", str(vbr * 2), "-pix_fmt", "yuv420p",
+               "-c:a", "aac", "-b:a", "128k", "-movflags", "+faststart", dst]
+        subprocess.run(cmd, check=True, timeout=3000)
+        if os.path.getsize(dst) <= 19.5 * 1024 * 1024:
+            return dst
+    raise RuntimeError("video terlalu panjang untuk dikecilkan ke bawah 20 MB")
+
+
+def send_video_for_approval(f, files):
+    """Video dalam folder Drive 'video-approval': muat turun, kecilkan jika perlu, hantar ke kumpulan VIDEO APPROVAL dengan butang."""
+    ext = os.path.splitext(f.path)[1].lower()
+    work = tempfile.mkdtemp()
+    src = os.path.join(work, "src" + ext)
+    if not gdown.download(id=f.id, output=src, quiet=True):
+        raise RuntimeError("muat turun video gagal")
+    caption = "Amboi...\n\nshukriee.com"
+    stem = os.path.splitext(f.path)[0]
+    for g in files:  # caption: fail .txt bernama sama dalam folder yang sama
+        if g.path.lower().endswith(".txt") and os.path.splitext(g.path)[0] == stem:
+            tp = os.path.join(work, "cap.txt")
+            if gdown.download(id=g.id, output=tp, quiet=True):
+                caption = open(tp, encoding="utf-8").read().strip()[:1024] or caption
+    out = src
+    if os.path.getsize(src) > 19.5 * 1024 * 1024:
+        out = compress(src, os.path.join(work, "small.mp4"))
+    elif ext != ".mp4":
+        out = compress(src, os.path.join(work, "small.mp4"))
+    subprocess.run([sys.executable, "send_for_approval.py", out, caption], check=True, timeout=900)
+
+
 def main():
     os.makedirs(OUT, exist_ok=True)
     man = json.load(open(MAN)) if os.path.exists(MAN) else {}
@@ -75,6 +111,16 @@ def main():
     added = 0
     for f in files:
         ext = os.path.splitext(f.path)[1].lower()
+        if "video-approval" in [p.lower() for p in f.path.replace("\\", "/").split("/")][:-1]:  # folder video-approval: hantar untuk kelulusan
+            if ext in VID and f.id not in man:
+                try:
+                    send_video_for_approval(f, files)
+                    man[f.id] = "kelulusan-" + slug(f.path)
+                    json.dump(man, open(MAN, "w"), indent=1)
+                    print("KELULUSAN", f.path)
+                except Exception as e:
+                    print("GAGAL kelulusan", f.path, str(e)[:300])
+            continue
         if f.id in man or ext not in IMG + VID:
             continue
         try:

@@ -190,13 +190,50 @@ def _process_redo(st, rs, base, token, notify):
         break  # satu item setiap larian (elak larian terlalu lama)
 
 
+def _vid_obj(m):
+    """Objek video daripada mesej Telegram: video biasa, atau fail (document) berjenis video."""
+    v = m.get("video")
+    if v:
+        return v
+    d = m.get("document")
+    if d and str(d.get("mime_type", "")).startswith("video/"):
+        return d
+    return None
+
+
+def _video_to_approval(rs, m, base, notify):
+    """Shukri hantar video terus dalam kumpulan VIDEO APPROVAL: bot hantar semula video itu (guna file_id, tanpa muat turun)
+    dengan butang Approve / Jadual / Tolak. Video lebih 20 MB tidak boleh dimuat turun bot Telegram: beri panduan (jalan Google Drive)."""
+    v = _vid_obj(m)
+    if not v:
+        return
+    chat, mid = m["chat"]["id"], m["message_id"]
+    caption = (m.get("caption") or "").strip()[:1024]
+    size = v.get("file_size") or 0
+    if size > MAX_VIDEO:
+        _tg(base, "sendMessage", chat_id=chat, reply_to_message_id=mid, text=(
+            f"⚠️ Video ini {size / 1048576:.0f} MB, melebihi had 20 MB yang boleh dimuat turun bot Telegram, jadi bot tidak boleh kecilkan atau siarkannya dari sini.\n\n"
+            "Pilihan:\n"
+            "1) Hantar semula sebagai VIDEO (bukan Fail) supaya Telegram kecilkan dahulu.\n"
+            "2) Letak video di Google Drive: emas > video-approval (caption: fail .txt dengan nama sama). Bot akan kecilkan automatik (kira-kira 30 minit) dan hantar ke sini dengan butang."))
+        return
+    is_video = bool(m.get("video"))
+    method, field = ("sendVideo", "video") if is_video else ("sendDocument", "document")
+    data = {"chat_id": chat, field: v["file_id"], "caption": caption, "reply_markup": json.dumps(approval_keyboard()), "reply_to_message_id": mid}
+    if is_video:
+        data["supports_streaming"] = "true"
+    resp = _tg(base, method, **data)
+    if resp is None or resp.status_code >= 300:
+        notify(f"⚠️ Gagal sediakan butang kelulusan untuk video dalam kumpulan: {(resp.text[:200] if resp is not None else 'tiada jawapan')}")
+
+
 def _handle_callback(rs, cb, owner, base, notify):
     """Proses satu tekanan butang kelulusan. Tiada penyiaran di sini: hanya masukkan ke giliran 'pending' (due = sekarang atau jadual)."""
     if str(cb.get("from", {}).get("id")) != owner:
         _tg(base, "answerCallbackQuery", callback_query_id=cb["id"], text="Tidak dibenarkan.")
         return
     m = cb.get("message") or {}
-    vid, data = m.get("video"), cb.get("data", "")
+    vid, data = _vid_obj(m), cb.get("data", "")
     chat, mid = m.get("chat", {}).get("id"), m.get("message_id")
     ans = lambda t: _tg(base, "answerCallbackQuery", callback_query_id=cb["id"], text=t)
     mark = lambda markup: _tg(base, "editMessageReplyMarkup", chat_id=chat, message_id=mid, reply_markup=json.dumps(markup))
@@ -311,6 +348,14 @@ def run(st, notify=print):
             rs["video_chat"] = m["chat"]["id"]
             rs["offset"] = uid + 1
             _tg(base, "sendMessage", chat_id=m["chat"]["id"], text="✅ Chat ini didaftarkan untuk video kelulusan. Video siap edit akan sampai di sini dengan butang; hanya selepas tekan butang baru masuk ke channel dan platform lain.")
+            continue
+        if not from_channel and rs.get("video_chat") and m["chat"]["id"] == rs["video_chat"]:  # kumpulan VIDEO APPROVAL
+            rs["offset"] = uid + 1
+            if str(m.get("from", {}).get("id")) == owner:
+                try:
+                    _video_to_approval(rs, m, base, notify)
+                except Exception as e:
+                    notify(f"⚠️ Gagal proses video dalam kumpulan kelulusan: {e}")
             continue
         if from_channel:
             uname = "@" + (m["chat"].get("username") or "")

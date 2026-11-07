@@ -44,6 +44,26 @@ def _enqueue(vid, caption, mid, tt=True, chat=None):
     return False
 
 
+def _register(chat, mid, status="BelumPost"):
+    """Daftar video baru dalam rekod laporan pusat (data/state.json), push dengan cuba semula."""
+    here = os.path.dirname(os.path.abspath(__file__))
+    git = lambda *a: subprocess.run(["git", *a], cwd=here, capture_output=True, text=True)
+    for _ in range(6):
+        git("fetch", "-q", "origin", "main")
+        git("reset", "-q", "--hard", "origin/main")
+        p = os.path.join(here, "data", "state.json")
+        st = json.load(open(p))
+        rs = st.setdefault("relay", {"offset": 0})
+        rs.setdefault("vids", {})[str(mid)] = {"chat": chat, "mid": mid, "status": status}
+        json.dump(st, open(p, "w"), ensure_ascii=False, indent=2)
+        git("add", "data/state.json")
+        git("-c", "user.name=channel-bot", "-c", "user.email=bot@users.noreply.github.com", "commit", "-q", "-m", "daftar video kelulusan")
+        if git("push", "-q", "origin", "HEAD:main").returncode == 0:
+            return True
+        time.sleep(5)
+    return False
+
+
 def _video_chat(default):
     """Chat khas video (didaftar dengan /video dalam kumpulan) daripada state.json di origin/main; jika tiada, guna lalai (DM)."""
     here = os.path.dirname(os.path.abspath(__file__))
@@ -83,6 +103,8 @@ def main():
                       files={"video": open(video, "rb")}, timeout=(10, 600))
     print(r.status_code, r.text[:200])
     r.raise_for_status()
+    if not auto:
+        _register(chat, r.json()["result"]["message_id"])
     if auto:
         m = r.json()["result"]
         ok = _enqueue({"file_id": m["video"]["file_id"], "file_size": m["video"]["file_size"]}, caption, m["message_id"], tt, chat)

@@ -129,7 +129,7 @@ def _tt_keyboard(done):
 
 def tt_reminder(base, owner, text, mid, notify=print):
     """Peringatan TikTok manual: mesej status (#TikTok_Belum) dengan butang 'Dah post', diikuti caption siap salin. Tanpa Claude."""
-    _tg(base, "sendMessage", chat_id=owner, text=_tt_status_text(False, text) + "\n\n"
+    sresp = _tg(base, "sendMessage", chat_id=owner, text=_tt_status_text(False, text) + "\n\n"
         "1) Simpan video di atas ke galeri\n2) TikTok > Upload > tampal caption di bawah\n3) Siar atau jadual, kemudian tekan butang di bawah",
         reply_to_message_id=mid, reply_markup=json.dumps(_tt_keyboard(False)))
     cap = (text or "").replace("`", "'")
@@ -272,6 +272,10 @@ def _video_to_approval(rs, m, base, notify):
     if is_video:
         data["supports_streaming"] = "true"
     resp = _tg(base, method, **data)
+    try:
+        _vrec(rs, chat, resp.json()["result"]["message_id"])
+    except Exception:
+        pass
     if resp is None or resp.status_code >= 300:
         notify(f"⚠️ Gagal sediakan butang kelulusan untuk video dalam kumpulan: {(resp.text[:200] if resp is not None else 'tiada jawapan')}")
 
@@ -309,6 +313,9 @@ def _handle_callback(rs, cb, owner, base, notify):
             if mid in done:
                 done.remove(mid)
             retag("#BelumPost", approval_keyboard())
+            rec = _vrec(rs, chat, mid)
+            rec["status"] = "BelumPost"
+            rec.pop("due", None)
             link = _msg_link(chat, mid)
             notify("#BelumPost Jadual dibatalkan. Video kembali menunggu kelulusan.\n\n" + (f"Video : {link}" if link else "Video : dalam kumpulan VIDEO APPROVAL"))
             return ans("Jadual dibatalkan")
@@ -320,6 +327,13 @@ def _handle_callback(rs, cb, owner, base, notify):
         steps = body.split("\n\n", 1)[1] if "\n\n" in body else ""
         txt = _tt_status_text(isdone, first) + ("\n\n" + steps if steps else "")
         _tg(base, "editMessageText", chat_id=chat, message_id=mid, text=txt, reply_markup=json.dumps(_tt_keyboard(isdone)))
+        vm = (m.get("reply_to_message") or {}).get("message_id")
+        if vm:
+            rec = _vrec(rs, chat, vm)
+            rec["tt"] = "Done" if isdone else "Belum"
+            rec["delivered"] = True
+            if isdone:
+                rec["done_at"] = _now().isoformat()
         return ans("Ditanda: sudah post ✅" if isdone else "Ditanda: belum post")
     if data == "hr":
         mark(approval_keyboard("dates"))
@@ -376,6 +390,8 @@ def _handle_callback(rs, cb, owner, base, notify):
     done.append(mid)
     rs["cbdone"] = done[-50:]
     sched = data not in ("ap", "ts")
+    rec = _vrec(rs, chat, mid)
+    rec["status"], rec["due"] = ("Schedule" if sched else "Approve"), due.isoformat()
     rows = [[{"text": label, "callback_data": "noop"}]] + ([[{"text": "❌ Batal jadual", "callback_data": "cx"}]] if sched else [])
     retag("#Schedule" if sched else "#Approve", {"inline_keyboard": rows})
     ans(label)
@@ -400,8 +416,11 @@ def _process_pending(st, rs, base, token, tg_channel, notify):
             del pend[key]
             notify(f"✅ Video lulus disiar ke {dest}.")
             n += 1
+            rec = _vrec(rs, it.get("chat"), it.get("mid"))
+            rec["delivered"] = True
             if it.get("tt"):
                 tt_reminder(base, it.get("chat") or os.getenv("TELEGRAM_CHAT_ID", ""), it["text"], it.get("mid"), notify)
+                rec["tt"] = "Belum"
         except Exception as e:
             it["tries"] = it.get("tries", 0) + 1
             if it["tries"] >= 5:
@@ -414,38 +433,77 @@ def _process_pending(st, rs, base, token, tg_channel, notify):
     return n
 
 
-def _sched_text(rs):
+def _vrec(rs, chat, mid):
+    """Rekod status satu video dalam kumpulan VIDEO APPROVAL (untuk laporan pusat)."""
+    return rs.setdefault("vids", {}).setdefault(str(mid), {"chat": chat, "mid": mid, "status": "BelumPost"})
+
+
+def _dash_text(rs):
     now = _now()
-    items = sorted((it for it in rs.get("pending", {}).values() if datetime.fromisoformat(it["due"]) > now + timedelta(minutes=2)),
-                   key=lambda it: it["due"])
-    lines = ["#AllSchedule", "VIDEO POSTING SCHEDULE", ""]
-    if not items:
-        lines.append("Tiada video dijadual buat masa ini.")
-    for n, it in enumerate(items, 1):
-        t = datetime.fromisoformat(it["due"]).astimezone(MYT)
-        link = _msg_link(it.get("chat"), it.get("mid"))
-        lines.append(f"{n}. ⏰ {t:%d/%m} ({DAYS[t.weekday()]}) {t:%H:%M} Video : {link or 'dalam kumpulan VIDEO APPROVAL'}")
-    if items:
-        lines += ["", f"Jumlah: {len(items)} video dalam jadual"]
+    vids = rs.setdefault("vids", {})
+    for key, it in rs.get("pending", {}).items():  # pastikan video dalam giliran ada rekod
+        rec = _vrec(rs, it.get("chat"), it.get("mid"))
+        if rec["status"] == "BelumPost" or "due" not in rec:
+            rec["status"] = "Schedule" if datetime.fromisoformat(it["due"]) > now + timedelta(minutes=2) else "Approve"
+            rec["due"] = it["due"]
+    for k in [k for k, v in vids.items() if v.get("tt") == "Done" and now - datetime.fromisoformat(v["done_at"]) > timedelta(hours=48)
+              or (v.get("delivered") and not v.get("tt"))]:
+        del vids[k]
+    link = lambda v: _msg_link(v.get("chat"), v.get("mid")) or "(VIDEO APPROVAL)"
+    prog = [v for v in vids.values() if not v.get("delivered")]
+    prog.sort(key=lambda v: (v["status"] != "Schedule", v.get("due", ""), v["mid"]))
+    lines = ["<b><u>STATUS VIDEO POSTING SCHEDULE</u></b>", ""]
+    for n, v in enumerate(prog, 1):
+        if v["status"] == "Schedule" and v.get("due"):
+            t = datetime.fromisoformat(v["due"]).astimezone(MYT)
+            lines.append(f"{n}. ⏰ {t:%d/%m} ({DAYS[t.weekday()]}) {t:%H:%M} Video : {link(v)}")
+        else:
+            lines.append(f"{n}. #{v['status']} Video : {link(v)}")
+    if not prog:
+        lines.append("Tiada video dalam proses.")
+    else:
+        cnt = {}
+        for v in prog:
+            cnt[v["status"]] = cnt.get(v["status"], 0) + 1
+        lines += ["", "Jumlah: " + " , ".join(f"{cnt[s]} {s}" for s in ("Schedule", "Approve", "BelumPost") if s in cnt)]
+    tk = sorted((v for v in vids.values() if v.get("tt")), key=lambda v: (v["tt"] == "Done", v["mid"]))
+    lines += ["", "<b><u>TIKTOK POST</u></b>", ""]
+    for n, v in enumerate(tk, 1):
+        lines.append(f"{n}. #TikTok_{v['tt']} Video : {link(v)}")
+    if not tk:
+        lines.append("Tiada video TikTok dalam senarai.")
+    else:
+        d = sum(1 for v in tk if v["tt"] == "Done")
+        lines += ["", f"Jumlah: {d} Done , {len(tk) - d} Belum"]
+    lines += ["", "Legend :", "#BelumPost", "#Approve", "#Schedule", "#TikTok_Belum", "#TikTok_Done"]
     return "\n".join(lines)
 
 
 def _sync_schedule(rs, base, owner):
-    """Satu mesej laporan senarai semua video dijadual (#AllSchedule); disunting di tempat bila jadual berubah."""
-    text = _sched_text(rs)
-    if rs.get("sched_text") == text:
+    """Satu mesej laporan pusat di kumpulan VIDEO APPROVAL; disunting di tempat bila status berubah (boleh di-pin)."""
+    chat = rs.get("video_chat")
+    if not chat:
         return
-    mid = rs.get("sched_msg")
-    if mid:
-        resp = _tg(base, "editMessageText", chat_id=owner, message_id=mid, text=text, disable_web_page_preview="true")
+    if rs.get("sched_msg") and not rs.get("sched_gone"):  # padam laporan lama di chat bot
+        _tg(base, "deleteMessage", chat_id=owner, message_id=rs["sched_msg"])
+        rs["sched_gone"] = True
+    text = _dash_text(rs)
+    d = rs.setdefault("dash", {})
+    if d.get("text") == text and d.get("chat") == chat:
+        return
+    kw = dict(parse_mode="HTML", disable_web_page_preview="true")
+    if d.get("mid") and d.get("chat") == chat:
+        resp = _tg(base, "editMessageText", chat_id=chat, message_id=d["mid"], text=text, **kw)
         if resp is not None and resp.status_code < 300:
-            rs["sched_text"] = text
+            d["text"] = text
             return
-    resp = _tg(base, "sendMessage", chat_id=owner, text=text, disable_web_page_preview="true")
+    resp = _tg(base, "sendMessage", chat_id=chat, text=text, **kw)
     try:
-        rs["sched_msg"], rs["sched_text"] = resp.json()["result"]["message_id"], text
+        mid = resp.json()["result"]["message_id"]
     except Exception:
-        pass
+        return
+    rs["dash"] = {"chat": chat, "mid": mid, "text": text}
+    _tg(base, "pinChatMessage", chat_id=chat, message_id=mid, disable_notification="true")
 
 
 def run(st, notify=print, poll=0):

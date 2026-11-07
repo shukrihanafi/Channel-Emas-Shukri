@@ -102,7 +102,7 @@
   },
   "bb_last": 1,
   "relay": {
-    "offset": 991464093,
+    "offset": 991464095,
     "wa_done": "a6",
     "tries": 0,
     "tg_done": "a6",
@@ -140,6 +140,37 @@
         "mid": 18,
         "tt": true,
         "chat": -1004451110392
+      },
+      "a32": {
+        "vid": {
+          "duration": 15,
+          "width": 720,
+          "height": 1152,
+          "mime_type": "video/mp4",
+          "thumbnail": {
+            "file_id": "AAMCBQADIQUAAwEJTo34AAMNau6yuLnPnMBZJg_ynX7omkxEslEAAqYgAAI8rHlXs6pV4NEvksEBAAdtAAM9BA",
+            "file_unique_id": "AQADpiAAAjyseVdy",
+            "file_size": 10192,
+            "width": 200,
+            "height": 320
+          },
+          "thumb": {
+            "file_id": "AAMCBQADIQUAAwEJTo34AAMNau6yuLnPnMBZJg_ynX7omkxEslEAAqYgAAI8rHlXs6pV4NEvksEBAAdtAAM9BA",
+            "file_unique_id": "AQADpiAAAjyseVdy",
+            "file_size": 10192,
+            "width": 200,
+            "height": 320
+          },
+          "file_id": "BAACAgUAAyEFAAMBCU6N-AADDWrusri5z5zAWSYP8p1-6JpMRLJRAAKmIAACPKx5V7OqVeDRL5LBPQQ",
+          "file_unique_id": "AgADpiAAAjyseVc",
+          "file_size": 5009622
+        },
+        "text": "Amboi...\n\nSaya doakan anda yang LIKE dan KOMEN posting saya ini akan ada simpanan emas minimum 1kg..!\n\nAjom klik shukriee.com untuk simpan emas!",
+        "due": "2026-11-09T15:15:00+00:00",
+        "tries": 0,
+        "mid": 32,
+        "tt": true,
+        "chat": -1004451110392
       }
     },
     "cbdone": [
@@ -148,7 +179,8 @@
       247,
       250,
       6,
-      18
+      18,
+      32
     ],
     "redo": {},
     "video_chat": -1004451110392,
@@ -165,13 +197,14 @@
       "32": {
         "chat": -1004451110392,
         "mid": 32,
-        "status": "BelumPost"
+        "status": "Schedule",
+        "due": "2026-11-09T15:15:00+00:00"
       }
     },
     "dash": {
       "chat": -1004451110392,
       "mid": 33,
-      "text": "<b><u>STATUS VIDEO POSTING SCHEDULE</u></b>\n\n1. ⏰ 08/11 (Sun) 11:45 Video : https://t.me/c/4451110392/18\n2. #BelumPost Video : https://t.me/c/4451110392/32\n\nJumlah: 1 Schedule , 1 BelumPost\n\n<b><u>TIKTOK POST</u></b>\n\nTiada video TikTok dalam senarai.\n\nLegend :\n#BelumPost\n#Approve\n#Schedule\n#TikTok_Belum\n#TikTok_Done"
+      "text": "<b><u>STATUS VIDEO POSTING SCHEDULE</u></b>\n\n1. ⏰ 08/11 (Sun) 11:45 Video : https://t.me/c/4451110392/18\n2. ⏰ 09/11 (Mon) 23:15 Video : https://t.me/c/4451110392/32\n\nJumlah: 2 Schedule\n\n<b><u>TIKTOK POST</u></b>\n\nTiada video TikTok dalam senarai.\n\nLegend :\n#BelumPost\n#Approve\n#Schedule\n#TikTok_Belum\n#TikTok_Done"
     }
   },
   "testi": {

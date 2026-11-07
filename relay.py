@@ -78,7 +78,7 @@ def strip_tag(caption):
 DAYS = ("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
 
 
-def approval_keyboard(page="main", kind="video"):
+def approval_keyboard(page="main", kind="video", taken=()):
     """Papan butang kelulusan, hanya 2 pilihan: Approve sekarang (ts) atau Schedule (sc) -> pilih tarikh (sd{off}) -> jam (sh{off}_{HH}) -> minit (sm{off}_{HH}_{MM}).
     Kedua-duanya menyebabkan bot hantar peringatan TikTok manual selepas siaran. (Callback lama ap/n20/m07/hr/h{HH}/rj masih diproses untuk mesej lama.)"""
     back = lambda cb: [{"text": "⬅️ Kembali", "callback_data": cb}]
@@ -89,7 +89,7 @@ def approval_keyboard(page="main", kind="video"):
             d = now + timedelta(days=i)
             row = []
             for hh, mm in ((11, 15), (23, 15)):
-                if d.replace(hour=hh, minute=mm, second=0, microsecond=0) > now:
+                if d.replace(hour=hh, minute=mm, second=0, microsecond=0) > now and f"{d:%Y-%m-%d} {hh:02d}:{mm:02d}" not in taken:
                     row.append({"text": f"{('Today', 'Esok', 'Lusa')[i]} @ {hh}{mm:02d}", "callback_data": f"sm{i}_{hh:02d}_{mm:02d}"})
             if row:
                 rows.append(row)
@@ -325,7 +325,9 @@ def _handle_callback(rs, cb, owner, base, notify):
     photo = m.get("photo")
     kind = "video" if vid else "other"
     typ = "Video" if vid else ("Image" if photo else "Ayat")
-    kb = lambda page="main": approval_keyboard(page, kind)
+    taken = {datetime.fromisoformat(p["due"]).astimezone(MYT).strftime("%Y-%m-%d %H:%M") for k, p in rs.get("pending", {}).items()
+             if k != f"a{m.get('message_id')}"}  # slot jadual yang sudah dipilih oleh posting lain
+    kb = lambda page="main": approval_keyboard(page, kind, taken)
     chat, mid = m.get("chat", {}).get("id"), m.get("message_id")
     ans = lambda t: _tg(base, "answerCallbackQuery", callback_query_id=cb["id"], text=t)
     mark = lambda markup: _tg(base, "editMessageReplyMarkup", chat_id=chat, message_id=mid, reply_markup=json.dumps(markup))
@@ -407,6 +409,9 @@ def _handle_callback(rs, cb, owner, base, notify):
         if t <= _now().astimezone(MYT):
             mark(kb("dates"))
             return ans("Masa itu sudah lalu, pilih semula.")
+        if t.strftime("%Y-%m-%d %H:%M") in taken:
+            mark(kb("dates"))
+            return ans("Slot itu sudah diambil posting lain, pilih slot lain.")
         due, tt = t.astimezone(timezone.utc), True
         label = f"⏰ Dijadual {t:%d/%m %H:%M} + 📣 peringatan TikTok"
     elif data == "n20" or data == "m07" or (data.startswith("h") and data[1:].isdigit()):

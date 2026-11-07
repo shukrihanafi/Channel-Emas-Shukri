@@ -90,7 +90,7 @@ def approval_keyboard(page="main"):
             row = []
             for hh, mm in ((11, 15), (23, 15)):
                 if d.replace(hour=hh, minute=mm, second=0, microsecond=0) > now:
-                    row.append({"text": f"{DAYS[d.weekday()]} {d:%d/%m} @ {hh}:{mm:02d}", "callback_data": f"sm{i}_{hh:02d}_{mm:02d}"})
+                    row.append({"text": f"{('Hari ini', 'Esok', 'Lusa')[i]}: {DAYS[d.weekday()]} {d:%d/%m} @ {hh}:{mm:02d}", "callback_data": f"sm{i}_{hh:02d}_{mm:02d}"})
             if row:
                 rows.append(row)
         rows.append(back("bk"))
@@ -111,8 +111,8 @@ def approval_keyboard(page="main"):
         rows.append(back(f"sd{off}"))
         return {"inline_keyboard": rows}
     return {"inline_keyboard": [
-        [{"text": "✅ Approve 5 sekarang + 📣 TikTok manual", "callback_data": "ts"}],
-        [{"text": "⏰ Schedule + 📣 TikTok manual", "callback_data": "sc"}]]}
+        [{"text": "✅ Approve 5 (Now)+ 📣 TikTok (Manual)", "callback_data": "ts"}],
+        [{"text": "⏰ Schedule + 📣 TikTok (Manual)", "callback_data": "sc"}]]}
 
 
 def _tt_status_text(done, text=""):
@@ -295,8 +295,24 @@ def _handle_callback(rs, cb, owner, base, notify):
     done = rs.setdefault("cbdone", [])
     pend = rs.setdefault("pending", {})
     key = f"a{mid}"
+    sid = (m.get("reply_to_message") or {}).get("message_id")
+
+    def retag(tag, markup):  # tukar hashtag pada mesej status berasingan, dan kemas kini butang video
+        if sid:
+            _tg(base, "editMessageText", chat_id=chat, message_id=sid, text=tag)
+        mark(markup)
     if data == "noop":
         return ans("Sudah diproses.")
+    if data == "cx":  # batal jadual (hanya jika belum disiar)
+        if key in pend:
+            del pend[key]
+            if mid in done:
+                done.remove(mid)
+            retag("#BelumPost", approval_keyboard())
+            link = _msg_link(chat, mid)
+            notify("#BelumPost Jadual dibatalkan. Video kembali menunggu kelulusan.\n\n" + (f"Video : {link}" if link else "Video : dalam kumpulan VIDEO APPROVAL"))
+            return ans("Jadual dibatalkan")
+        return ans("Sudah disiar, tidak boleh dibatalkan.")
     if data in ("ttd", "ttu"):  # status TikTok manual: dah post / batal
         isdone = data == "ttd"
         body = (m.get("text") or "")
@@ -325,12 +341,6 @@ def _handle_callback(rs, cb, owner, base, notify):
     if key in pend or mid in done:
         return ans("Sudah diproses.")
     text = strip_tag((m.get("caption") or "").strip())
-    sid = (m.get("reply_to_message") or {}).get("message_id")
-
-    def retag(tag, markup):  # tukar hashtag pada mesej status berasingan, dan kemas kini butang video
-        if sid:
-            _tg(base, "editMessageText", chat_id=chat, message_id=sid, text=tag)
-        mark(markup)
     if data == "rj":
         done.append(mid)
         rs["cbdone"] = done[-50:]
@@ -366,7 +376,8 @@ def _handle_callback(rs, cb, owner, base, notify):
     done.append(mid)
     rs["cbdone"] = done[-50:]
     sched = data not in ("ap", "ts")
-    retag("#Schedule" if sched else "#Approve", {"inline_keyboard": [[{"text": label, "callback_data": "noop"}]]})
+    rows = [[{"text": label, "callback_data": "noop"}]] + ([[{"text": "❌ Batal jadual", "callback_data": "cx"}]] if sched else [])
+    retag("#Schedule" if sched else "#Approve", {"inline_keyboard": rows})
     ans(label)
     if sched:
         link = _msg_link(chat, mid)

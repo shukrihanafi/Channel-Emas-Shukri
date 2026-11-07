@@ -6,6 +6,7 @@ import gdown
 from PIL import Image, ImageFilter, ImageStat, ImageOps
 
 FOLDER = "https://drive.google.com/drive/folders/1vtoBFhizVA8tvO023Pvgtrk-LTdYVqoA"
+APPROVAL = "https://drive.google.com/drive/folders/1bbf3_iWXuGln2mpUguRFhvDnoyjscRgr"
 OUT = "ilmu_img"
 MAN = os.path.join(OUT, ".synced.json")
 IMG = (".jpg", ".jpeg", ".png", ".webp")
@@ -108,6 +109,21 @@ def main():
     used = {v: k for k, v in man.items()}
     files = gdown.download_folder(url=FOLDER, skip_download=True, quiet=True) or []
     print(f"Fail di Drive: {len(files)}; sudah diproses: {len(man)}")
+    try:  # folder video-approval (berasingan): hantar video ke kumpulan kelulusan
+        af = gdown.download_folder(url=APPROVAL, skip_download=True, quiet=True) or []
+    except Exception as e:
+        af = []
+        print("Folder video-approval tidak dapat dibaca:", str(e)[:200])
+    print(f"Fail di video-approval: {len(af)}")
+    for f in af:
+        if os.path.splitext(f.path)[1].lower() in VID and f.id not in man:
+            try:
+                send_video_for_approval(f, af)
+                man[f.id] = "kelulusan-" + slug(f.path)
+                json.dump(man, open(MAN, "w"), indent=1)
+                print("KELULUSAN", f.path)
+            except Exception as e:
+                print("GAGAL kelulusan", f.path, str(e)[:300])
     added = 0
     for f in files:
         ext = os.path.splitext(f.path)[1].lower()

@@ -97,7 +97,7 @@
   },
   "bb_last": 1,
   "relay": {
-    "offset": 991464106,
+    "offset": 991464108,
     "wa_done": "a6",
     "tries": 0,
     "tg_done": "a6",
@@ -166,6 +166,45 @@
         "mid": 32,
         "tt": true,
         "chat": -1004451110392
+      },
+      "a44": {
+        "vid": null,
+        "photo": [
+          {
+            "file_id": "AgACAgUAAyEFAAMBCU6N-AADJGrvTww-rdBavZ409cJqT57C_W03AAIbFGsbPKyBV5pUsv6GYbalAQADAgADcwADPQQ",
+            "file_unique_id": "AQADGxRrGzysgVd4",
+            "file_size": 2886,
+            "width": 90,
+            "height": 90
+          },
+          {
+            "file_id": "AgACAgUAAyEFAAMBCU6N-AADJGrvTww-rdBavZ409cJqT57C_W03AAIbFGsbPKyBV5pUsv6GYbalAQADAgADbQADPQQ",
+            "file_unique_id": "AQADGxRrGzysgVdy",
+            "file_size": 48659,
+            "width": 320,
+            "height": 320
+          },
+          {
+            "file_id": "AgACAgUAAyEFAAMBCU6N-AADJGrvTww-rdBavZ409cJqT57C_W03AAIbFGsbPKyBV5pUsv6GYbalAQADAgADeAADPQQ",
+            "file_unique_id": "AQADGxRrGzysgVd9",
+            "file_size": 215123,
+            "width": 800,
+            "height": 800
+          },
+          {
+            "file_id": "AgACAgUAAyEFAAMBCU6N-AADJGrvTww-rdBavZ409cJqT57C_W03AAIbFGsbPKyBV5pUsv6GYbalAQADAgADeQADPQQ",
+            "file_unique_id": "AQADGxRrGzysgVd-",
+            "file_size": 379755,
+            "width": 1254,
+            "height": 1254
+          }
+        ],
+        "text": "KECIL DI MATA ORANG, BESAR ERTINYA BUAT SAYA.\n\nSelama 6 tahun, saya kumpul emas sedikit demi sedikit. Bukan sebab banyak duit, tetapi kerana ada impian.\n\nAlhamdulillah, berjaya kumpul lebih 100 gram emas. Akhirnya, emas itu saya jual untuk membina sebuah rumah kecil.\n\nOrang nampak rumah kecil. Saya nampak 6 tahun kesabaran, pengorbanan dan perjuangan.\n\nJangan malu bermula sedikit. Simpanan kecil hari ini mungkin jadi impian besar esok.\n\nKredit: Rinawati\n\nshukriee.com",
+        "due": "2026-11-10T03:15:00+00:00",
+        "tries": 0,
+        "mid": 44,
+        "tt": false,
+        "chat": -1004451110392
       }
     },
     "cbdone": [
@@ -175,7 +214,8 @@
       250,
       6,
       18,
-      32
+      32,
+      44
     ],
     "redo": {},
     "video_chat": -1004451110392,
@@ -198,17 +238,18 @@
       "44": {
         "chat": -1004451110392,
         "mid": 44,
-        "status": "BelumPost",
-        "type": "Image"
+        "status": "Schedule",
+        "type": "Image",
+        "due": "2026-11-10T03:15:00+00:00"
       }
     },
     "dash": {
       "chat": -1004451110392,
       "mid": 33,
-      "text": "<b>STATUS MEDIA POSTING</b>\n\n<b>🟡 VIDEO @ 5 PLATFORM</b>\n\n1. ⏰ 08/11 (Sun) 11:45 Video : https://t.me/c/4451110392/18\n\n2. ⏰ 09/11 (Mon) 23:15 Video : https://t.me/c/4451110392/32\n\n✅ Jumlah: 2 Schedule\n\n\n<b>🔵 VIDEO @ TIKTOK</b>\n\nTiada video TikTok dalam senarai.\n\n\n<b>🔴 NON VIDEO @ 5 PLATFORM</b>\n\n1. #BelumPost Image : https://t.me/c/4451110392/44\n\n✅ Jumlah: 1 BelumPost\n\n\nLegend Status :\n#BelumPost\n#Approve\n#Schedule\n#TikTok_Belum\n#TikTok_Done"
+      "text": "<b>STATUS MEDIA POSTING</b>\n\n<b>🟡 VIDEO @ 5 PLATFORM</b>\n\n1. ⏰ 08/11 (Sun) 11:45 Video : https://t.me/c/4451110392/18\n\n2. ⏰ 09/11 (Mon) 23:15 Video : https://t.me/c/4451110392/32\n\n✅ Jumlah: 2 Schedule\n\n\n<b>🔵 VIDEO @ TIKTOK</b>\n\nTiada video TikTok dalam senarai.\n\n\n<b>🔴 NON VIDEO @ 5 PLATFORM</b>\n\n1. ⏰ 10/11 (Tue) 11:15 Image : https://t.me/c/4451110392/44\n\n✅ Jumlah: 1 Schedule\n\n\nLegend Status :\n#BelumPost\n#Approve\n#Schedule\n#TikTok_Belum\n#TikTok_Done"
     },
     "title_try": true,
-    "sweep_at": "2026-11-07T16:45:52.294690+00:00"
+    "sweep_at": "2026-11-07T16:47:29.369261+00:00"
   },
   "testi": {
     "used": [

@@ -1,0 +1,53 @@
+name: Relay
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+# Kumpulan sendiri: tidak menyekat atau dibatalkan oleh slot auto push dalam channel.yml
+concurrency:
+  group: relay-emas
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - run: cp data/state.json "$RUNNER_TEMP/base.json"
+      - name: Jalankan relay
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          RELAY_SECS: "75"
+          TELEGRAM_CHANNEL: "@kenaliemas"
+          TG_CHANNEL_ENABLED: "1"
+          ALERT_THRESHOLD: "0.5"
+          WHAPI_TOKEN: ${{ secrets.WHAPI_TOKEN }}
+          FB_PAGE_TOKEN: ${{ secrets.FB_PAGE_TOKEN }}
+          FB_PAGE_ID: ${{ secrets.FB_PAGE_ID }}
+          THREADS_TOKEN: ${{ secrets.THREADS_TOKEN }}
+          IG_TOKEN: ${{ secrets.IG_TOKEN }}
+          GMAIL_USER: "shukripublicgold@gmail.com"
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+          WA_CHANNEL_ID: ${{ secrets.WA_CHANNEL_ID }}
+          # Suis WhatsApp auto: tukar "0" kepada "1" bila sudah bersedia. Tukar kembali "0" untuk berhenti.
+          WA_ENABLED: "1"
+          # Mod yang dihantar auto ke WhatsApp Channel.
+          WA_AUTO_MODES: "gap,jewel,alert,item,pgitem,ilmu,berita,testimoni,fizikal,semangat"
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: python post.py relay
+      - name: Simpan state
+        if: always()
+        run: python merge_state.py "$RUNNER_TEMP/base.json"

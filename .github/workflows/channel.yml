@@ -15,6 +15,7 @@ on:
 
 permissions:
   contents: write
+  actions: write
 
 concurrency:
   group: channel-emas
@@ -27,11 +28,6 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: main
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-          cache: pip
-      - run: pip install -r requirements.txt
       - name: Tentukan mod
         id: m
         run: |
@@ -48,8 +44,26 @@ jobs:
               *) echo "mode=alert" >> $GITHUB_OUTPUT ;;
             esac
           fi
+      - name: Relay dihantar ke workflow berasingan (cepat, tidak ganggu slot lain)
+        id: r
+        if: steps.m.outputs.mode == 'relay'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if gh api -X POST "repos/${{ github.repository }}/actions/workflows/relay.yml/dispatches" -f ref=main; then
+            echo "skip=1" >> $GITHUB_OUTPUT
+          else
+            echo "Dispatch relay.yml gagal, jalan relay di sini."
+          fi
+      - uses: actions/setup-python@v5
+        if: steps.m.outputs.mode != 'skip' && steps.r.outputs.skip != '1'
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements.txt
+        if: steps.m.outputs.mode != 'skip' && steps.r.outputs.skip != '1'
       - name: Pasang pelayar (berita, atau pengawas jika slot berita terlepas)
-        if: steps.m.outputs.mode != 'skip'
+        if: steps.m.outputs.mode != 'skip' && steps.r.outputs.skip != '1'
         run: |
           M="${{ steps.m.outputs.mode }}"
           HM=$(TZ=Asia/Kuala_Lumpur date +%H%M)
@@ -65,8 +79,11 @@ jobs:
             pip install playwright
             playwright install chromium
           fi
+      - name: Snapshot state
+        if: steps.m.outputs.mode != 'skip' && steps.r.outputs.skip != '1'
+        run: cp data/state.json "$RUNNER_TEMP/base.json"
       - name: Jalankan bot
-        if: steps.m.outputs.mode != 'skip'
+        if: steps.m.outputs.mode != 'skip' && steps.r.outputs.skip != '1'
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -90,9 +107,5 @@ jobs:
           NEWS_URL: ${{ github.event.inputs.url }}
         run: python post.py ${{ steps.m.outputs.mode }}
       - name: Simpan state
-        if: always() && steps.m.outputs.mode != 'skip'
-        run: |
-          git config user.name "channel-bot"
-          git config user.email "bot@users.noreply.github.com"
-          git add data/state.json
-          git diff --staged --quiet || (git commit -m "kemas kini state" && (git push || (git pull --rebase -X theirs && git push)))
+        if: always() && steps.m.outputs.mode != 'skip' && steps.r.outputs.skip != '1'
+        run: python merge_state.py "$RUNNER_TEMP/base.json"

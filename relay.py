@@ -533,10 +533,48 @@ def _dash_text(rs):
     if not nv:
         L += ["Tiada gambar / ayat dalam senarai.", ""]
     else:
-        d = sum(1 for v in nv if v.get("delivered"))
-        L += [f"✅ Jumlah: {d} Done , {len(nv) - d} Belum", ""]
+        cnt = {}
+        for v in nv:
+            k = "Done" if v.get("delivered") else v["status"]
+            cnt[k] = cnt.get(k, 0) + 1
+        L += ["✅ Jumlah: " + " , ".join(f"{cnt[s]} {s}" for s in ("Schedule", "Approve", "BelumPost", "Done") if s in cnt), ""]
     L += ["", "Legend Status :", "#BelumPost", "#Approve", "#Schedule", "#TikTok_Belum", "#TikTok_Done"]
     return "\n".join(L)
+
+
+def _gone(base, chat, mid):
+    """True jika mesej sudah dipadam. Bot tidak dapat peristiwa padam, jadi uji dengan setMessageReaction kosong (tiada kesan nampak)."""
+    resp = _tg(base, "setMessageReaction", chat_id=chat, message_id=mid, reaction="[]")
+    if resp is None or resp.status_code < 300:
+        return False
+    try:
+        d = resp.json().get("description", "").lower()
+    except Exception:
+        return False
+    return "not found" in d or "message_id_invalid" in d
+
+
+def _sweep_deleted(rs, base, owner, notify):
+    """Sync laporan bila Shukri padam posting asal: buang rekod (dan jadual) yang mesejnya sudah tiada. Sahkan 2 kali berturut-turut."""
+    now = _now()
+    last = rs.get("sweep_at")
+    if last and now - datetime.fromisoformat(last) < timedelta(seconds=90):
+        return
+    rs["sweep_at"] = now.isoformat()
+    vids = rs.get("vids", {})
+    for k, v in list(vids.items()):
+        if v.get("delivered") or not v.get("chat") or not v.get("mid"):
+            continue
+        if not _gone(base, v["chat"], v["mid"]):
+            v.pop("miss", None)
+            continue
+        v["miss"] = v.get("miss", 0) + 1
+        if v["miss"] < 2:
+            continue
+        for pk in [pk for pk, it in rs.get("pending", {}).items() if str(it.get("mid")) == str(v["mid"]) and it.get("chat") == v["chat"]]:
+            del rs["pending"][pk]
+        del vids[k]
+        notify(f"🗑️ {v.get('type', 'Video')} dipadam dari MEDIA APPROVAL: dibuang daripada laporan{' dan jadual dibatalkan' if v.get('status') == 'Schedule' else ''}.")
 
 
 def _sync_schedule(rs, base, owner):
@@ -653,6 +691,10 @@ def run(st, notify=print, poll=0):
         _process_redo(st, rs, base, token, notify)
     except Exception as e:
         notify(f"⚠️ Gagal cuba semula Threads/Instagram: {e}")
+    try:
+        _sweep_deleted(rs, base, owner, notify)
+    except Exception as e:
+        print("Sweep padam gagal:", e)
     try:
         _sync_schedule(rs, base, owner)
     except Exception as e:

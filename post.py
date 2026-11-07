@@ -715,12 +715,14 @@ def watchdog(p, st):
 
 
 def mode_relay(p, st):
-    """Larian relay menunggu aktif ~10 saat (sengaja pendek: larian panjang menyebabkan larian slot jadual lain dibatalkan oleh GitHub) supaya butang kelulusan dijawab dalam beberapa saat."""
+    """Relay menunggu aktif (long-poll) supaya butang kelulusan dijawab dalam beberapa saat. RELAY_SECS ditetapkan dalam relay.yml (kumpulan sendiri); lalai 10 saat jika dijalankan dalam channel.yml."""
     import time
+    secs = int(os.getenv("RELAY_SECS", "10"))
     t0, n = time.time(), 0
     while True:
-        n += relay.run(st, tg_plain, poll=3)
-        if time.time() - t0 > 10:
+        left = secs - (time.time() - t0)
+        n += relay.run(st, tg_plain, poll=max(1, min(25, int(left))))
+        if time.time() - t0 >= secs:
             break
     print(f"Relay: {n} posting disalin.")
 
@@ -871,10 +873,6 @@ if __name__ == "__main__":
     prices = pgfetch.get_prices() if mode in ("gap", "jewel", "alert", "gapthreads-test", "gapig-test") else {}
     MODES[mode](prices, st)
     if mode == "alert":
-        try:
-            relay.run(st, tg_plain)
-        except Exception as e:
-            print("Relay gagal:", e)
         watchdog(prices, st)
         if threads.enabled():
             try:

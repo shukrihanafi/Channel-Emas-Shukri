@@ -102,7 +102,7 @@
   },
   "bb_last": 1,
   "relay": {
-    "offset": 991464126,
+    "offset": 991464127,
     "wa_done": "a51",
     "tries": 0,
     "tg_done": "a51",
@@ -231,15 +231,21 @@
         "delivered": true,
         "done_at": "2026-11-08T05:53:38.338051+00:00",
         "tt": "Done"
+      },
+      "64": {
+        "chat": -1004451110392,
+        "mid": 64,
+        "status": "BelumPost",
+        "type": "Video"
       }
     },
     "dash": {
       "chat": -1004451110392,
       "mid": 33,
-      "text": "<b>STATUS MEDIA POSTING</b>\n\n<b>1️⃣ ON SCHEDULE</b>\n\n1. 🟢 Image Today 09/11 (Mon) 11:15\nLink : https://t.me/c/4451110392/48\n\n2. 🔴 Video Esok 10/11 (Tue) 23:15\nLink : https://t.me/c/4451110392/32\n\n<b>2️⃣ PENDING POST</b>\n\nTiada posting menunggu kelulusan.\n\n<b>3️⃣ TIKTOK POST</b>\n\nTiada video TikTok dalam senarai.\n\n<b>4️⃣ LEGEND</b>\n\n🔴 VIDEO @ 5 PLATFORM\nJumlah: 1 Schedule\n\n🟡 VIDEO @ TIKTOK\nTiada video TikTok dalam senarai.\n\n🟢 NON VIDEO @ 5 PLATFORM\nJumlah: 1 Schedule\n\n<b>5️⃣ 🙋🏻‍♂️ TESTIMONI (Auto push)</b>\nJumlah: 2\n\n<b>6️⃣ HASHTAG SEARCH</b>\n\n#Schedule\n#BelumPost\n#DonePost\n#TikTok_Belum\n#TikTok_Done\n#testimoni"
+      "text": "<b>STATUS MEDIA POSTING</b>\n\n<b>1️⃣ ON SCHEDULE</b>\n\n1. 🟢 Image Today 09/11 (Mon) 11:15\nLink : https://t.me/c/4451110392/48\n\n2. 🔴 Video Esok 10/11 (Tue) 23:15\nLink : https://t.me/c/4451110392/32\n\n<b>2️⃣ PENDING POST</b>\n\n1. 🔴 #BelumPost Video : https://t.me/c/4451110392/64\n\n<b>3️⃣ TIKTOK POST</b>\n\nTiada video TikTok dalam senarai.\n\n<b>4️⃣ LEGEND</b>\n\n🔴 VIDEO @ 5 PLATFORM\nJumlah: 1 Schedule , 1 BelumPost\n\n🟡 VIDEO @ TIKTOK\nTiada video TikTok dalam senarai.\n\n🟢 NON VIDEO @ 5 PLATFORM\nJumlah: 1 Schedule\n\n<b>5️⃣ 🙋🏻‍♂️ TESTIMONI (Auto push)</b>\nJumlah: 2\n\n<b>6️⃣ HASHTAG SEARCH</b>\n\n#Schedule\n#BelumPost\n#DonePost\n#TikTok_Belum\n#TikTok_Done\n#testimoni"
     },
     "title_try": true,
-    "sweep_at": "2026-11-08T16:22:27.744875+00:00"
+    "sweep_at": "2026-11-08T16:24:00.195133+00:00"
   },
   "testi": {
     "used": [

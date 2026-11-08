@@ -105,44 +105,13 @@
   "bb_last": 1,
   "relay": {
     "offset": 991464121,
-    "wa_done": "a6",
+    "wa_done": "a18",
     "tries": 0,
-    "tg_done": "a6",
-    "fb_done": "a6",
-    "th_done": "a6",
-    "ig_done": "a6",
+    "tg_done": "a18",
+    "fb_done": "a18",
+    "th_done": "a18",
+    "ig_done": "a18",
     "pending": {
-      "a18": {
-        "vid": {
-          "duration": 18,
-          "width": 720,
-          "height": 1136,
-          "mime_type": "video/mp4",
-          "thumbnail": {
-            "file_id": "AAMCBQADIQUAAwEJTo34AAMHau6pKs8flH3OM5bgpypWQSgtikQAApcgAAI8rHlXpn6xiIZplNUBAAdtAAM9BA",
-            "file_unique_id": "AQADlyAAAjyseVdy",
-            "file_size": 13205,
-            "width": 203,
-            "height": 320
-          },
-          "thumb": {
-            "file_id": "AAMCBQADIQUAAwEJTo34AAMHau6pKs8flH3OM5bgpypWQSgtikQAApcgAAI8rHlXpn6xiIZplNUBAAdtAAM9BA",
-            "file_unique_id": "AQADlyAAAjyseVdy",
-            "file_size": 13205,
-            "width": 203,
-            "height": 320
-          },
-          "file_id": "BAACAgUAAyEFAAMBCU6N-AADB2ruqSrPH5R9zjOW4KcqVkEoLYpEAAKXIAACPKx5V6Z-sYiGaZTVPQQ",
-          "file_unique_id": "AgADlyAAAjyseVc",
-          "file_size": 6041542
-        },
-        "text": "Amboi...\n\nBila waktu terbaik simpan emas?\nTengok video sini ok.\n\nAjom klik shukriee.com untuk simpan emas!",
-        "due": "2026-11-08T03:45:00+00:00",
-        "tries": 0,
-        "mid": 18,
-        "tt": true,
-        "chat": -1004451110392
-      },
       "a48": {
         "vid": null,
         "photo": [
@@ -235,7 +204,10 @@
         "chat": -1004451110392,
         "mid": 18,
         "status": "Schedule",
-        "due": "2026-11-08T03:45:00+00:00"
+        "due": "2026-11-08T03:45:00+00:00",
+        "delivered": true,
+        "done_at": "2026-11-08T03:47:25.169120+00:00",
+        "tt": "Belum"
       },
       "32": {
         "chat": -1004451110392,
@@ -257,10 +229,10 @@
     "dash": {
       "chat": -1004451110392,
       "mid": 33,
-      "text": "<b>STATUS MEDIA POSTING</b>\n\n<b>ON SCHEDULE:</b>\n\n1. 🔴 Video Today 08/11 (Sun) 11:45\nLink : https://t.me/c/4451110392/18\n\n2. 🟢 Image Esok 09/11 (Mon) 11:15\nLink : https://t.me/c/4451110392/48\n\n3. 🔴 Video Lusa 10/11 (Tue) 23:15\nLink : https://t.me/c/4451110392/32\n\n<b>PENDING POST:</b>\n\nTiada posting menunggu kelulusan.\n\n<b>LEGEND:</b>\n\n🔴 VIDEO @ 5 PLATFORM\nJumlah: 2 Schedule\n\n🟡 VIDEO @ TIKTOK\nTiada video TikTok dalam senarai.\n\n🟢 NON VIDEO @ 5 PLATFORM\nJumlah: 1 Schedule\n\n<b>HASHTAG SEARCH:</b>\n\n#Schedule\n#BelumPost\n#Approve\n#TikTok_Belum\n#TikTok_Done"
+      "text": "<b>STATUS MEDIA POSTING</b>\n\n<b>ON SCHEDULE:</b>\n\n1. 🟢 Image Esok 09/11 (Mon) 11:15\nLink : https://t.me/c/4451110392/48\n\n2. 🔴 Video Lusa 10/11 (Tue) 23:15\nLink : https://t.me/c/4451110392/32\n\n<b>PENDING POST:</b>\n\nTiada posting menunggu kelulusan.\n\n<b>TIKTOK POST:</b>\n\n1. 🟡 Video #TikTok_Belum\nLink : https://t.me/c/4451110392/18\n\n<b>LEGEND:</b>\n\n🔴 VIDEO @ 5 PLATFORM\nJumlah: 1 Schedule\n\n🟡 VIDEO @ TIKTOK\nJumlah: 1 Belum\n\n🟢 NON VIDEO @ 5 PLATFORM\nJumlah: 1 Schedule\n\n<b>HASHTAG SEARCH:</b>\n\n#Schedule\n#BelumPost\n#Approve\n#TikTok_Belum\n#TikTok_Done"
     },
     "title_try": true,
-    "sweep_at": "2026-11-08T03:44:39.161271+00:00"
+    "sweep_at": "2026-11-08T03:47:26.625453+00:00"
   },
   "testi": {
     "used": [

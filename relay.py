@@ -578,13 +578,24 @@ def _gone(base, chat, mid):
     return "not found" in d or "message_id_invalid" in d
 
 
-def _sweep_deleted(rs, base, owner, notify):
+def _sweep_deleted(rs, base, owner, notify, st=None):
     """Sync laporan bila Shukri padam posting asal: buang rekod (dan jadual) yang mesejnya sudah tiada. Sahkan 2 kali berturut-turut."""
     now = _now()
     last = rs.get("sweep_at")
     if last and now - datetime.fromisoformat(last) < timedelta(seconds=3):
         return
     rs["sweep_at"] = now.isoformat()
+    for k, e in list(((st or {}).get("testi", {}).get("extra") or {}).items()):  # testimoni baharu yang dipadam: buang dari kitaran + padam mesej "disimpan"
+        if not e.get("chat"):
+            continue
+        if not _gone(base, e["chat"], int(k)):
+            e.pop("miss", None)
+            continue
+        e["miss"] = e.get("miss", 0) + 1
+        if e["miss"] >= 2:
+            if e.get("rep"):
+                _tg(base, "deleteMessage", chat_id=e["chat"], message_id=e["rep"])
+            del st["testi"]["extra"][k]
     vids = rs.get("vids", {})
     for k, v in list(vids.items()):
         if v.get("delivered") or not v.get("chat") or not v.get("mid"):
@@ -676,8 +687,12 @@ def run(st, notify=print, poll=0):
             if str(m.get("from", {}).get("id")) == owner and m.get("photo") and "#testimoni" in (m.get("caption") or "").lower():
                 # testimoni baharu: simpan untuk kitaran testimoni (tiada butang kelulusan)
                 cap = re.sub(r"(?i)#testimoni\w*", "", m.get("caption") or "").strip()
-                st.setdefault("testi", {"used": []}).setdefault("extra", {})[str(m["message_id"])] = {"file_id": m["photo"][-1]["file_id"], "text": cap, "chat": m["chat"]["id"]}
-                _tg(base, "sendMessage", chat_id=m["chat"]["id"], reply_to_message_id=m["message_id"], text="✅ Testimoni disimpan. Akan masuk kitaran testimoni (tarikh dibuang automatik).")
+                ex = st.setdefault("testi", {"used": []}).setdefault("extra", {})[str(m["message_id"])] = {"file_id": m["photo"][-1]["file_id"], "text": cap, "chat": m["chat"]["id"]}
+                resp = _tg(base, "sendMessage", chat_id=m["chat"]["id"], reply_to_message_id=m["message_id"], text="✅ Testimoni disimpan. Akan masuk kitaran testimoni (tarikh dibuang automatik).")
+                try:
+                    ex["rep"] = resp.json()["result"]["message_id"]
+                except Exception:
+                    pass
             elif str(m.get("from", {}).get("id")) == owner:
                 try:
                     _media_to_approval(rs, m, base, notify)
@@ -721,7 +736,7 @@ def run(st, notify=print, poll=0):
     except Exception as e:
         notify(f"⚠️ Gagal cuba semula Threads/Instagram: {e}")
     try:
-        _sweep_deleted(rs, base, owner, notify)
+        _sweep_deleted(rs, base, owner, notify, st)
     except Exception as e:
         print("Sweep padam gagal:", e)
     try:

@@ -721,7 +721,7 @@ def mode_relay(p, st):
     t0, n = time.time(), 0
     while True:
         left = secs - (time.time() - t0)
-        n += relay.run(st, tg_plain, poll=max(1, min(5, int(left))))
+        n += relay.run(st, tg_plain, poll=max(1, min(2, int(left))))
         if time.time() - t0 >= secs:
             break
     print(f"Relay: {n} posting disalin.")

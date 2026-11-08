@@ -495,7 +495,7 @@ def _vrec(rs, chat, mid):
     return rs.setdefault("vids", {}).setdefault(str(mid), {"chat": chat, "mid": mid, "status": "BelumPost", "type": "Video"})
 
 
-def _dash_text(rs):
+def _dash_text(rs, ntesti=0):
     now = _now()
     vids = rs.setdefault("vids", {})
     for key, it in rs.get("pending", {}).items():  # pastikan item dalam giliran ada rekod
@@ -544,25 +544,27 @@ def _dash_text(rs):
     sched.sort(key=lambda x: x[:2])
     pend.sort()
     tk.sort(key=lambda x: x[:2])
-    L = ["<b>STATUS MEDIA POSTING</b>", "", "<b>ON SCHEDULE:</b>", ""]
+    L = ["<b>STATUS MEDIA POSTING</b>", "", "<b>1️⃣ ON SCHEDULE</b>", ""]
     for n, x in enumerate(sched, 1):
         L += [f"{n}. {x[2]}", ""]
     if not sched:
         L += ["Tiada posting dijadualkan.", ""]
-    L += ["<b>PENDING POST:</b>", ""]
+    L += ["<b>2️⃣ PENDING POST</b>", ""]
     for n, x in enumerate(pend, 1):
         L += [f"{n}. {x[1]}", ""]
     if not pend:
         L += ["Tiada posting menunggu kelulusan.", ""]
-    if tk:
-        L += ["<b>TIKTOK POST:</b>", ""]
-        for n, x in enumerate(tk, 1):
-            L += [f"{n}. {x[2]}", ""]
+    L += ["<b>3️⃣ TIKTOK POST</b>", ""]
+    for n, x in enumerate(tk, 1):
+        L += [f"{n}. {x[2]}", ""]
+    if not tk:
+        L += ["Tiada video TikTok dalam senarai.", ""]
     leg = lambda ic, name, c, empty: [f"{ic} {name}", f"Jumlah: {count(c)}" if c else empty, ""]
-    L += ["<b>LEGEND:</b>", ""] + leg("🔴", "VIDEO @ 5 PLATFORM", vcnt, "Tiada video dalam proses.") \
+    L += ["<b>4️⃣ LEGEND</b>", ""] + leg("🔴", "VIDEO @ 5 PLATFORM", vcnt, "Tiada video dalam proses.") \
         + leg("🟡", "VIDEO @ TIKTOK", tcnt, "Tiada video TikTok dalam senarai.") \
         + leg("🟢", "NON VIDEO @ 5 PLATFORM", ncnt, "Tiada gambar / ayat dalam senarai.") \
-        + ["<b>HASHTAG SEARCH:</b>", "", "#Schedule", "#BelumPost", "#Approve", "#TikTok_Belum", "#TikTok_Done"]
+        + ["<b>5️⃣ 🙋🏻‍♂️ TESTIMONI (Auto push)</b>", f"Jumlah: {ntesti}", "",
+           "<b>6️⃣ HASHTAG SEARCH</b>", "", "#Schedule", "#BelumPost", "#Approve", "#TikTok_Belum", "#TikTok_Done", "#testimoni"]
     return "\n".join(L)
 
 
@@ -582,7 +584,7 @@ def _sweep_deleted(rs, base, owner, notify, st=None):
     """Sync laporan bila Shukri padam posting asal: buang rekod (dan jadual) yang mesejnya sudah tiada. Sahkan 2 kali berturut-turut."""
     now = _now()
     last = rs.get("sweep_at")
-    if last and now - datetime.fromisoformat(last) < timedelta(seconds=3):
+    if last and now - datetime.fromisoformat(last) < timedelta(seconds=1):
         return
     rs["sweep_at"] = now.isoformat()
     for k, e in list(((st or {}).get("testi", {}).get("extra") or {}).items()):  # testimoni baharu yang dipadam: buang dari kitaran + padam mesej "disimpan"
@@ -591,11 +593,9 @@ def _sweep_deleted(rs, base, owner, notify, st=None):
         if not _gone(base, e["chat"], int(k)):
             e.pop("miss", None)
             continue
-        e["miss"] = e.get("miss", 0) + 1
-        if e["miss"] >= 2:
-            if e.get("rep"):
-                _tg(base, "deleteMessage", chat_id=e["chat"], message_id=e["rep"])
-            del st["testi"]["extra"][k]
+        if e.get("rep"):  # "not found" muktamad: terus padam
+            _tg(base, "deleteMessage", chat_id=e["chat"], message_id=e["rep"])
+        del st["testi"]["extra"][k]
     vids = rs.get("vids", {})
     for k, v in list(vids.items()):
         if v.get("delivered") or not v.get("chat") or not v.get("mid"):
@@ -612,7 +612,7 @@ def _sweep_deleted(rs, base, owner, notify, st=None):
         del vids[k]
 
 
-def _sync_schedule(rs, base, owner):
+def _sync_schedule(rs, base, owner, st=None):
     """Satu mesej laporan pusat di kumpulan MEDIA APPROVAL; disunting di tempat bila status berubah (boleh di-pin)."""
     chat = rs.get("video_chat")
     if not chat:
@@ -625,7 +625,7 @@ def _sync_schedule(rs, base, owner):
         resp = _tg(base, "setChatTitle", chat_id=chat, title="MEDIA APPROVAL")
         if resp is None or resp.status_code >= 300:
             _tg(base, "sendMessage", chat_id=owner, text="ℹ️ Bot tidak dapat tukar nama kumpulan secara automatik. Sila tukar sendiri kepada MEDIA APPROVAL (Edit nama kumpulan).")
-    text = _dash_text(rs)
+    text = _dash_text(rs, len(((st or {}).get("testi") or {}).get("extra") or {}))
     d = rs.setdefault("dash", {})
     if d.get("text") == text and d.get("chat") == chat:
         return
@@ -740,7 +740,7 @@ def run(st, notify=print, poll=0):
     except Exception as e:
         print("Sweep padam gagal:", e)
     try:
-        _sync_schedule(rs, base, owner)
+        _sync_schedule(rs, base, owner, st)
     except Exception as e:
         print("Laporan jadual gagal:", e)
     return done

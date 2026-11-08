@@ -84,7 +84,10 @@ def _ocr_words(img):
     scale = 3 if img.width < 1400 else 2
     big = ImageOps.grayscale(img.resize((img.width * scale, img.height * scale)))
     words = []
-    for v in (big, ImageOps.invert(big)):  # teks cerah atas latar gelap dan sebaliknya
+    variants = [big, ImageOps.invert(big)]  # teks cerah atas latar gelap dan sebaliknya
+    for th in (235, 245):  # teks kelabu pudar atas latar putih (cth tarikh dalam tangkap layar bank)
+        variants.append(big.point(lambda p, th=th: 0 if p < th else 255))
+    for v in variants:
         try:
             d = pytesseract.image_to_data(v, config="--psm 11 -l eng", output_type=pytesseract.Output.DICT)
         except Exception as e:
@@ -143,7 +146,12 @@ def find_dates(words):
                 while i0 > 0 and LEAD_RE.match(ws[i0 - 1][0]):  # "Today," / "Last updated:" di hadapan tarikh
                     i0 -= 1
                 grp = ws[i0: ws.index(hit[-1]) + 1]
-                boxes.append([min(g[1] for g in grp), min(g[2] for g in grp), max(g[3] for g in grp), max(g[4] for g in grp)])
+                b = [min(g[1] for g in grp), min(g[2] for g in grp), max(g[3] for g in grp), max(g[4] for g in grp)]
+                hh = b[3] - b[1]
+                for w in words:  # nombor hari (1-2 digit) bersebelahan di kiri tarikh, kadang terpisah daripada bulan oleh OCR
+                    if re.fullmatch(r"\d{1,2}", w[0]) and 0 <= b[0] - w[3] <= hh * 2.5 and abs((w[2] + w[4]) / 2 - (b[1] + b[3]) / 2) < hh:
+                        b[0] = min(b[0], w[1])
+                boxes.append(b)
     merged = []
     for b in sorted(boxes):
         for m in merged:
@@ -239,6 +247,8 @@ def run(st, send, dt, out="out", notify=print):
         return
     # senarai gambar: (kunci unik, teks, url)
     items = [(f"{p['key']}#{i}", p["text"], u) for p in posts for i, u in enumerate(p["photos"][:1])]
+    for mid, e in (n.get("extra") or {}).items():  # testimoni baharu yang diletak Shukri di kumpulan MEDIA APPROVAL (#testimoni)
+        items.append((f"g{mid}#0", e.get("text", ""), "tgfile:" + e["file_id"]))
     print(f"Testimoni dijumpai: {len(items)} (gambar), sudah digunakan: {len(n['used'])}")
     if not items:
         notify("⚠️ Tiada siaran #testimoni berserta gambar ditemui di @kenaliemas.")
@@ -252,7 +262,12 @@ def run(st, send, dt, out="out", notify=print):
     os.makedirs(out, exist_ok=True)
     for key, text, url in fresh[:8]:
         try:
-            r = requests.get(url, headers=UA, timeout=60)
+            if url.startswith("tgfile:"):
+                base = f"https://api.telegram.org/bot{os.getenv('TELEGRAM_BOT_TOKEN')}"
+                fp = requests.get(f"{base}/getFile", params={"file_id": url[7:]}, timeout=30).json()["result"]["file_path"]
+                r = requests.get(f"{base.replace('/bot', '/file/bot')}/{fp}", timeout=60)
+            else:
+                r = requests.get(url, headers=UA, timeout=60)
             r.raise_for_status()
             img = _to_pil(r.content)
             boxes, words = find_boxes(img)

@@ -673,7 +673,12 @@ def run(st, notify=print, poll=0):
             continue
         if not from_channel and rs.get("video_chat") and m["chat"]["id"] == rs["video_chat"]:  # kumpulan MEDIA APPROVAL
             rs["offset"] = uid + 1
-            if str(m.get("from", {}).get("id")) == owner:
+            if str(m.get("from", {}).get("id")) == owner and m.get("photo") and "#testimoni" in (m.get("caption") or "").lower():
+                # testimoni baharu: simpan untuk kitaran testimoni (tiada butang kelulusan)
+                cap = re.sub(r"(?i)#testimoni\w*", "", m.get("caption") or "").strip()
+                st.setdefault("testi", {"used": []}).setdefault("extra", {})[str(m["message_id"])] = {"file_id": m["photo"][-1]["file_id"], "text": cap}
+                _tg(base, "sendMessage", chat_id=m["chat"]["id"], reply_to_message_id=m["message_id"], text="✅ Testimoni disimpan. Akan masuk kitaran testimoni (tarikh dibuang automatik).")
+            elif str(m.get("from", {}).get("id")) == owner:
                 try:
                     _media_to_approval(rs, m, base, notify)
                 except Exception as e:

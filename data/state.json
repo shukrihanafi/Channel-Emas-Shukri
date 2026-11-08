@@ -102,7 +102,7 @@
   },
   "bb_last": 1,
   "relay": {
-    "offset": 991464127,
+    "offset": 991464132,
     "wa_done": "a51",
     "tries": 0,
     "tg_done": "a51",
@@ -180,6 +180,38 @@
         "mid": 32,
         "tt": true,
         "chat": -1004451110392
+      },
+      "a64": {
+        "vid": {
+          "duration": 21,
+          "width": 720,
+          "height": 1136,
+          "mime_type": "video/mp4",
+          "thumbnail": {
+            "file_id": "AAMCBQADIQUAAwEJTo34AAM-avCiHtqw3WZ0MQN_yAo7VeoBA5AAAmonAAJj34BXpbEl22T96q4BAAdtAAM9BA",
+            "file_unique_id": "AQADaicAAmPfgFdy",
+            "file_size": 13331,
+            "width": 203,
+            "height": 320
+          },
+          "thumb": {
+            "file_id": "AAMCBQADIQUAAwEJTo34AAM-avCiHtqw3WZ0MQN_yAo7VeoBA5AAAmonAAJj34BXpbEl22T96q4BAAdtAAM9BA",
+            "file_unique_id": "AQADaicAAmPfgFdy",
+            "file_size": 13331,
+            "width": 203,
+            "height": 320
+          },
+          "file_id": "BAACAgUAAyEFAAMBCU6N-AADPmrwoh7asN1mdDEDf8gKO1XqAQOQAAJqJwACY9-AV6WxJdtk_equPQQ",
+          "file_unique_id": "AgADaicAAmPfgFc",
+          "file_size": 7193692
+        },
+        "photo": null,
+        "text": "Amboi...\n\nApa persedian anda di hari tua?\nTengok video ni sampai habis.\n\nKlik shukriee.com untuk simpan emas.",
+        "due": "2026-11-11T03:15:00+00:00",
+        "tries": 0,
+        "mid": 64,
+        "tt": true,
+        "chat": -1004451110392
       }
     },
     "cbdone": [
@@ -190,7 +222,8 @@
       6,
       18,
       48,
-      32
+      32,
+      64
     ],
     "redo": {},
     "video_chat": -1004451110392,
@@ -235,17 +268,19 @@
       "64": {
         "chat": -1004451110392,
         "mid": 64,
-        "status": "BelumPost",
-        "type": "Video"
+        "status": "Schedule",
+        "type": "Video",
+        "due": "2026-11-11T03:15:00+00:00",
+        "rep": 328
       }
     },
     "dash": {
       "chat": -1004451110392,
       "mid": 33,
-      "text": "<b>STATUS MEDIA POSTING</b>\n\n<b>1️⃣ ON SCHEDULE</b>\n\n1. 🟢 Image Today 09/11 (Mon) 11:15\nLink : https://t.me/c/4451110392/48\n\n2. 🔴 Video Esok 10/11 (Tue) 23:15\nLink : https://t.me/c/4451110392/32\n\n<b>2️⃣ PENDING POST</b>\n\n1. 🔴 #BelumPost Video : https://t.me/c/4451110392/64\n\n<b>3️⃣ TIKTOK POST</b>\n\nTiada video TikTok dalam senarai.\n\n<b>4️⃣ LEGEND</b>\n\n🔴 VIDEO @ 5 PLATFORM\nJumlah: 1 Schedule , 1 BelumPost\n\n🟡 VIDEO @ TIKTOK\nTiada video TikTok dalam senarai.\n\n🟢 NON VIDEO @ 5 PLATFORM\nJumlah: 1 Schedule\n\n<b>5️⃣ 🙋🏻‍♂️ TESTIMONI (Auto push)</b>\nJumlah: 2\n\n<b>6️⃣ HASHTAG SEARCH</b>\n\n#Schedule\n#BelumPost\n#DonePost\n#TikTok_Belum\n#TikTok_Done\n#testimoni"
+      "text": "<b>STATUS MEDIA POSTING</b>\n\n<b>1️⃣ ON SCHEDULE</b>\n\n1. 🟢 Image Today 09/11 (Mon) 11:15\nLink : https://t.me/c/4451110392/48\n\n2. 🔴 Video Esok 10/11 (Tue) 23:15\nLink : https://t.me/c/4451110392/32\n\n3. 🔴 Video Lusa 11/11 (Wed) 11:15\nLink : https://t.me/c/4451110392/64\n\n<b>2️⃣ PENDING POST</b>\n\nTiada posting menunggu kelulusan.\n\n<b>3️⃣ TIKTOK POST</b>\n\nTiada video TikTok dalam senarai.\n\n<b>4️⃣ LEGEND</b>\n\n🔴 VIDEO @ 5 PLATFORM\nJumlah: 2 Schedule\n\n🟡 VIDEO @ TIKTOK\nTiada video TikTok dalam senarai.\n\n🟢 NON VIDEO @ 5 PLATFORM\nJumlah: 1 Schedule\n\n<b>5️⃣ 🙋🏻‍♂️ TESTIMONI (Auto push)</b>\nJumlah: 2\n\n<b>6️⃣ HASHTAG SEARCH</b>\n\n#Schedule\n#BelumPost\n#DonePost\n#TikTok_Belum\n#TikTok_Done\n#testimoni"
     },
     "title_try": true,
-    "sweep_at": "2026-11-08T16:24:00.195133+00:00"
+    "sweep_at": "2026-11-08T16:25:38.015152+00:00"
   },
   "testi": {
     "used": [

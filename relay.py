@@ -56,7 +56,7 @@ def _now():
     return datetime.now(timezone.utc)
 
 
-TAGS = ("#BelumPost", "#Approve", "#Tolak")
+TAGS = ("#BelumPost", "#DonePost", "#Approve", "#Tolak")
 
 
 def send_status(base, chat, tag="#BelumPost"):
@@ -448,7 +448,7 @@ def _handle_callback(rs, cb, owner, base, notify):
     rec = _vrec(rs, chat, mid)
     rec["status"], rec["due"], rec["type"] = ("Schedule" if sched else "Approve"), due.isoformat(), typ
     rows = [[{"text": label, "callback_data": "noop"}]] + ([[{"text": "❌ Batal jadual", "callback_data": "cx"}]] if sched else [])
-    retag("#Schedule" if sched else "#Approve", {"inline_keyboard": rows})
+    retag("#Schedule" if sched else "#DonePost", {"inline_keyboard": rows})
     ans(label)
     _unreport(base, owner, rec)
     if sched:
@@ -564,7 +564,7 @@ def _dash_text(rs, ntesti=0):
         + leg("🟡", "VIDEO @ TIKTOK", tcnt, "Tiada video TikTok dalam senarai.") \
         + leg("🟢", "NON VIDEO @ 5 PLATFORM", ncnt, "Tiada gambar / ayat dalam senarai.") \
         + ["<b>5️⃣ 🙋🏻‍♂️ TESTIMONI (Auto push)</b>", f"Jumlah: {ntesti}", "",
-           "<b>6️⃣ HASHTAG SEARCH</b>", "", "#Schedule", "#BelumPost", "#Approve", "#TikTok_Belum", "#TikTok_Done", "#testimoni"]
+           "<b>6️⃣ HASHTAG SEARCH</b>", "", "#Schedule", "#BelumPost", "#DonePost", "#TikTok_Belum", "#TikTok_Done", "#testimoni"]
     return "\n".join(L)
 
 

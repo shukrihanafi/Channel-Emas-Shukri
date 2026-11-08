@@ -676,7 +676,7 @@ def run(st, notify=print, poll=0):
             if str(m.get("from", {}).get("id")) == owner and m.get("photo") and "#testimoni" in (m.get("caption") or "").lower():
                 # testimoni baharu: simpan untuk kitaran testimoni (tiada butang kelulusan)
                 cap = re.sub(r"(?i)#testimoni\w*", "", m.get("caption") or "").strip()
-                st.setdefault("testi", {"used": []}).setdefault("extra", {})[str(m["message_id"])] = {"file_id": m["photo"][-1]["file_id"], "text": cap}
+                st.setdefault("testi", {"used": []}).setdefault("extra", {})[str(m["message_id"])] = {"file_id": m["photo"][-1]["file_id"], "text": cap, "chat": m["chat"]["id"]}
                 _tg(base, "sendMessage", chat_id=m["chat"]["id"], reply_to_message_id=m["message_id"], text="✅ Testimoni disimpan. Akan masuk kitaran testimoni (tarikh dibuang automatik).")
             elif str(m.get("from", {}).get("id")) == owner:
                 try:

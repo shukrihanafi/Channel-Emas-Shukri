@@ -151,6 +151,16 @@ def find_dates(words):
                 for w in words:  # nombor hari (1-2 digit) bersebelahan di kiri tarikh, kadang terpisah daripada bulan oleh OCR
                     if re.fullmatch(r"\d{1,2}", w[0]) and 0 <= b[0] - w[3] <= hh * 2.5 and abs((w[2] + w[4]) / 2 - (b[1] + b[3]) / 2) < hh:
                         b[0] = min(b[0], w[1])
+                TIME_RE = re.compile(r"^(\d{1,2}[:.]?\d{2}(:\d{2})?|[ap]\.?m\.?|,)$", re.I)
+                for _ in range(6):  # masa (cth 11:07 PM) yang dekat dengan tarikh dibuang sekali
+                    grew = False
+                    for w in words:
+                        if TIME_RE.match(w[0]) and abs((w[2] + w[4]) / 2 - (b[1] + b[3]) / 2) < hh and (0 <= w[1] - b[2] <= hh * 3 or 0 <= b[0] - w[3] <= hh * 3):
+                            nb = [min(b[0], w[1]), min(b[1], w[2]), max(b[2], w[3]), max(b[3], w[4])]
+                            if nb != b:
+                                b, grew = nb, True
+                    if not grew:
+                        break
                 boxes.append(b)
     merged = []
     for b in sorted(boxes):
@@ -235,6 +245,16 @@ def fit_ratio(img):
     return img
 
 
+def _deleted(chat, mid):
+    """Semak sama ada mesej sudah dipadam (setMessageReaction kosong: tiada kesan nampak; 'not found' = sudah padam)."""
+    try:
+        r = requests.post(f"https://api.telegram.org/bot{os.getenv('TELEGRAM_BOT_TOKEN')}/setMessageReaction",
+                          data={"chat_id": chat, "message_id": mid, "reaction": "[]"}, timeout=20)
+        return r.status_code >= 300 and "not found" in r.text.lower()
+    except Exception:
+        return False
+
+
 def run(st, send, dt, out="out", notify=print):
     n = st.setdefault("testi", {"used": []})
     test = getattr(sys.modules.get("__main__"), "CURRENT_MODE", "").endswith("-test")
@@ -247,7 +267,11 @@ def run(st, send, dt, out="out", notify=print):
         return
     # senarai gambar: (kunci unik, teks, url)
     items = [(f"{p['key']}#{i}", p["text"], u) for p in posts for i, u in enumerate(p["photos"][:1])]
-    for mid, e in (n.get("extra") or {}).items():  # testimoni baharu yang diletak Shukri di kumpulan MEDIA APPROVAL (#testimoni)
+    for mid, e in list((n.get("extra") or {}).items()):  # testimoni baharu yang diletak Shukri di kumpulan MEDIA APPROVAL (#testimoni)
+        if e.get("chat") and not test and _deleted(e["chat"], mid):  # Shukri padam di MEDIA APPROVAL: jangan guna, buang dari kitaran
+            del n["extra"][mid]
+            print(f"Testimoni {mid} dipadam di MEDIA APPROVAL: dibuang.")
+            continue
         items.append((f"g{mid}#0", e.get("text", ""), "tgfile:" + e["file_id"]))
     print(f"Testimoni dijumpai: {len(items)} (gambar), sudah digunakan: {len(n['used'])}")
     if not items:

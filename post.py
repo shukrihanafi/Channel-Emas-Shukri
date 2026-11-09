@@ -95,6 +95,11 @@ def wa_health_check(st):
         return
     h = st.setdefault("wa_health", {})
     dt = now_my()
+    # jimat kuota Whapi Sandbox (1000 request/bulan): semak 12 jam sekali (3 jam jika sedang bermasalah)
+    gap = 3 * 3600 if h.get("bad") else 12 * 3600
+    if h.get("last_check") and (dt - datetime.fromisoformat(h["last_check"])).total_seconds() < gap:
+        return
+    h["last_check"] = dt.isoformat()
     try:
         ok, txt = whapi.health()
         err = None

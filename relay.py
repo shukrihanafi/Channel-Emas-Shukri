@@ -187,23 +187,29 @@ def _deliver(st, rs, key, text, vid, photo, from_channel, notify, base, token, t
         path = _fetch_file(base, token, vid["file_id"])
     else:
         path = _fetch_file(base, token, photo[-1]["file_id"]) if photo else None
+    parts = []
     if rs.get("wa_done") != key:  # elak hantar dua kali ke WhatsApp jika langkah kemudian perlu diulang
-        if vid:
-            whapi.post_channel(text, video_path=path)
-        else:
-            whapi.post_channel(text, path)
-        rs["wa_done"] = key
-    dest = "WhatsApp Channel"
+        try:  # WhatsApp (Whapi) gagal tidak boleh menyekat platform lain
+            if vid:
+                whapi.post_channel(text, video_path=path)
+            else:
+                whapi.post_channel(text, path)
+            rs["wa_done"] = key
+            parts.append("WhatsApp Channel")
+        except Exception as e:
+            notify(f"⚠️ Gagal hantar ke WhatsApp Channel: {str(e)[:200]}\nPlatform lain diteruskan. Sila post manual ke WhatsApp.")
+    else:
+        parts.append("WhatsApp Channel")
     if not from_channel and tg_channel:
         if rs.get("tg_done") != key:
             _tg_push(base, tg_channel, text, path, bool(vid))
             rs["tg_done"] = key
-        dest += f" + Telegram Channel {tg_channel}"
+        parts.append(f"Telegram Channel {tg_channel}")
     if fb.enabled():
         if rs.get("fb_done") != key:
             fb.post(text, video_path=path) if vid else fb.post(text, path)
             rs["fb_done"] = key
-        dest += " + Facebook Page"
+        parts.append("Facebook Page")
     # Threads + Instagram: teks panjang diringkaskan, sentiasa tamat dengan shukriee.com.
     # Kegagalan di sini tidak mengulang langkah lain; platform yang gagal dimasukkan ke giliran cuba-semula (rs["redo"]).
     import threads, instagram
@@ -213,7 +219,7 @@ def _deliver(st, rs, key, text, vid, photo, from_channel, notify, base, token, t
         try:
             _post_social(st, name, text, path, bool(vid))
             rs[f"{name}_done"] = key
-            dest += " + " + ("Threads" if name == "th" else "Instagram")
+            parts.append("Threads" if name == "th" else "Instagram")
         except Exception as e:
             label = "Threads" if name == "th" else "Instagram"
             notify(f"⚠️ Gagal hantar posting manual ke {label}: {e} (akan dicuba lagi automatik)")
@@ -222,7 +228,7 @@ def _deliver(st, rs, key, text, vid, photo, from_channel, notify, base, token, t
                                                                 "due": (_now() + timedelta(minutes=10)).isoformat()})
                 if name not in rd["plats"]:
                     rd["plats"].append(name)
-    return dest
+    return " + ".join(parts) or "(tiada platform berjaya)"
 
 
 def _post_social(st, name, text, path, is_video):

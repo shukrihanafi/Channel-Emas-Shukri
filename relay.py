@@ -85,14 +85,20 @@ def approval_keyboard(page="main", kind="video", taken=()):
     if page == "dates":  # tarikh + jam sekali: 3 hari bermula hari ini, jam 11:15 dan 23:15 (slot yang sudah lalu disembunyikan)
         now = _now().astimezone(MYT)
         rows = []
-        for i in range(3):
+        used_days = {t[:10] for t in taken}  # satu posting tambahan sehari sahaja: hari yang sudah ada jadual disembunyikan
+        for i in range(60):
             d = now + timedelta(days=i)
+            if f"{d:%Y-%m-%d}" in used_days:
+                continue
             row = []
             for hh, mm in ((11, 15), (23, 15)):
-                if d.replace(hour=hh, minute=mm, second=0, microsecond=0) > now and f"{d:%Y-%m-%d} {hh:02d}:{mm:02d}" not in taken:
-                    row.append({"text": f"{('Today', 'Esok', 'Lusa')[i]} @ {hh}{mm:02d}", "callback_data": f"sm{i}_{hh:02d}_{mm:02d}"})
+                if d.replace(hour=hh, minute=mm, second=0, microsecond=0) > now:
+                    day = ("Today", "Esok", "Lusa")[i] if i < 3 else f"{DAYS[d.weekday()]} {d:%d/%m}"
+                    row.append({"text": f"{day} @ {hh}{mm:02d}", "callback_data": f"sm{i}_{hh:02d}_{mm:02d}"})
             if row:
                 rows.append(row)
+            if len(rows) == 3:
+                break
         rows.append(back("bk"))
         return {"inline_keyboard": rows}
     if page.startswith("hrs"):
@@ -423,9 +429,9 @@ def _handle_callback(rs, cb, owner, base, notify):
         if t <= _now().astimezone(MYT):
             mark(kb("dates"))
             return ans("Masa itu sudah lalu, pilih semula.")
-        if t.strftime("%Y-%m-%d %H:%M") in taken:
+        if t.strftime("%Y-%m-%d") in {x[:10] for x in taken}:
             mark(kb("dates"))
-            return ans("Slot itu sudah diambil posting lain, pilih slot lain.")
+            return ans("Hari itu sudah ada jadual posting lain, pilih hari lain.")
         due, tt = t.astimezone(timezone.utc), True
         label = f"⏰ Dijadual {t:%d/%m %H:%M} + 📣 peringatan TikTok"
     elif data == "n20" or data == "m07" or (data.startswith("h") and data[1:].isdigit()):

@@ -129,6 +129,48 @@ def wa_health_check(st):
         wa_notify(f"⚠️ WhatsApp Channel bermasalah.\n{reason}\nPost auto ke WhatsApp tidak akan sampai. Sila buka dashboard Whapi dan sambung semula. Telegram & Facebook masih berjalan.")
 
 
+WA_MONTH_CAP = 750   # Whapi Sandbox 1000 request/bulan: simpan ~250 untuk posting manual, semakan dan relay
+WA_ALERT_DAY_CAP = 4  # maksimum post alert harga ke WhatsApp sehari (Telegram/FB/IG tidak terhad)
+
+
+def _wa_u():
+    st = globals().get("_ST")
+    if st is None:
+        return None
+    dt = now_my()
+    u = st.setdefault("wa_usage", {})
+    if u.get("month") != dt.strftime("%Y-%m"):
+        u.clear(); u["month"] = dt.strftime("%Y-%m"); u["n"] = 0
+    if u.get("day") != dt.strftime("%Y-%m-%d"):
+        u["day"] = dt.strftime("%Y-%m-%d"); u["alerts"] = 0
+    return u
+
+
+def wa_budget(label):
+    u = _wa_u()
+    if u is None:
+        return True, ""
+    if u.get("n", 0) >= WA_MONTH_CAP:
+        if not u.get("warned"):
+            u["warned"] = True
+            try:
+                wa_notify(f"⚠️ Kuota Whapi bulan ini hampir habis ({u['n']} post auto). Auto push WhatsApp dihentikan; post manual ke WhatsApp.")
+            except Exception:
+                pass
+        return False, "kuota bulanan hampir habis"
+    if label in ("price-alert", "alert-buyback", "alert-fizikal") and u.get("alerts", 0) >= WA_ALERT_DAY_CAP:
+        return False, "had alert harian"
+    return True, ""
+
+
+def wa_count(label):
+    u = _wa_u()
+    if u is not None:
+        u["n"] = u.get("n", 0) + 1
+        if label in ("price-alert", "alert-buyback", "alert-fizikal"):
+            u["alerts"] = u.get("alerts", 0) + 1
+
+
 def send(text, image=None, label="post", closing=True):
     if image is None and label == "berita":  # berita tiada gambar: guna gambar sandaran repo
         try:
@@ -146,9 +188,13 @@ def send(text, image=None, label="post", closing=True):
     base = f"https://api.telegram.org/bot{token}"
     wa_note = ""
     test_only = CURRENT_MODE.endswith("-test")  # mod ujian: hantar ke Telegram peribadi sahaja
-    if not test_only and wa_auto_for(CURRENT_MODE):
+    wa_ok_budget, wa_why = wa_budget(label)
+    if not test_only and wa_auto_for(CURRENT_MODE) and not wa_ok_budget:
+        wa_note = f"ℹ️ WhatsApp Channel dilangkau ({wa_why}). Post manual jika perlu."
+    elif not test_only and wa_auto_for(CURRENT_MODE):
         try:
             whapi.post_channel(text, image)
+            wa_count(label)
             wa_note = "✅ Sudah dihantar ke WhatsApp Channel (auto)."
         except Exception as e:  # WhatsApp gagal -> Telegram tetap ada untuk hantar manual
             wa_note = f"⚠️ Gagal hantar ke WhatsApp Channel: {e}\nSila hantar manual."

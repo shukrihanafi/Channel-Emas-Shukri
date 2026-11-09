@@ -110,52 +110,13 @@
   "bb_last": 0,
   "relay": {
     "offset": 991464132,
-    "wa_done": "a51",
+    "wa_done": "a48",
     "tries": 0,
-    "tg_done": "a51",
-    "fb_done": "a51",
-    "th_done": "a51",
-    "ig_done": "a51",
+    "tg_done": "a48",
+    "fb_done": "a48",
+    "th_done": "a48",
+    "ig_done": "a48",
     "pending": {
-      "a48": {
-        "vid": null,
-        "photo": [
-          {
-            "file_id": "AgACAgUAAyEFAAMBCU6N-AADJGrvTww-rdBavZ409cJqT57C_W03AAIbFGsbPKyBV5pUsv6GYbalAQADAgADcwADPQQ",
-            "file_unique_id": "AQADGxRrGzysgVd4",
-            "file_size": 2886,
-            "width": 90,
-            "height": 90
-          },
-          {
-            "file_id": "AgACAgUAAyEFAAMBCU6N-AADJGrvTww-rdBavZ409cJqT57C_W03AAIbFGsbPKyBV5pUsv6GYbalAQADAgADbQADPQQ",
-            "file_unique_id": "AQADGxRrGzysgVdy",
-            "file_size": 48659,
-            "width": 320,
-            "height": 320
-          },
-          {
-            "file_id": "AgACAgUAAyEFAAMBCU6N-AADJGrvTww-rdBavZ409cJqT57C_W03AAIbFGsbPKyBV5pUsv6GYbalAQADAgADeAADPQQ",
-            "file_unique_id": "AQADGxRrGzysgVd9",
-            "file_size": 215123,
-            "width": 800,
-            "height": 800
-          },
-          {
-            "file_id": "AgACAgUAAyEFAAMBCU6N-AADJGrvTww-rdBavZ409cJqT57C_W03AAIbFGsbPKyBV5pUsv6GYbalAQADAgADeQADPQQ",
-            "file_unique_id": "AQADGxRrGzysgVd-",
-            "file_size": 379755,
-            "width": 1254,
-            "height": 1254
-          }
-        ],
-        "text": "KECIL DI MATA ORANG, BESAR ERTINYA BUAT SAYA.\n\nSelama 6 tahun, saya kumpul emas sedikit demi sedikit. Bukan sebab banyak duit, tetapi kerana ada impian.\n\nAlhamdulillah, berjaya kumpul lebih 100 gram emas. Akhirnya, emas itu saya jual untuk membina sebuah rumah kecil.\n\nOrang nampak rumah kecil. Saya nampak 6 tahun kesabaran, pengorbanan dan perjuangan.\n\nJangan malu bermula sedikit. Simpanan kecil hari ini mungkin jadi impian besar esok.\n\nKredit: Rinawati\n\nshukriee.com",
-        "due": "2026-11-09T03:15:00+00:00",
-        "tries": 0,
-        "mid": 48,
-        "tt": false,
-        "chat": -1004451110392
-      },
       "a32": {
         "vid": {
           "duration": 15,
@@ -261,7 +222,9 @@
         "status": "Schedule",
         "type": "Image",
         "due": "2026-11-09T03:15:00+00:00",
-        "rep": 301
+        "rep": 301,
+        "delivered": true,
+        "done_at": "2026-11-09T03:16:14.816964+00:00"
       },
       "51": {
         "chat": "-1004451110392",
@@ -284,10 +247,10 @@
     "dash": {
       "chat": -1004451110392,
       "mid": 33,
-      "text": "<b>STATUS MEDIA POSTING</b>\n\n<b>1️⃣ ON SCHEDULE</b>\n\n1. 🟢 Image Today 09/11 (Mon) 11:15\nLink : https://t.me/c/4451110392/48\n\n2. 🔴 Video Esok 10/11 (Tue) 23:15\nLink : https://t.me/c/4451110392/32\n\n3. 🔴 Video Lusa 11/11 (Wed) 11:15\nLink : https://t.me/c/4451110392/64\n\n<b>2️⃣ PENDING POST</b>\n\nTiada posting menunggu kelulusan.\n\n<b>3️⃣ TIKTOK POST</b>\n\nTiada video TikTok dalam senarai.\n\n<b>4️⃣ LEGEND</b>\n\n🔴 VIDEO @ 5 PLATFORM\nJumlah: 2 Schedule\n\n🟡 VIDEO @ TIKTOK\nTiada video TikTok dalam senarai.\n\n🟢 NON VIDEO @ 5 PLATFORM\nJumlah: 1 Schedule\n\n<b>5️⃣ 🙋🏻‍♂️ TESTIMONI (Auto push)</b>\nJumlah: 2\n\n<b>6️⃣ HASHTAG SEARCH</b>\n\n#Schedule\n#BelumPost\n#DonePost\n#TikTok_Belum\n#TikTok_Done\n#testimoni"
+      "text": "<b>STATUS MEDIA POSTING</b>\n\n<b>1️⃣ ON SCHEDULE</b>\n\n1. 🔴 Video Esok 10/11 (Tue) 23:15\nLink : https://t.me/c/4451110392/32\n\n2. 🔴 Video Lusa 11/11 (Wed) 11:15\nLink : https://t.me/c/4451110392/64\n\n<b>2️⃣ PENDING POST</b>\n\nTiada posting menunggu kelulusan.\n\n<b>3️⃣ TIKTOK POST</b>\n\nTiada video TikTok dalam senarai.\n\n<b>4️⃣ LEGEND</b>\n\n🔴 VIDEO @ 5 PLATFORM\nJumlah: 2 Schedule\n\n🟡 VIDEO @ TIKTOK\nTiada video TikTok dalam senarai.\n\n🟢 NON VIDEO @ 5 PLATFORM\nTiada gambar / ayat dalam senarai.\n\n<b>5️⃣ 🙋🏻‍♂️ TESTIMONI (Auto push)</b>\nJumlah: 2\n\n<b>6️⃣ HASHTAG SEARCH</b>\n\n#Schedule\n#BelumPost\n#DonePost\n#TikTok_Belum\n#TikTok_Done\n#testimoni"
     },
     "title_try": true,
-    "sweep_at": "2026-11-09T03:14:55.147877+00:00"
+    "sweep_at": "2026-11-09T03:16:30.888586+00:00"
   },
   "testi": {
     "used": [

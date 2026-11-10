@@ -113,7 +113,7 @@
   },
   "bb_last": 0,
   "relay": {
-    "offset": 991464144,
+    "offset": 991464147,
     "wa_done": 991464134,
     "tries": 0,
     "tg_done": "a48",
@@ -280,6 +280,45 @@
         "mid": 73,
         "tt": true,
         "chat": -1004451110392
+      },
+      "a76": {
+        "vid": null,
+        "photo": [
+          {
+            "file_id": "AgACAgUAAyEFAAMBCU6N-AADSmry2TBylolWRiQby4-45dRwxQVsAAIhwjEb0RgoV_UMWsAXctuRAQADAgADcwADPQQ",
+            "file_unique_id": "AQADIcIxG9EYKFd4",
+            "file_size": 1568,
+            "width": 90,
+            "height": 67
+          },
+          {
+            "file_id": "AgACAgUAAyEFAAMBCU6N-AADSmry2TBylolWRiQby4-45dRwxQVsAAIhwjEb0RgoV_UMWsAXctuRAQADAgADbQADPQQ",
+            "file_unique_id": "AQADIcIxG9EYKFdy",
+            "file_size": 20677,
+            "width": 320,
+            "height": 240
+          },
+          {
+            "file_id": "AgACAgUAAyEFAAMBCU6N-AADSmry2TBylolWRiQby4-45dRwxQVsAAIhwjEb0RgoV_UMWsAXctuRAQADAgADeAADPQQ",
+            "file_unique_id": "AQADIcIxG9EYKFd9",
+            "file_size": 80011,
+            "width": 800,
+            "height": 600
+          },
+          {
+            "file_id": "AgACAgUAAyEFAAMBCU6N-AADSmry2TBylolWRiQby4-45dRwxQVsAAIhwjEb0RgoV_UMWsAXctuRAQADAgADeQADPQQ",
+            "file_unique_id": "AQADIcIxG9EYKFd-",
+            "file_size": 83583,
+            "width": 1080,
+            "height": 810
+          }
+        ],
+        "text": "Tahniah..! Sebanyak ±RM8 juta duit tunai sudah selamat jadi 20kg emas untuk dijadikan aset untuk masa depan.\n\nEmas ni bukan untuk kegunaan sekarang tapi backup untuk lagi 3-5 tahun akan datang.\n\nMungkin pada waktu itu harga emas untuk 20kg ini boleh cecah RM16 juta. 😳\n\nTiada siapa yang tahu secara tepat turun naik harga tapi sejarah harga emas banyak mengajar kita potensi kenaikan harga emas untuk jangkamasa panjang.\n\nKadar kenaikan 100% untuk tempoh masa 5 tahun, purata keuntungan 20% untuk setiap tahun.\n\nNak untung besar dalam simpanan dan pelaburan emas kena ada gram yang banyak dan ‘hold’ lagi lama.\n\nNak tahu apa kelebihan emas besar? Klik link di bawah\nhttps://boards.com/a/cnt922.jgfEAn",
+        "due": "2026-11-15T03:15:00+00:00",
+        "tries": 0,
+        "mid": 76,
+        "tt": false,
+        "chat": -1004451110392
       }
     },
     "cbdone": [
@@ -294,7 +333,8 @@
       64,
       67,
       70,
-      73
+      73,
+      76
     ],
     "redo": {},
     "video_chat": -1004451110392,
@@ -360,15 +400,23 @@
         "type": "Video",
         "due": "2026-11-14T15:15:00+00:00",
         "rep": 386
+      },
+      "76": {
+        "chat": -1004451110392,
+        "mid": 76,
+        "status": "Schedule",
+        "type": "Image",
+        "due": "2026-11-15T03:15:00+00:00",
+        "rep": 387
       }
     },
     "dash": {
       "chat": -1004451110392,
       "mid": 33,
-      "text": "<b>STATUS MEDIA POSTING</b>\n\n<b>1️⃣ ON SCHEDULE</b>\n\n1. 🔴 Video Today 10/11 (Tue) 23:15\nLink : https://t.me/c/4451110392/32\n\n2. 🔴 Video Esok 11/11 (Wed) 11:15\nLink : https://t.me/c/4451110392/64\n\n3. 🔴 Video Lusa 12/11 (Thu) 23:15\nLink : https://t.me/c/4451110392/67\n\n4. 🔴 Video 13/11 (Fri) 11:15\nLink : https://t.me/c/4451110392/70\n\n5. 🔴 Video 14/11 (Sat) 23:15\nLink : https://t.me/c/4451110392/73\n\n<b>2️⃣ PENDING POST</b>\n\nTiada posting menunggu kelulusan.\n\n<b>3️⃣ TIKTOK POST</b>\n\nTiada video TikTok dalam senarai.\n\n<b>4️⃣ LEGEND</b>\n\n🔴 VIDEO @ 5 PLATFORM\nJumlah: 5 Schedule\n\n🟡 VIDEO @ TIKTOK\nTiada video TikTok dalam senarai.\n\n🟢 NON VIDEO @ 5 PLATFORM\nTiada gambar / ayat dalam senarai.\n\n<b>5️⃣ 🙋🏻‍♂️ TESTIMONI (Auto push)</b>\nJumlah: 2\n\n<b>6️⃣ HASHTAG SEARCH</b>\n\n#Schedule\n#BelumPost\n#DonePost\n#TikTok_Belum\n#TikTok_Done\n#testimoni"
+      "text": "<b>STATUS MEDIA POSTING</b>\n\n<b>1️⃣ ON SCHEDULE</b>\n\n1. 🔴 Video Today 10/11 (Tue) 23:15\nLink : https://t.me/c/4451110392/32\n\n2. 🔴 Video Esok 11/11 (Wed) 11:15\nLink : https://t.me/c/4451110392/64\n\n3. 🔴 Video Lusa 12/11 (Thu) 23:15\nLink : https://t.me/c/4451110392/67\n\n4. 🔴 Video 13/11 (Fri) 11:15\nLink : https://t.me/c/4451110392/70\n\n5. 🔴 Video 14/11 (Sat) 23:15\nLink : https://t.me/c/4451110392/73\n\n6. 🟢 Image 15/11 (Sun) 11:15\nLink : https://t.me/c/4451110392/76\n\n<b>2️⃣ PENDING POST</b>\n\nTiada posting menunggu kelulusan.\n\n<b>3️⃣ TIKTOK POST</b>\n\nTiada video TikTok dalam senarai.\n\n<b>4️⃣ LEGEND</b>\n\n🔴 VIDEO @ 5 PLATFORM\nJumlah: 5 Schedule\n\n🟡 VIDEO @ TIKTOK\nTiada video TikTok dalam senarai.\n\n🟢 NON VIDEO @ 5 PLATFORM\nJumlah: 1 Schedule\n\n<b>5️⃣ 🙋🏻‍♂️ TESTIMONI (Auto push)</b>\nJumlah: 2\n\n<b>6️⃣ HASHTAG SEARCH</b>\n\n#Schedule\n#BelumPost\n#DonePost\n#TikTok_Belum\n#TikTok_Done\n#testimoni"
     },
     "title_try": true,
-    "sweep_at": "2026-11-10T08:43:24.962355+00:00"
+    "sweep_at": "2026-11-10T08:45:07.344670+00:00"
   },
   "testi": {
     "used": [

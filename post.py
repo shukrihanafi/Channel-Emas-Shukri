@@ -129,8 +129,9 @@ def wa_health_check(st):
         wa_notify(f"⚠️ WhatsApp Channel bermasalah.\n{reason}\nPost auto ke WhatsApp tidak akan sampai. Sila buka dashboard Whapi dan sambung semula. Telegram & Facebook masih berjalan.")
 
 
-WA_MONTH_CAP = 850   # Whapi Sandbox 1000 request/bulan: simpan ~250 untuk posting manual, semakan dan relay
-WA_ALERT_DAY_CAP = 10  # maksimum alert GAP ke WhatsApp sehari; alert PG Buy/emas fizikal tidak dihantar ke WhatsApp (Telegram/FB/IG tidak terhad)
+WA_MONTH_CAP = 900   # Whapi Sandbox 1000 request/bulan: simpan ~250 untuk posting manual, semakan dan relay
+WA_ALERT_DAY_CAP = 14  # maksimum post alert ke WhatsApp sehari
+WA_SIDE_ALERT_CAP = 8  # alert PG Buy/Non-PG/emas fizikal ke WhatsApp hanya jika alert hari ini < 8 (baki untuk alert GAP) (Telegram/FB/IG tidak terhad)
 
 
 def _wa_u():
@@ -158,9 +159,9 @@ def wa_budget(label):
             except Exception:
                 pass
         return False, "kuota bulanan hampir habis"
-    if label in ("alert-buyback", "alert-fizikal"):
-        return False, ""  # senyap: alert sampingan tidak ke WhatsApp (jimat kuota)
-    if label == "price-alert" and u.get("alerts", 0) >= WA_ALERT_DAY_CAP:
+    if label in ("alert-buyback", "alert-fizikal") and u.get("alerts", 0) >= WA_SIDE_ALERT_CAP:
+        return False, "had alert sampingan harian"
+    if label in ("price-alert", "alert-buyback", "alert-fizikal") and u.get("alerts", 0) >= WA_ALERT_DAY_CAP:
         return False, "had alert harian"
     return True, ""
 
@@ -169,7 +170,7 @@ def wa_count(label):
     u = _wa_u()
     if u is not None:
         u["n"] = u.get("n", 0) + 1
-        if label == "price-alert":
+        if label in ("price-alert", "alert-buyback", "alert-fizikal"):
             u["alerts"] = u.get("alerts", 0) + 1
 
 

@@ -129,8 +129,8 @@ def wa_health_check(st):
         wa_notify(f"⚠️ WhatsApp Channel bermasalah.\n{reason}\nPost auto ke WhatsApp tidak akan sampai. Sila buka dashboard Whapi dan sambung semula. Telegram & Facebook masih berjalan.")
 
 
-WA_MONTH_CAP = 750   # Whapi Sandbox 1000 request/bulan: simpan ~250 untuk posting manual, semakan dan relay
-WA_ALERT_DAY_CAP = 4  # maksimum post alert harga ke WhatsApp sehari (Telegram/FB/IG tidak terhad)
+WA_MONTH_CAP = 850   # Whapi Sandbox 1000 request/bulan: simpan ~250 untuk posting manual, semakan dan relay
+WA_ALERT_DAY_CAP = 10  # maksimum alert GAP ke WhatsApp sehari; alert PG Buy/emas fizikal tidak dihantar ke WhatsApp (Telegram/FB/IG tidak terhad)
 
 
 def _wa_u():
@@ -158,7 +158,9 @@ def wa_budget(label):
             except Exception:
                 pass
         return False, "kuota bulanan hampir habis"
-    if label in ("price-alert", "alert-buyback", "alert-fizikal") and u.get("alerts", 0) >= WA_ALERT_DAY_CAP:
+    if label in ("alert-buyback", "alert-fizikal"):
+        return False, ""  # senyap: alert sampingan tidak ke WhatsApp (jimat kuota)
+    if label == "price-alert" and u.get("alerts", 0) >= WA_ALERT_DAY_CAP:
         return False, "had alert harian"
     return True, ""
 
@@ -167,7 +169,7 @@ def wa_count(label):
     u = _wa_u()
     if u is not None:
         u["n"] = u.get("n", 0) + 1
-        if label in ("price-alert", "alert-buyback", "alert-fizikal"):
+        if label == "price-alert":
             u["alerts"] = u.get("alerts", 0) + 1
 
 
@@ -190,7 +192,7 @@ def send(text, image=None, label="post", closing=True):
     test_only = CURRENT_MODE.endswith("-test")  # mod ujian: hantar ke Telegram peribadi sahaja
     wa_ok_budget, wa_why = wa_budget(label)
     if not test_only and wa_auto_for(CURRENT_MODE) and not wa_ok_budget:
-        wa_note = f"ℹ️ WhatsApp Channel dilangkau ({wa_why}). Post manual jika perlu."
+        wa_note = f"ℹ️ WhatsApp Channel dilangkau ({wa_why}). Post manual jika perlu." if wa_why else ""
     elif not test_only and wa_auto_for(CURRENT_MODE):
         try:
             whapi.post_channel(text, image)

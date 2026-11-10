@@ -113,7 +113,7 @@
   },
   "bb_last": 0,
   "relay": {
-    "offset": 991464141,
+    "offset": 991464144,
     "wa_done": 991464134,
     "tries": 0,
     "tg_done": "a48",
@@ -248,6 +248,38 @@
         "mid": 70,
         "tt": true,
         "chat": -1004451110392
+      },
+      "a73": {
+        "vid": {
+          "duration": 8,
+          "width": 576,
+          "height": 1024,
+          "mime_type": "video/mp4",
+          "thumbnail": {
+            "file_id": "AAMCBQADIQUAAwEJTo34AANHavLYmbwTtTlaEIwqDJxCBRgST1kAAmojAALDgphXkdO9Lao4kYABAAdtAAM9BA",
+            "file_unique_id": "AQADaiMAAsOCmFdy",
+            "file_size": 17093,
+            "width": 180,
+            "height": 320
+          },
+          "thumb": {
+            "file_id": "AAMCBQADIQUAAwEJTo34AANHavLYmbwTtTlaEIwqDJxCBRgST1kAAmojAALDgphXkdO9Lao4kYABAAdtAAM9BA",
+            "file_unique_id": "AQADaiMAAsOCmFdy",
+            "file_size": 17093,
+            "width": 180,
+            "height": 320
+          },
+          "file_id": "BAACAgUAAyEFAAMBCU6N-AADR2ry2Jm8E7U5WhCMKgycQgUYEk9ZAAJqIwACw4KYV5HTvS2qOJGAPQQ",
+          "file_unique_id": "AgADaiMAAsOCmFc",
+          "file_size": 493598
+        },
+        "photo": null,
+        "text": "Amboi...\n\nNak jual emas dengan harga tinggi?\nJual je di Public Gold..!\n\nVideo penuh, klik link bawah\n\nhttps://vt.tiktok.com/ZSpfhwGWV/\n\nAjom klik shukriee.com untuk simpan emas!",
+        "due": "2026-11-14T15:15:00+00:00",
+        "tries": 0,
+        "mid": 73,
+        "tt": true,
+        "chat": -1004451110392
       }
     },
     "cbdone": [
@@ -261,7 +293,8 @@
       32,
       64,
       67,
-      70
+      70,
+      73
     ],
     "redo": {},
     "video_chat": -1004451110392,
@@ -319,15 +352,23 @@
         "type": "Video",
         "due": "2026-11-13T03:15:00+00:00",
         "rep": 381
+      },
+      "73": {
+        "chat": -1004451110392,
+        "mid": 73,
+        "status": "Schedule",
+        "type": "Video",
+        "due": "2026-11-14T15:15:00+00:00",
+        "rep": 386
       }
     },
     "dash": {
       "chat": -1004451110392,
       "mid": 33,
-      "text": "<b>STATUS MEDIA POSTING</b>\n\n<b>1️⃣ ON SCHEDULE</b>\n\n1. 🔴 Video Today 10/11 (Tue) 23:15\nLink : https://t.me/c/4451110392/32\n\n2. 🔴 Video Esok 11/11 (Wed) 11:15\nLink : https://t.me/c/4451110392/64\n\n3. 🔴 Video Lusa 12/11 (Thu) 23:15\nLink : https://t.me/c/4451110392/67\n\n4. 🔴 Video 13/11 (Fri) 11:15\nLink : https://t.me/c/4451110392/70\n\n<b>2️⃣ PENDING POST</b>\n\nTiada posting menunggu kelulusan.\n\n<b>3️⃣ TIKTOK POST</b>\n\nTiada video TikTok dalam senarai.\n\n<b>4️⃣ LEGEND</b>\n\n🔴 VIDEO @ 5 PLATFORM\nJumlah: 4 Schedule\n\n🟡 VIDEO @ TIKTOK\nTiada video TikTok dalam senarai.\n\n🟢 NON VIDEO @ 5 PLATFORM\nTiada gambar / ayat dalam senarai.\n\n<b>5️⃣ 🙋🏻‍♂️ TESTIMONI (Auto push)</b>\nJumlah: 2\n\n<b>6️⃣ HASHTAG SEARCH</b>\n\n#Schedule\n#BelumPost\n#DonePost\n#TikTok_Belum\n#TikTok_Done\n#testimoni"
+      "text": "<b>STATUS MEDIA POSTING</b>\n\n<b>1️⃣ ON SCHEDULE</b>\n\n1. 🔴 Video Today 10/11 (Tue) 23:15\nLink : https://t.me/c/4451110392/32\n\n2. 🔴 Video Esok 11/11 (Wed) 11:15\nLink : https://t.me/c/4451110392/64\n\n3. 🔴 Video Lusa 12/11 (Thu) 23:15\nLink : https://t.me/c/4451110392/67\n\n4. 🔴 Video 13/11 (Fri) 11:15\nLink : https://t.me/c/4451110392/70\n\n5. 🔴 Video 14/11 (Sat) 23:15\nLink : https://t.me/c/4451110392/73\n\n<b>2️⃣ PENDING POST</b>\n\nTiada posting menunggu kelulusan.\n\n<b>3️⃣ TIKTOK POST</b>\n\nTiada video TikTok dalam senarai.\n\n<b>4️⃣ LEGEND</b>\n\n🔴 VIDEO @ 5 PLATFORM\nJumlah: 5 Schedule\n\n🟡 VIDEO @ TIKTOK\nTiada video TikTok dalam senarai.\n\n🟢 NON VIDEO @ 5 PLATFORM\nTiada gambar / ayat dalam senarai.\n\n<b>5️⃣ 🙋🏻‍♂️ TESTIMONI (Auto push)</b>\nJumlah: 2\n\n<b>6️⃣ HASHTAG SEARCH</b>\n\n#Schedule\n#BelumPost\n#DonePost\n#TikTok_Belum\n#TikTok_Done\n#testimoni"
     },
     "title_try": true,
-    "sweep_at": "2026-11-10T08:40:14.727769+00:00"
+    "sweep_at": "2026-11-10T08:41:53.796384+00:00"
   },
   "testi": {
     "used": [

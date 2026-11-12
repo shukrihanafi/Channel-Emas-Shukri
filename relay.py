@@ -168,6 +168,32 @@ def _tt_keyboard(done):
                                 [{"text": "✅ Dah post di TikTok", "callback_data": "ttd"}]]}
 
 
+def _first_line(text):
+    return next((l.strip() for l in (text or "").splitlines() if l.strip() and not l.strip().lower().startswith(("amboi", "shukriee"))), "")
+
+
+def _yt_status_text(done, text=""):
+    """Status YouTube manual: #YouTube_Belum / #YouTube_Done."""
+    first = _first_line(text)
+    head = ("✅ YouTube: SUDAH POST\n#YouTube_Done" if done else "⏳ YouTube: BELUM POST\n#YouTube_Belum")
+    return head + (f"\n▶️ {first[:60]}" if first else "")
+
+
+def _yt_keyboard(done):
+    return {"inline_keyboard": [[{"text": "↩️ Batal (belum post)", "callback_data": "ytu"}] if done else
+                                [{"text": "✅ Dah post di YouTube", "callback_data": "ytd"}]]}
+
+
+def yt_reminder(base, owner, text, mid, notify=print):
+    """Peringatan YouTube Shorts manual: status (#YouTube_Belum) + butang, kemudian tajuk dan keterangan siap salin."""
+    _tg(base, "sendMessage", chat_id=owner, text=_yt_status_text(False, text) + "\n\n"
+        "1) Simpan video ke galeri\n2) YouTube > + > Muat naik Shorts > tampal tajuk dan keterangan di bawah\n3) Siar, kemudian tekan butang di bawah",
+        reply_to_message_id=mid, reply_markup=json.dumps(_yt_keyboard(False)))
+    title = (_first_line(text)[:85].rstrip() + " #Shorts").replace("`", "'")
+    desc = ((text or "").strip() + "\n\n#Shorts #emas #goldbar").replace("`", "'")[:4900]
+    _tg(base, "sendMessage", chat_id=owner, text=f"```\n{title}\n```\n```\n{desc}\n```", parse_mode="Markdown", reply_to_message_id=mid)
+
+
 def tt_reminder(base, owner, text, mid, notify=print):
     """Peringatan TikTok manual: mesej status (#TikTok_Belum) dengan butang 'Dah post', diikuti caption siap salin. Tanpa Claude."""
     sresp = _tg(base, "sendMessage", chat_id=owner, text=_tt_status_text(False, text) + "\n\n"
@@ -489,6 +515,21 @@ def _handle_callback(rs, cb, owner, base, notify):
             if isdone:
                 rec["done_at"] = _now().isoformat()
         return ans("Ditanda: sudah post ✅" if isdone else "Ditanda: belum post")
+    if data in ("ytd", "ytu"):  # status YouTube manual
+        isdone = data == "ytd"
+        body = (m.get("text") or "")
+        first = next((l[2:].strip() for l in body.splitlines() if l.startswith("▶️")), "")
+        steps = body.split("\n\n", 1)[1] if "\n\n" in body else ""
+        txt = _yt_status_text(isdone, first) + ("\n\n" + steps if steps else "")
+        _tg(base, "editMessageText", chat_id=chat, message_id=mid, text=txt, reply_markup=json.dumps(_yt_keyboard(isdone)))
+        vm = (m.get("reply_to_message") or {}).get("message_id")
+        if vm:
+            rec = _vrec(rs, chat, vm)
+            rec["yt"] = "Done" if isdone else "Belum"
+            rec["delivered"] = True
+            if isdone:
+                rec["yt_done_at"] = _now().isoformat()
+        return ans("Ditanda: sudah post ✅" if isdone else "Ditanda: belum post")
     if data == "hr":
         mark(kb("dates"))
         return ans("Pilih tarikh")
@@ -589,6 +630,8 @@ def _process_pending(st, rs, base, token, tg_channel, notify):
             if it.get("tt"):
                 tt_reminder(base, it.get("chat") or os.getenv("TELEGRAM_CHAT_ID", ""), it["text"], it.get("mid"), notify)
                 rec["tt"] = "Belum"
+                yt_reminder(base, it.get("chat") or os.getenv("TELEGRAM_CHAT_ID", ""), it["text"], it.get("mid"), notify)
+                rec["yt"] = "Belum"
         except Exception as e:
             it["tries"] = it.get("tries", 0) + 1
             if it["tries"] >= 5:
@@ -617,8 +660,10 @@ def _dash_text(rs, ntesti=0):
             rec["status"] = "Schedule" if datetime.fromisoformat(it["due"]) > now + timedelta(minutes=2) else "Approve"
             rec["due"] = it["due"]
     old = lambda v, h: v.get("done_at") and now - datetime.fromisoformat(v["done_at"]) > timedelta(hours=h)
-    for k in [k for k, v in vids.items() if (v.get("tt") == "Done" and old(v, 48))
-              or (v.get("type", "Video") == "Video" and v.get("delivered") and not v.get("tt"))
+    def alldone(v):
+        return v.get("tt") != "Belum" and v.get("yt") != "Belum" and (v.get("tt") == "Done" or v.get("yt") == "Done")
+    for k in [k for k, v in vids.items() if (alldone(v) and old(v, 48))
+              or (v.get("type", "Video") == "Video" and v.get("delivered") and not v.get("tt") and not v.get("yt"))
               or (v.get("type", "Video") != "Video" and v.get("delivered") and old(v, 48))]:
         del vids[k]
     link = lambda v: _msg_link(v.get("chat"), v.get("mid")) or "(MEDIA APPROVAL)"
@@ -652,6 +697,12 @@ def _dash_text(rs, ntesti=0):
         if v.get("tt") == "Belum":  # yang sudah Done tidak perlu dalam laporan
             tcnt.append("Belum")
             tk.append((False, v["mid"], f"🟡 Video #TikTok_Belum\nLink : {link(v)}"))
+    yl, ycnt = [], []
+    for v in vids.values():
+        if v.get("yt") == "Belum":
+            ycnt.append("Belum")
+            yl.append((v["mid"], f"🟡 Video #YouTube_Belum\nLink : {link(v)}"))
+    yl.sort()
     sched.sort(key=lambda x: x[:2])
     pend.sort()
     tk.sort(key=lambda x: x[:2])
@@ -670,12 +721,18 @@ def _dash_text(rs, ntesti=0):
         L += [f"{n}. {x[2]}", ""]
     if not tk:
         L += ["Tiada video TikTok dalam senarai.", ""]
+    L += ["<b>4️⃣ YOUTUBE POST</b>", ""]
+    for n, x in enumerate(yl, 1):
+        L += [f"{n}. {x[1]}", ""]
+    if not yl:
+        L += ["Tiada video YouTube dalam senarai.", ""]
     leg = lambda ic, name, c, empty: [f"{ic} {name}", f"Jumlah: {count(c)}" if c else empty, ""]
-    L += ["<b>4️⃣ LEGEND</b>", ""] + leg("🔴", "VIDEO @ 5 PLATFORM", vcnt, "Tiada video dalam proses.") \
+    L += ["<b>5️⃣ LEGEND</b>", ""] + leg("🔴", "VIDEO @ 5 PLATFORM", vcnt, "Tiada video dalam proses.") \
         + leg("🟡", "VIDEO @ TIKTOK", tcnt, "Tiada video TikTok dalam senarai.") \
+        + leg("▶️", "VIDEO @ YOUTUBE", ycnt, "Tiada video YouTube dalam senarai.") \
         + leg("🟢", "NON VIDEO @ 5 PLATFORM", ncnt, "Tiada gambar / ayat dalam senarai.") \
-        + ["<b>5️⃣ 🙋🏻‍♂️ TESTIMONI (Auto push)</b>", f"Jumlah: {ntesti}", "",
-           "<b>6️⃣ HASHTAG SEARCH</b>", "", "#Schedule", "#BelumPost", "#DonePost", "#TikTok_Belum", "#TikTok_Done", "#testimoni"]
+        + ["<b>6️⃣ 🙋🏻‍♂️ TESTIMONI (Auto push)</b>", f"Jumlah: {ntesti}", "",
+           "<b>7️⃣ HASHTAG SEARCH</b>", "", "#Schedule", "#BelumPost", "#DonePost", "#TikTok_Belum", "#TikTok_Done", "#YouTube_Belum", "#YouTube_Done", "#testimoni"]
     return "\n".join(L)
 
 

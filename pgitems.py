@@ -69,7 +69,7 @@ def fetch_catalog():
 def specs(name):
     """Berat & ketulenan daripada nama produk, cth '5g', '999.9'."""
     w = re.search(r"(\d+(?:\.\d+)?)\s*(kg|g)\b", name, re.I)
-    p = re.search(r"\((?:A[ug]\s*)?(\d{3}(?:\.\d)?)\)", name, re.I)
+    p = re.search(r"\((?:A[ug]\s*)?(\d{3}(?:\.\d)?)\)", name, re.I) or re.search(r"\)\s*(\d{3}(?:\.\d)?)\b", name)
     weight = f"{w.group(1)}{w.group(2).lower()}" if w else None
     return weight, (p.group(1) if p else None)
 
@@ -77,14 +77,30 @@ def specs(name):
 TITLES = {"bar": "🥇 GOLD BAR PUBLIC GOLD", "dinar": "🪙 DINAR EMAS PUBLIC GOLD", "silver": "🥈 PERAK PUBLIC GOLD"}
 
 
+def short_name(name):
+    """Ringkas nama produk: buang jenama/berat/ketulenan di hadapan, cth
+    'SANRIO x AURORA ITALIA (1g) 999.9 Hello Kitty in Melaka Limited Edition Gold Bar' -> 'Hello Kitty in Melaka Limited Edition Gold Bar'."""
+    n = re.sub(r"^\s*\[[^\]]*\]\s*", "", name)
+    n2 = re.sub(r"^.*?\(\s*\d+(?:\.\d+)?\s*g\s*\)\s*(?:\d{3}(?:\.\d)?\s*)?", "", n, flags=re.I)
+    return (n2 or n).strip()
+
+
+def link_for(it):
+    if it.get("url"):
+        return it["url"]
+    return f"https://publicgold.com.my/index.php?route=product/product&product_id={it['id']}"
+
+
 def pg_text(it, ts):
     weight, purity = specs(it["name"])
-    lines = [TITLES[it["kind"]], "", f"Produk : {it['name']}"]
+    brand = it.get("brand") or "PUBLIC GOLD"
+    lines = [f"🌟 {brand}", "", f"Produk : {short_name(it['name'])}"]
     if weight:
         lines += ["", f"Berat: {weight}"]
     if purity:
         lines += ["", f"Ketulenan: {purity}"]
-    lines += ["", f"Harga : RM {it['price']:,.0f}", "", "Anda berminat nak dapat kan nya?", "WhatsApp saya di shukriee.com", "", f"Dikemaskini: {ts}"]
+    lines += ["", f"Harga : RM {it['price']:,.0f}", "", "Anda berminat nak dapat kan nya?", "", "Klik link di bawah", link_for(it), "",
+              "atau WhatsApp saya di shukriee.com", "", f"Dikemaskini: {ts}"]
     return "\n".join(lines)
 
 

@@ -78,7 +78,41 @@ def strip_tag(caption):
 DAYS = ("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
 
 
-def approval_keyboard(page="main", kind="video", taken=()):
+def next_sched_slot(rs, exclude=None):
+    """Slot jadual seterusnya (waktu MYT): selang-seli hari dan jam (11:15 / 23:15). Jika tiada jadual akan datang
+    (jurang), reset ke hari ini 11:15 (atau slot seterusnya yang belum lalu)."""
+    now = _now().astimezone(MYT)
+    fut = []
+    for k, p in (rs or {}).get("pending", {}).items():
+        if k == exclude:
+            continue
+        try:
+            t = datetime.fromisoformat(p["due"]).astimezone(MYT)
+        except Exception:
+            continue
+        if t > now + timedelta(minutes=1):
+            fut.append(t)
+    mk = lambda d, hh: d.replace(hour=hh, minute=15, second=0, microsecond=0)
+    if not fut:
+        for hh in (11, 23):
+            if mk(now, hh) > now:
+                return mk(now, hh)
+        return mk(now + timedelta(days=1), 11)
+    last = max(fut)
+    hh = 23 if last.hour < 17 else 11  # selang-seli pagi/malam
+    days = {f"{t:%Y-%m-%d}" for t in fut}
+    d = last + timedelta(days=1)
+    while f"{d:%Y-%m-%d}" in days:
+        d += timedelta(days=1)
+    return mk(d, hh)
+
+
+def sched_label(rs, exclude=None):
+    t = next_sched_slot(rs, exclude)
+    return f"⏰ Schedule @ {t:%d/%m} ({DAYS[t.weekday()]}) {t:%H:%M}"
+
+
+def approval_keyboard(page="main", kind="video", taken=(), rs=None, exclude=None):
     """Papan butang kelulusan, hanya 2 pilihan: Approve sekarang (ts) atau Schedule (sc) -> pilih tarikh (sd{off}) -> jam (sh{off}_{HH}) -> minit (sm{off}_{HH}_{MM}).
     Kedua-duanya menyebabkan bot hantar peringatan TikTok manual selepas siaran. (Callback lama ap/n20/m07/hr/h{HH}/rj masih diproses untuk mesej lama.)"""
     back = lambda cb: [{"text": "⬅️ Kembali", "callback_data": cb}]
@@ -116,13 +150,10 @@ def approval_keyboard(page="main", kind="video", taken=()):
         rows = [[{"text": f"{hh}:{m}", "callback_data": f"sm{off}_{hh}_{m}"} for m in ("00", "15", "30", "45")]]
         rows.append(back(f"sd{off}"))
         return {"inline_keyboard": rows}
+    sch = [{"text": sched_label(rs, exclude) if rs is not None else "⏰ Schedule seterusnya", "callback_data": "sn"}]
     if kind != "video":  # gambar / ayat: tiada TikTok
-        return {"inline_keyboard": [
-            [{"text": "✅ Approve 5 (Now)", "callback_data": "ts"}],
-            [{"text": "⏰ Schedule 5", "callback_data": "sc"}]]}
-    return {"inline_keyboard": [
-        [{"text": "✅ Approve 5 (Now) + TikTok Manual", "callback_data": "ts"}],
-        [{"text": "⏰ Schedule + TikTok Manual", "callback_data": "sc"}]]}
+        return {"inline_keyboard": [[{"text": "✅ Post 5 (Now)", "callback_data": "ts"}], sch]}
+    return {"inline_keyboard": [[{"text": "✅ Post 5 (Now) + TikTok Manual", "callback_data": "ts"}], sch]}
 
 
 def _tt_status_text(done, text=""):
@@ -296,7 +327,7 @@ def _video_to_approval(rs, m, base, notify):
         return
     is_video = bool(m.get("video"))
     method, field = ("sendVideo", "video") if is_video else ("sendDocument", "document")
-    data = {"chat_id": chat, field: v["file_id"], "caption": caption, "reply_markup": json.dumps(approval_keyboard())}
+    data = {"chat_id": chat, field: v["file_id"], "caption": caption, "reply_markup": json.dumps(approval_keyboard(rs=rs))}
     sid = send_status(base, chat)
     if sid:
         data["reply_to_message_id"] = sid
@@ -325,7 +356,7 @@ def _media_to_approval(rs, m, base, notify):
         data = {"text": text[:4096], "disable_web_page_preview": "true"}
     else:
         return
-    data.update(chat_id=chat, reply_markup=json.dumps(approval_keyboard("main", "other")))
+    data.update(chat_id=chat, reply_markup=json.dumps(approval_keyboard("main", "other", rs=rs)))
     sid = send_status(base, chat)
     if sid:
         data["reply_to_message_id"] = sid
@@ -354,7 +385,7 @@ def _handle_callback(rs, cb, owner, base, notify):
     typ = "Video" if vid else ("Image" if photo else "Ayat")
     taken = {datetime.fromisoformat(p["due"]).astimezone(MYT).strftime("%Y-%m-%d %H:%M") for k, p in rs.get("pending", {}).items()
              if k != f"a{m.get('message_id')}"}  # slot jadual yang sudah dipilih oleh posting lain
-    kb = lambda page="main": approval_keyboard(page, kind, taken)
+    kb = lambda page="main": approval_keyboard(page, kind, taken, rs, f"a{m.get('message_id')}")
     chat, mid = m.get("chat", {}).get("id"), m.get("message_id")
     ans = lambda t: _tg(base, "answerCallbackQuery", callback_query_id=cb["id"], text=t)
     mark = lambda markup: _tg(base, "editMessageReplyMarkup", chat_id=chat, message_id=mid, reply_markup=json.dumps(markup))
@@ -402,6 +433,8 @@ def _handle_callback(rs, cb, owner, base, notify):
     if data == "sc":
         mark(kb("dates"))
         return ans("Pilih tarikh")
+    if data == "sn":  # satu butang: slot jadual seterusnya (selang-seli)
+        pass
     if re.fullmatch(r"sd\d+", data):
         mark(kb("hrs" + data[2:]))
         return ans("Pilih jam (waktu Malaysia)")
@@ -429,6 +462,10 @@ def _handle_callback(rs, cb, owner, base, notify):
         due, label = _now(), "✅ 5 platform sekarang (tiada TikTok)"
     elif data == "ts":
         due, label, tt = _now(), "✅ 5 platform sekarang + 📣 peringatan TikTok", True
+    elif data == "sn":
+        t = next_sched_slot(rs, key)
+        due, tt = t.astimezone(timezone.utc), True
+        label = f"⏰ Dijadual {t:%d/%m %H:%M} + 📣 peringatan TikTok"
     elif re.fullmatch(r"sm\d+_\d\d_\d\d", data):
         off, hh, mm = data[2:].split("_")
         t = (_now().astimezone(MYT) + timedelta(days=int(off))).replace(hour=int(hh), minute=int(mm), second=0, microsecond=0)

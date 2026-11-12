@@ -75,6 +75,15 @@ def _video_chat(default):
         return default
 
 
+def _relay_state():
+    here = os.path.dirname(os.path.abspath(__file__))
+    try:
+        o = subprocess.run(["git", "show", "origin/main:data/state.json"], cwd=here, capture_output=True, text=True, check=True).stdout
+        return json.loads(o).get("relay", {})
+    except Exception:
+        return None
+
+
 def main():
     argv = sys.argv[1:]
     tt = True
@@ -95,7 +104,7 @@ def main():
         sys.exit(f"Video {size / 1048576:.1f} MB melebihi 20 MB; kecilkan dahulu.")
     if len(caption) > 1024:
         sys.exit("Caption melebihi 1024 aksara.")
-    markup = {"inline_keyboard": [[{"text": "⚡ Auto-push: 5 platform" + (" + 📣 peringatan TikTok" if tt else ""), "callback_data": "noop"}]]} if auto else relay.approval_keyboard()
+    markup = {"inline_keyboard": [[{"text": "⚡ Auto-push: 5 platform" + (" + 📣 peringatan TikTok" if tt else ""), "callback_data": "noop"}]]} if auto else relay.approval_keyboard(rs=_relay_state())
     sid = None if auto else relay.send_status(f"https://api.telegram.org/bot{token}", chat)
     r = requests.post(f"https://api.telegram.org/bot{token}/sendVideo",
                       data={"chat_id": chat, "caption": caption, **({"reply_to_message_id": sid} if sid else {}), "supports_streaming": "true",

@@ -222,20 +222,21 @@ def jewel_card(path, j, date_text, nonpg=None):
 
 
 def item_card(path, product_img, title, name, price, weight, purity, date_text):
-    """Kad item Gold Bar / Dinar / Perak (1080x1080) dengan gambar produk."""
-    im, d = _bg()
-    _center(d, 55, title, _f(BOLD, 62), GOLD)
-    box = 470
+    """Kad item (1080x1350, 4:5) dengan gambar produk BESAR."""
+    HH = 1350
+    im, d = _bg(H=HH)
+    _center(d, 55, title, _f(BOLD, 60), GOLD)
+    box = 760
+    d.rounded_rectangle([W // 2 - 400, 135, W // 2 + 400, 135 + box + 30], 30, fill=(255, 255, 255))
     if product_img:
         try:
             pi = Image.open(product_img).convert("RGBA")
-            pi.thumbnail((box, box))
+            sc = box / max(pi.width, pi.height)
+            pi = pi.resize((max(1, int(pi.width * sc)), max(1, int(pi.height * sc))), Image.LANCZOS)
             cx, cy = (W - pi.width) // 2, 150 + (box - pi.height) // 2
-            d.rounded_rectangle([W // 2 - 270, 135, W // 2 + 270, 135 + box + 30], 30, fill=(255, 255, 255))
             im.paste(pi, (cx, cy), pi)
         except Exception as e:
             print("Gambar produk gagal:", e)
-    # nama (dua baris jika panjang)
     f = _f(BOLD, 40)
     words, lines, cur = name.split(), [], ""
     for w in words:
@@ -245,19 +246,19 @@ def item_card(path, product_img, title, name, price, weight, purity, date_text):
         else:
             cur = t
     lines.append(cur)
-    y = 650
+    y = 950
     for ln in lines[:2]:
         _center(d, y, ln, f, WHITE)
         y += 52
-    _center(d, 765, f"RM {price:,.0f}", _f(BOLD, 96), GOLD_L)
+    _center(d, 1045, f"RM {price:,.0f}", _f(BOLD, 96), GOLD_L)
     info = "   |   ".join(x for x in [f"Berat {weight}" if weight else "", f"Ketulenan {purity}" if purity else ""] if x)
     if info:
-        _center(d, 880, info, _f(REG, 34), WHITE)
-    _center(d, 930, f"Dikemaskini: {date_text}", _f(REG, 28), GOLD_L)
-    w, h = 330, 56
+        _center(d, 1160, info, _f(REG, 34), WHITE)
+    _center(d, 1205, f"Dikemaskini: {date_text}", _f(REG, 28), GOLD_L)
+    w, h = 330, 52
     x0 = (W - w) / 2
-    d.rounded_rectangle([x0, 985, x0 + w, 985 + h], 28, fill=(0, 0, 0), outline=GOLD, width=3)
-    _center(d, 994, "shukriee.com", _f(BOLD, 32), WHITE)
+    d.rounded_rectangle([x0, 1252, x0 + w, 1252 + h], 26, outline=GOLD, fill=(0, 0, 0), width=3)
+    _center(d, 1260, "shukriee.com", _f(BOLD, 30), WHITE)
     im.save(path)
 
 

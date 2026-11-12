@@ -296,3 +296,30 @@ def post_video(st, text, video_path):
             print(f"Threads video ({label}) gagal: {e}")
             errs.append(f"{label}: {str(e)[:200]}")
     raise RuntimeError("Threads video gagal | " + " | ".join(errs))
+
+
+def post_album(st, text, image_paths):
+    """Carousel Threads (2-20 gambar) dengan satu teks."""
+    tok = token(st)
+    h = {"Authorization": f"Bearer {tok}"}
+    uid = me(tok)["id"]
+    text = fmt(text)
+    kids = []
+    for p in image_paths[:20]:
+        r = requests.post(f"{API}/v1.0/{uid}/threads", data={"media_type": "IMAGE", "is_carousel_item": "true", "image_url": _host_image(p)}, headers=h, timeout=60)
+        if r.status_code >= 300:
+            raise RuntimeError(f"Threads item {r.status_code}: {r.text[:300]}")
+        kids.append(r.json()["id"])
+    time.sleep(8)
+    r = requests.post(f"{API}/v1.0/{uid}/threads", data={"media_type": "CAROUSEL", "children": ",".join(kids), "text": text}, headers=h, timeout=60)
+    if r.status_code >= 300:
+        raise RuntimeError(f"Threads carousel {r.status_code}: {r.text[:300]}")
+    cid = r.json()["id"]
+    time.sleep(8)
+    for i in range(4):
+        p = requests.post(f"{API}/v1.0/{uid}/threads_publish", data={"creation_id": cid}, headers=h, timeout=60)
+        if p.status_code < 300:
+            return p.json()
+        if i < 3:
+            time.sleep(8)
+    raise RuntimeError(f"Threads publish {p.status_code}: {p.text[:300]}")

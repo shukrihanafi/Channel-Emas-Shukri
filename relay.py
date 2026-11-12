@@ -262,6 +262,68 @@ def _deliver(st, rs, key, text, vid, photo, from_channel, notify, base, token, t
     return " + ".join(parts) or "(tiada platform berjaya)"
 
 
+def _deliver_album(st, rs, key, text, file_ids, from_channel, notify, base, token, tg_channel):
+    """Beberapa gambar (album Telegram) -> SATU hantaran dengan satu caption di semua platform."""
+    paths = [_fetch_file(base, token, fid) for fid in file_ids]
+    parts = []
+    if rs.get("wa_done") != key:
+        try:  # WhatsApp Channel: gambar pertama dengan caption, selebihnya mengikut (tiada caption)
+            for i, p in enumerate(paths):
+                whapi.post_channel(text if i == 0 else "", p)
+            rs["wa_done"] = key
+            parts.append("WhatsApp Channel")
+        except Exception as e:
+            notify(f"⚠️ Gagal hantar album ke WhatsApp Channel: {str(e)[:200]}\nPlatform lain diteruskan. Sila post manual ke WhatsApp.")
+    else:
+        parts.append("WhatsApp Channel")
+    if not from_channel and tg_channel and rs.get("tg_done") != key:
+        try:
+            media = [{"type": "photo", "media": f"attach://p{i}", **({"caption": text[:1024]} if i == 0 else {})} for i in range(len(paths))]
+            files = {f"p{i}": open(p, "rb") for i, p in enumerate(paths)}
+            _retry(lambda: requests.post(f"{base}/sendMediaGroup", data={"chat_id": tg_channel, "media": json.dumps(media)}, files=files, timeout=(10, 300))).raise_for_status()
+            rs["tg_done"] = key
+            parts.append(f"Telegram Channel {tg_channel}")
+        except Exception as e:
+            notify(f"⚠️ Gagal hantar album ke Telegram Channel: {str(e)[:200]}")
+    elif from_channel or not tg_channel:
+        pass
+    if fb.enabled() and rs.get("fb_done") != key:
+        try:
+            fb.post_album(text, paths)
+            rs["fb_done"] = key
+            parts.append("Facebook Page")
+        except Exception as e:
+            notify(f"⚠️ Gagal hantar album ke Facebook: {str(e)[:200]}")
+    import threads, instagram
+    for name, mod, limit in (("th", threads, 450), ("ig", instagram, 1200)):
+        if not mod.enabled() or rs.get(f"{name}_done") == key:
+            continue
+        try:
+            tt = threads.summarize(text, limit)
+            (threads.post_album(st, tt, paths) if name == "th" else instagram.post_album(tt, paths))
+            rs[f"{name}_done"] = key
+            parts.append("Threads" if name == "th" else "Instagram")
+        except Exception as e:
+            notify(f"⚠️ Gagal hantar album ke {'Threads' if name == 'th' else 'Instagram'}: {str(e)[:200]}")
+    return " + ".join(parts) or "(tiada platform berjaya)"
+
+
+def _flush_albums(st, rs, notify, base, token, tg_channel, wait=4):
+    """Hantar album yang sudah tiada bahagian baharu selama {wait} saat."""
+    n = 0
+    for gid, a in list((rs.get("albums") or {}).items()):
+        if (_now() - datetime.fromisoformat(a["last"])).total_seconds() < wait:
+            continue
+        try:
+            dest = _deliver_album(st, rs, f"g{gid}", a["text"], a["photos"], a["from_channel"], notify, base, token, tg_channel)
+            notify(f"✅ Posting manual ({len(a['photos'])} gambar, satu caption) disalin ke {dest}.")
+            n += 1
+        except Exception as e:
+            notify(f"⚠️ Album gagal disalin: {str(e)[:200]}")
+        del rs["albums"][gid]
+    return n
+
+
 def _post_social(st, name, text, path, is_video):
     import threads, instagram
     if name == "th":
@@ -765,6 +827,15 @@ def run(st, notify=print, poll=0):
             rs["offset"], rs["tries"] = uid + 1, 0
             notify(f"⚠️ Video {vid['file_size'] / 1048576:.0f} MB melebihi had 20 MB bot Telegram, tidak disalin. Sila post manual di WhatsApp dan Facebook.")
             continue
+        gid = m.get("media_group_id")
+        if gid and m.get("photo"):  # album: kumpul semua gambar, hantar sebagai satu hantaran
+            a = rs.setdefault("albums", {}).setdefault(str(gid), {"photos": [], "text": "", "from_channel": from_channel, "last": _now().isoformat()})
+            a["photos"].append(m["photo"][-1]["file_id"])
+            if text and not a["text"]:
+                a["text"] = text
+            a["last"] = _now().isoformat()
+            rs["offset"], rs["tries"] = uid + 1, 0
+            continue
         try:
             dest = _deliver(st, rs, uid, text, vid, m.get("photo"), from_channel, notify, base, token, tg_channel)
             rs["offset"], rs["tries"] = uid + 1, 0
@@ -779,6 +850,10 @@ def run(st, notify=print, poll=0):
             elif rs["tries"] == 1:
                 notify(f"⚠️ Gagal salin posting manual (akan dicuba lagi): {e}")
             break
+    try:
+        done += _flush_albums(st, rs, notify, base, token, tg_channel)
+    except Exception as e:
+        notify(f"⚠️ Gagal proses album: {e}")
     done += _process_pending(st, rs, base, token, tg_channel, notify)
     try:
         _process_redo(st, rs, base, token, notify)

@@ -1,5 +1,5 @@
 """Post terus ke Facebook Page melalui Graph API (ganti IFTTT). Aktif hanya jika FB_PAGE_TOKEN dan FB_PAGE_ID ditetapkan."""
-import os
+import json, os
 import requests
 
 GRAPH = "https://graph.facebook.com/v21.0"
@@ -85,3 +85,23 @@ def check():
     except Exception as e:
         exp += " | IG semak gagal: " + str(e)[:80]
     return r.json().get("name", "?") + " (uji hantar OK)", exp
+
+
+def post_album(text, image_paths):
+    """Beberapa gambar dalam SATU hantaran Page dengan satu caption."""
+    pid = os.environ["FB_PAGE_ID"]
+    tok = page_token(pid, os.environ["FB_PAGE_TOKEN"])
+    ids = []
+    for p in image_paths:
+        with open(p, "rb") as f:
+            r = requests.post(f"{GRAPH}/{pid}/photos", data={"published": "false", "access_token": tok}, files={"source": f}, timeout=(10, 120))
+        if r.status_code >= 300:
+            raise RuntimeError(f"Facebook gambar {r.status_code}: {r.text[:300]}")
+        ids.append(r.json()["id"])
+    data = {"message": text, "access_token": tok}
+    for i, fid in enumerate(ids):
+        data[f"attached_media[{i}]"] = json.dumps({"media_fbid": fid})
+    r = requests.post(f"{GRAPH}/{pid}/feed", data=data, timeout=(10, 60))
+    if r.status_code >= 300:
+        raise RuntimeError(f"Facebook album {r.status_code}: {r.text[:300]}")
+    return r.json()

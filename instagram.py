@@ -268,3 +268,38 @@ def post_video(text, video_path):
             print(f"Instagram reel {label} gagal: {e}")
             errs.append(f"{label}: {str(e)[:220]}")
     raise RuntimeError("Instagram reel gagal | " + " | ".join(errs))
+
+
+def post_album(text, image_paths):
+    """Carousel Instagram (2-10 gambar) dengan satu caption."""
+    import threads
+    uid = me()["id"]
+    kids = []
+    for p in image_paths[:10]:
+        url = threads._host_image(_jpeg(p))
+        r = requests.post(f"{GRAPH}/{uid}/media", data={"image_url": url, "is_carousel_item": "true", "access_token": _tok()}, timeout=60)
+        if r.status_code >= 300:
+            raise RuntimeError(f"Instagram item {r.status_code}: {r.text[:300]}")
+        kids.append(r.json()["id"])
+    r = requests.post(f"{GRAPH}/{uid}/media", data={"media_type": "CAROUSEL", "children": ",".join(kids), "caption": fmt(text), "access_token": _tok()}, timeout=60)
+    if r.status_code >= 300:
+        raise RuntimeError(f"Instagram carousel {r.status_code}: {r.text[:300]}")
+    cid = r.json()["id"]
+    for _ in range(12):
+        time.sleep(5)
+        try:
+            s = _get(cid, fields="status_code").get("status_code")
+        except Exception:
+            s = None
+        if s == "FINISHED":
+            break
+        if s == "ERROR":
+            raise RuntimeError("Instagram carousel ERROR")
+    last = None
+    for i in range(4):
+        p = requests.post(f"{GRAPH}/{uid}/media_publish", data={"creation_id": cid, "access_token": _tok()}, timeout=60)
+        if p.status_code < 300:
+            return p.json()
+        last = p
+        time.sleep(8)
+    raise RuntimeError(f"Instagram publish {last.status_code}: {last.text[:300]}")

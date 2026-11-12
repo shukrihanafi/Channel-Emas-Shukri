@@ -604,6 +604,51 @@ def mode_pgitem(p, st):
     send(text, img, f"item-{it['kind']}")
 
 
+JADUAL_TEXT = """📌 JADUAL AUTO PUSH (waktu Malaysia, setiap hari)
+
+🌅 PAGI
+07:09  Kata Semangat
+08:09  Harga GAP
+08:39  Harga Emas Fizikal
+10:09  Item PG (Bar/Dinar/Perak)
+
+☀️ TENGAH HARI - PETANG
+13:09  Berita Emas
+15:09  Testimoni
+16:09  Harga PG Jewel + Non-PG
+18:09  Item PG Jewel
+
+🌙 MALAM
+20:09  Harga GAP
+21:09  Ilmu Emas
+22:39  Item PG (Bar/Dinar/Perak)
+
+⚡ ALERT HARGA: bila GAP berubah RM3 atau lebih (08:30 - 24:00)
+📤 MANUAL: media di MEDIA APPROVAL ikut butang Post 5 (Now) / Schedule (11:15 dan 23:15)
+
+Platform: Telegram, WhatsApp Channel, Facebook, Threads, Instagram. TikTok manual."""
+
+
+def mode_pinjadual(p, st):
+    """Hantar (atau kemas kini) satu mesej jadual auto push di bot chat dan pin."""
+    token, chat = os.getenv("TELEGRAM_BOT_TOKEN"), os.getenv("TELEGRAM_CHAT_ID")
+    base = f"https://api.telegram.org/bot{token}"
+    rec = st.setdefault("pin_jadual", {})
+    mid = rec.get("mid")
+    if mid:
+        r = requests.post(f"{base}/editMessageText", data={"chat_id": chat, "message_id": mid, "text": JADUAL_TEXT}, timeout=30)
+        if r.status_code < 300 or "not modified" in r.text:
+            requests.post(f"{base}/pinChatMessage", data={"chat_id": chat, "message_id": mid, "disable_notification": "true"}, timeout=30)
+            print("Jadual dikemas kini.")
+            return
+    r = requests.post(f"{base}/sendMessage", data={"chat_id": chat, "text": JADUAL_TEXT}, timeout=30)
+    r.raise_for_status()
+    mid = r.json()["result"]["message_id"]
+    rec["mid"] = mid
+    q = requests.post(f"{base}/pinChatMessage", data={"chat_id": chat, "message_id": mid, "disable_notification": "true"}, timeout=30)
+    print("Jadual dihantar dan dipin." if q.status_code < 300 else f"Pin gagal: {q.text[:200]}")
+
+
 def mode_wa_channels(p, st):
     """Papar senarai Channel WhatsApp (untuk salin ID Channel) ke Telegram."""
     rows = whapi.list_channels()
@@ -908,7 +953,7 @@ def mode_igdiag(p, st):
         tg_plain(f"⚠️ Diagnosis gagal: {e}")
 
 
-MODES = {"ig-diag": mode_igdiag, "gapig-test": mode_gapig, "berita-ig": mode_beritaig, "ig-check": mode_igcheck, "gapthreads-test": mode_gapthreads, "berita-threads": mode_beritathreads, "threads-casual-test": mode_threadscasual, "threads-test": mode_threadstest, "threads-check": mode_threadscheck, "fb-check": mode_fbcheck, "relay": mode_relay, "wa-channels": mode_wa_channels, "berita": mode_berita, "berita-test": mode_berita, "fizikal": mode_fizikal, "fizikal-test": mode_fizikal, "fizikal-alert-test": mode_fizikal_alert, "semangat": mode_semangat, "semangat-test": mode_semangat, "testimoni": mode_testimoni, "testimoni-test": mode_testimoni, "gap": mode_gap, "jewel": mode_jewel, "alert": mode_alert, "ilmu": mode_ilmu, "item": mode_item, "pgitem": mode_pgitem, "pgitem-all": mode_pgitem,
+MODES = {"ig-diag": mode_igdiag, "gapig-test": mode_gapig, "berita-ig": mode_beritaig, "ig-check": mode_igcheck, "gapthreads-test": mode_gapthreads, "berita-threads": mode_beritathreads, "threads-casual-test": mode_threadscasual, "threads-test": mode_threadstest, "threads-check": mode_threadscheck, "fb-check": mode_fbcheck, "relay": mode_relay, "pinjadual": mode_pinjadual, "wa-channels": mode_wa_channels, "berita": mode_berita, "berita-test": mode_berita, "fizikal": mode_fizikal, "fizikal-test": mode_fizikal, "fizikal-alert-test": mode_fizikal_alert, "semangat": mode_semangat, "semangat-test": mode_semangat, "testimoni": mode_testimoni, "testimoni-test": mode_testimoni, "gap": mode_gap, "jewel": mode_jewel, "alert": mode_alert, "ilmu": mode_ilmu, "item": mode_item, "pgitem": mode_pgitem, "pgitem-all": mode_pgitem,
          "item-jewel": lambda p, st: mode_item(p, st, "jewel"),
          "item-mall": lambda p, st: mode_item(p, st, "mall")}
 

@@ -119,45 +119,13 @@
   "bb_last": 0,
   "relay": {
     "offset": 991464175,
-    "wa_done": "a105",
+    "wa_done": "a70",
     "tries": 0,
-    "tg_done": "a105",
-    "fb_done": "a105",
-    "th_done": "a105",
-    "ig_done": "a105",
+    "tg_done": "a70",
+    "fb_done": "a70",
+    "th_done": "a70",
+    "ig_done": "a70",
     "pending": {
-      "a70": {
-        "vid": {
-          "duration": 32,
-          "width": 1064,
-          "height": 772,
-          "mime_type": "video/mp4",
-          "thumbnail": {
-            "file_id": "AAMCBQADIQUAAwEJTo34AANEavLAn9NRR6YQ4yQsWSGk09Vm48MAAtoiAALDgphXO0vuoBq6P_8BAAdtAAM9BA",
-            "file_unique_id": "AQAD2iIAAsOCmFdy",
-            "file_size": 15657,
-            "width": 320,
-            "height": 232
-          },
-          "thumb": {
-            "file_id": "AAMCBQADIQUAAwEJTo34AANEavLAn9NRR6YQ4yQsWSGk09Vm48MAAtoiAALDgphXO0vuoBq6P_8BAAdtAAM9BA",
-            "file_unique_id": "AQAD2iIAAsOCmFdy",
-            "file_size": 15657,
-            "width": 320,
-            "height": 232
-          },
-          "file_id": "BAACAgUAAyEFAAMBCU6N-AADRGrywJ_TUUemEOMkLFkhpNPVZuPDAALaIgACw4KYVztL7qAauj__PQQ",
-          "file_unique_id": "AgAD2iIAAsOCmFc",
-          "file_size": 2508228
-        },
-        "photo": null,
-        "text": "Amboi...\n\nRamai yang tak tahu lagi akaun GAP boleh keluar kan barang kemas di PG Jewel ye?\n\nJom dengar voice mesej saya sini k. Moga anda dapat manfaat.\n\nKlik www.pgjewel.my untuk tengok barang kemas ya.\n\n#testimoni",
-        "due": "2026-11-13T03:15:00+00:00",
-        "tries": 0,
-        "mid": 70,
-        "tt": true,
-        "chat": -1004451110392
-      },
       "a73": {
         "vid": {
           "duration": 8,
@@ -348,7 +316,11 @@
         "status": "Schedule",
         "type": "Video",
         "due": "2026-11-13T03:15:00+00:00",
-        "rep": 381
+        "rep": 381,
+        "delivered": true,
+        "done_at": "2026-11-13T03:18:33.181433+00:00",
+        "tt": "Belum",
+        "yt": "Belum"
       },
       "73": {
         "chat": -1004451110392,
@@ -416,10 +388,10 @@
     "dash": {
       "chat": -1004451110392,
       "mid": 33,
-      "text": "<b>STATUS MEDIA POSTING</b>\n\n<b>1️⃣ ON SCHEDULE</b>\n\n1. 🔴 Video Today 13/11 (Fri) 11:15\nLink : https://t.me/c/4451110392/70\n\n2. 🔴 Video Esok 14/11 (Sat) 23:15\nLink : https://t.me/c/4451110392/73\n\n3. 🟢 Image Lusa 15/11 (Sun) 11:15\nLink : https://t.me/c/4451110392/76\n\n4. 🔴 Video 16/11 (Mon) 23:15\nLink : https://t.me/c/4451110392/79\n\n5. 🔴 Video 17/11 (Tue) 11:15\nLink : https://t.me/c/4451110392/93\n\n<b>2️⃣ PENDING POST</b>\n\nTiada posting menunggu kelulusan.\n\n<b>3️⃣ TIKTOK POST</b>\n\n1. 🟡 Video #TikTok_Belum\nLink : https://t.me/c/4451110392/67\n\n<b>4️⃣ YOUTUBE POST</b>\n\n1. 🟡 Video #YouTube_Belum\nLink : https://t.me/c/4451110392/67\n\n<b>5️⃣ LEGEND</b>\n\n🔴 VIDEO @ 5 PLATFORM\nJumlah: 4 Schedule\n\n🟡 VIDEO @ TIKTOK\nJumlah: 1 Belum\n\n▶️ VIDEO @ YOUTUBE\nJumlah: 1 Belum\n\n🟢 NON VIDEO @ 5 PLATFORM\nJumlah: 1 Schedule\n\n<b>6️⃣ 🙋🏻‍♂️ TESTIMONI (Auto push)</b>\nJumlah: 3\n\n<b>7️⃣ HASHTAG SEARCH</b>\n\n#Schedule\n#BelumPost\n#DonePost\n#TikTok_Belum\n#TikTok_Done\n#YouTube_Belum\n#YouTube_Done\n#testimoni"
+      "text": "<b>STATUS MEDIA POSTING</b>\n\n<b>1️⃣ ON SCHEDULE</b>\n\n1. 🔴 Video Esok 14/11 (Sat) 23:15\nLink : https://t.me/c/4451110392/73\n\n2. 🟢 Image Lusa 15/11 (Sun) 11:15\nLink : https://t.me/c/4451110392/76\n\n3. 🔴 Video 16/11 (Mon) 23:15\nLink : https://t.me/c/4451110392/79\n\n4. 🔴 Video 17/11 (Tue) 11:15\nLink : https://t.me/c/4451110392/93\n\n<b>2️⃣ PENDING POST</b>\n\nTiada posting menunggu kelulusan.\n\n<b>3️⃣ TIKTOK POST</b>\n\n1. 🟡 Video #TikTok_Belum\nLink : https://t.me/c/4451110392/67\n\n2. 🟡 Video #TikTok_Belum\nLink : https://t.me/c/4451110392/70\n\n<b>4️⃣ YOUTUBE POST</b>\n\n1. 🟡 Video #YouTube_Belum\nLink : https://t.me/c/4451110392/67\n\n2. 🟡 Video #YouTube_Belum\nLink : https://t.me/c/4451110392/70\n\n<b>5️⃣ LEGEND</b>\n\n🔴 VIDEO @ 5 PLATFORM\nJumlah: 3 Schedule\n\n🟡 VIDEO @ TIKTOK\nJumlah: 2 Belum\n\n▶️ VIDEO @ YOUTUBE\nJumlah: 2 Belum\n\n🟢 NON VIDEO @ 5 PLATFORM\nJumlah: 1 Schedule\n\n<b>6️⃣ 🙋🏻‍♂️ TESTIMONI (Auto push)</b>\nJumlah: 3\n\n<b>7️⃣ HASHTAG SEARCH</b>\n\n#Schedule\n#BelumPost\n#DonePost\n#TikTok_Belum\n#TikTok_Done\n#YouTube_Belum\n#YouTube_Done\n#testimoni"
     },
     "title_try": true,
-    "sweep_at": "2026-11-13T03:14:58.160421+00:00"
+    "sweep_at": "2026-11-13T03:18:35.972298+00:00"
   },
   "testi": {
     "used": [

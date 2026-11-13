@@ -227,13 +227,29 @@ def item_card(path, product_img, title, name, price, weight, purity, date_text):
     _center(d, 50, title, _f(BOLD, 48), GOLD)
     box = 560
     ov = Image.new("RGBA", im.size, (0, 0, 0, 0))
-    ImageDraw.Draw(ov).rounded_rectangle([120, 130, W - 120, 130 + box + 10], 28, fill=(255, 255, 255, 70))
+    ImageDraw.Draw(ov).rounded_rectangle([100, 130, W - 100, 130 + box + 10], 28, fill=(255, 255, 255, 70))
     im = Image.alpha_composite(im.convert("RGBA"), ov).convert("RGB")
     d = ImageDraw.Draw(im)
     if product_img:
         try:
             pi = Image.open(product_img).convert("RGBA")
-            sc = min(700 / pi.width, (box - 20) / pi.height)
+            # buang latar putih yang bersambung dengan tepi imej (supaya serasi dengan box lutsinar)
+            rgb = Image.alpha_composite(Image.new("RGBA", pi.size, (255, 255, 255, 255)), pi).convert("RGB")
+            for pt in [(0, 0), (pi.width - 1, 0), (0, pi.height - 1), (pi.width - 1, pi.height - 1)]:
+                if min(rgb.getpixel(pt)) > 235:
+                    ImageDraw.floodfill(rgb, pt, (255, 0, 255), thresh=28)
+            px, mpx = rgb.load(), pi.load()
+            for yy in range(pi.height):
+                for xx in range(pi.width):
+                    if px[xx, yy] == (255, 0, 255):
+                        mpx[xx, yy] = (255, 255, 255, 0)
+            bg = Image.new("RGBA", pi.size, (255, 255, 255, 255))
+            flat = Image.alpha_composite(bg, pi).convert("L").point(lambda v: 255 if v < 238 else 0)
+            bb = flat.getbbox()
+            if bb:  # buang ruang kosong sekeliling produk supaya produk memenuhi box
+                m = 4
+                pi = pi.crop((max(0, bb[0] - m), max(0, bb[1] - m), min(pi.width, bb[2] + m), min(pi.height, bb[3] + m)))
+            sc = min(840 / pi.width, (box - 10) / pi.height)
             pi = pi.resize((max(1, int(pi.width * sc)), max(1, int(pi.height * sc))), Image.LANCZOS)
             cx, cy = (W - pi.width) // 2, 135 + (box - pi.height) // 2
             im.paste(pi, (cx, cy), pi)

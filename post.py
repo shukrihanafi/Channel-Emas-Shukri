@@ -594,6 +594,14 @@ def mode_pgitem(p, st):
         r.raise_for_status()
         pimg = f"{OUT}/pgitem_src.png"
         Image.open(BytesIO(r.content)).convert("RGBA").save(pimg)
+        if CURRENT_MODE.endswith("-test"):  # ujian: hantar juga gambar asal (fail) ke Telegram peribadi
+            try:
+                with open(pimg, "rb") as fh:
+                    requests.post(f"https://api.telegram.org/bot{os.getenv('TELEGRAM_BOT_TOKEN')}/sendDocument",
+                                  data={"chat_id": os.getenv("TELEGRAM_CHAT_ID"), "caption": f"Gambar asal: {it['name']} ({Image.open(pimg).size})"},
+                                  files={"document": ("asal.png", fh)}, timeout=60)
+            except Exception as e:
+                print("Hantar asal gagal:", e)
         weight, purity = pgitems.specs(it["name"])
         img = f"{OUT}/pgitem.png"
         card.item_card(img, pimg, {"bar": "GOLD BAR PUBLIC GOLD", "dinar": "DINAR EMAS PUBLIC GOLD",
@@ -953,7 +961,7 @@ def mode_igdiag(p, st):
         tg_plain(f"⚠️ Diagnosis gagal: {e}")
 
 
-MODES = {"ig-diag": mode_igdiag, "gapig-test": mode_gapig, "berita-ig": mode_beritaig, "ig-check": mode_igcheck, "gapthreads-test": mode_gapthreads, "berita-threads": mode_beritathreads, "threads-casual-test": mode_threadscasual, "threads-test": mode_threadstest, "threads-check": mode_threadscheck, "fb-check": mode_fbcheck, "relay": mode_relay, "pinjadual": mode_pinjadual, "wa-channels": mode_wa_channels, "berita": mode_berita, "berita-test": mode_berita, "fizikal": mode_fizikal, "fizikal-test": mode_fizikal, "fizikal-alert-test": mode_fizikal_alert, "semangat": mode_semangat, "semangat-test": mode_semangat, "testimoni": mode_testimoni, "testimoni-test": mode_testimoni, "gap": mode_gap, "jewel": mode_jewel, "alert": mode_alert, "ilmu": mode_ilmu, "item": mode_item, "pgitem": mode_pgitem, "pgitem-all": mode_pgitem,
+MODES = {"ig-diag": mode_igdiag, "gapig-test": mode_gapig, "berita-ig": mode_beritaig, "ig-check": mode_igcheck, "gapthreads-test": mode_gapthreads, "berita-threads": mode_beritathreads, "threads-casual-test": mode_threadscasual, "threads-test": mode_threadstest, "threads-check": mode_threadscheck, "fb-check": mode_fbcheck, "relay": mode_relay, "pinjadual": mode_pinjadual, "wa-channels": mode_wa_channels, "berita": mode_berita, "berita-test": mode_berita, "fizikal": mode_fizikal, "fizikal-test": mode_fizikal, "fizikal-alert-test": mode_fizikal_alert, "semangat": mode_semangat, "semangat-test": mode_semangat, "testimoni": mode_testimoni, "testimoni-test": mode_testimoni, "gap": mode_gap, "jewel": mode_jewel, "alert": mode_alert, "ilmu": mode_ilmu, "item": mode_item, "pgitem": mode_pgitem, "pgitem-test": mode_pgitem, "pgitem-all": mode_pgitem,
          "item-jewel": lambda p, st: mode_item(p, st, "jewel"),
          "item-mall": lambda p, st: mode_item(p, st, "mall")}
 

@@ -95,7 +95,8 @@
     "2026-11-13|07:09": "07:10",
     "2026-11-13|08:09": "08:10",
     "2026-11-13|08:39": "08:39",
-    "2026-11-13|10:09": "10:09"
+    "2026-11-13|10:09": "10:09",
+    "2026-11-13|13:09": "13:10"
   },
   "news": {
     "posted": [
@@ -109,11 +110,13 @@
       "https://goldseek.com/article/gold-stocks-across-board-buys",
       "https://theedgemalaysia.com/node/825102",
       "https://www.kitco.com/news/article/2026-11-10/gold-silver-plunge-hotter-us-inflation-raises-prospect-larger-fed-rate-hike",
-      "https://www.astroawani.com/berita-dunia/singapura-lancar-kemudahan-penyimpanan-rizab-emas-berkapasiti-500-tan"
+      "https://www.astroawani.com/berita-dunia/singapura-lancar-kemudahan-penyimpanan-rizab-emas-berkapasiti-500-tan",
+      "https://goldseek.com/article/gold-silver-resume-explosion-higher-when-happens"
     ],
-    "rot": 4,
+    "rot": 5,
     "imgs": [
-      "bar-bd-img-06.jpg"
+      "bar-bd-img-06.jpg",
+      "bar-bd-vid-01.jpg"
     ]
   },
   "bb_last": 0,
@@ -452,7 +455,7 @@
   },
   "wa_usage": {
     "month": "2026-11",
-    "n": 52,
+    "n": 53,
     "day": "2026-11-13",
     "alerts": 2
   },

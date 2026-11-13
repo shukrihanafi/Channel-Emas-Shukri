@@ -227,7 +227,7 @@ def item_card(path, product_img, title, name, price, weight, purity, date_text):
     _center(d, 50, title, _f(BOLD, 48), GOLD)
     box = 560
     ov = Image.new("RGBA", im.size, (0, 0, 0, 0))
-    ImageDraw.Draw(ov).rounded_rectangle([100, 130, W - 100, 130 + box + 10], 28, fill=(255, 255, 255, 70))
+    ImageDraw.Draw(ov).rounded_rectangle([100, 130, W - 100, 130 + box + 10], 28, fill=(255, 255, 255, 255))
     im = Image.alpha_composite(im.convert("RGBA"), ov).convert("RGB")
     d = ImageDraw.Draw(im)
     if product_img:

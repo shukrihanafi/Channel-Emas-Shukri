@@ -112,6 +112,9 @@ def sched_label(rs, exclude=None):
     return f"⏰ Schedule @ {t:%d/%m} ({DAYS[t.weekday()]}) {t:%H:%M}"
 
 
+CHECKPOINT = lambda: None  # ditetapkan oleh post.py: simpan state ke fail supaya larian yang tamat masa tidak hilang kemajuan
+
+
 def approval_keyboard(page="main", kind="video", taken=(), rs=None, exclude=None):
     """Papan butang kelulusan, hanya 2 pilihan: Approve sekarang (ts) atau Schedule (sc) -> pilih tarikh (sd{off}) -> jam (sh{off}_{HH}) -> minit (sm{off}_{HH}_{MM}).
     Kedua-duanya menyebabkan bot hantar peringatan TikTok manual selepas siaran. (Callback lama ap/n20/m07/hr/h{HH}/rj masih diproses untuk mesej lama.)"""
@@ -252,6 +255,7 @@ def _deliver(st, rs, key, text, vid, photo, from_channel, notify, base, token, t
             else:
                 whapi.post_channel(text, path)
             rs["wa_done"] = key
+            CHECKPOINT()
             parts.append("WhatsApp Channel")
         except Exception as e:
             notify(f"⚠️ Gagal hantar ke WhatsApp Channel: {str(e)[:200]}\nPlatform lain diteruskan. Sila post manual ke WhatsApp.")
@@ -261,11 +265,13 @@ def _deliver(st, rs, key, text, vid, photo, from_channel, notify, base, token, t
         if rs.get("tg_done") != key:
             _tg_push(base, tg_channel, text, path, bool(vid))
             rs["tg_done"] = key
+            CHECKPOINT()
         parts.append(f"Telegram Channel {tg_channel}")
     if fb.enabled():
         if rs.get("fb_done") != key:
             fb.post(text, video_path=path) if vid else fb.post(text, path)
             rs["fb_done"] = key
+            CHECKPOINT()
         parts.append("Facebook Page")
     # Threads + Instagram: teks panjang diringkaskan, sentiasa tamat dengan shukriee.com.
     # Kegagalan di sini tidak mengulang langkah lain; platform yang gagal dimasukkan ke giliran cuba-semula (rs["redo"]).
@@ -276,6 +282,7 @@ def _deliver(st, rs, key, text, vid, photo, from_channel, notify, base, token, t
         try:
             _post_social(st, name, text, path, bool(vid))
             rs[f"{name}_done"] = key
+            CHECKPOINT()
             parts.append("Threads" if name == "th" else "Instagram")
         except Exception as e:
             label = "Threads" if name == "th" else "Instagram"
@@ -297,6 +304,7 @@ def _deliver_album(st, rs, key, text, file_ids, from_channel, notify, base, toke
             for i, p in enumerate(paths):
                 whapi.post_channel(text if i == 0 else "", p)
             rs["wa_done"] = key
+            CHECKPOINT()
             parts.append("WhatsApp Channel")
         except Exception as e:
             notify(f"⚠️ Gagal hantar album ke WhatsApp Channel: {str(e)[:200]}\nPlatform lain diteruskan. Sila post manual ke WhatsApp.")
@@ -308,6 +316,7 @@ def _deliver_album(st, rs, key, text, file_ids, from_channel, notify, base, toke
             files = {f"p{i}": open(p, "rb") for i, p in enumerate(paths)}
             _retry(lambda: requests.post(f"{base}/sendMediaGroup", data={"chat_id": tg_channel, "media": json.dumps(media)}, files=files, timeout=(10, 300))).raise_for_status()
             rs["tg_done"] = key
+            CHECKPOINT()
             parts.append(f"Telegram Channel {tg_channel}")
         except Exception as e:
             notify(f"⚠️ Gagal hantar album ke Telegram Channel: {str(e)[:200]}")
@@ -317,6 +326,7 @@ def _deliver_album(st, rs, key, text, file_ids, from_channel, notify, base, toke
         try:
             fb.post_album(text, paths)
             rs["fb_done"] = key
+            CHECKPOINT()
             parts.append("Facebook Page")
         except Exception as e:
             notify(f"⚠️ Gagal hantar album ke Facebook: {str(e)[:200]}")
@@ -328,6 +338,7 @@ def _deliver_album(st, rs, key, text, file_ids, from_channel, notify, base, toke
             tt = threads.summarize(text, limit)
             (threads.post_album(st, tt, paths) if name == "th" else instagram.post_album(tt, paths))
             rs[f"{name}_done"] = key
+            CHECKPOINT()
             parts.append("Threads" if name == "th" else "Instagram")
         except Exception as e:
             notify(f"⚠️ Gagal hantar album ke {'Threads' if name == 'th' else 'Instagram'}: {str(e)[:200]}")
@@ -373,6 +384,7 @@ def _process_redo(st, rs, base, token, notify):
             try:
                 _post_social(st, name, it["text"], path, True)
                 rs[f"{name}_done"] = key
+                CHECKPOINT()
                 it["plats"].remove(name)
                 notify(f"✅ {label} berjaya selepas dicuba semula.")
             except Exception as e:
@@ -599,6 +611,7 @@ def _handle_callback(rs, cb, owner, base, notify):
     sched = data not in ("ap", "ts")
     rec = _vrec(rs, chat, mid)
     rec["status"], rec["due"], rec["type"] = ("Schedule" if sched else "Approve"), due.isoformat(), typ
+    CHECKPOINT()
     rows = [[{"text": label, "callback_data": "noop"}]] + ([[{"text": "❌ Batal jadual", "callback_data": "cx"}]] if sched else [])
     retag("#Schedule" if sched else "#DonePost", {"inline_keyboard": rows})
     ans(label)

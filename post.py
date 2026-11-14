@@ -824,6 +824,7 @@ def mode_relay(p, st):
     """Relay menunggu aktif (long-poll) supaya butang kelulusan dijawab dalam beberapa saat. RELAY_SECS ditetapkan dalam relay.yml (kumpulan sendiri); lalai 10 saat jika dijalankan dalam channel.yml."""
     import time
     secs = int(os.getenv("RELAY_SECS", "10"))
+    relay.CHECKPOINT = lambda: save(STATE, st)
     t0, n = time.time(), 0
     while True:
         left = secs - (time.time() - t0)

@@ -139,7 +139,7 @@
   },
   "bb_last": 1,
   "relay": {
-    "offset": 991464183,
+    "offset": 991464186,
     "wa_done": 991464180,
     "tries": 0,
     "tg_done": "a93",
@@ -181,8 +181,8 @@
         "due": "2026-11-14T15:15:00+00:00",
         "rep": 386,
         "delivered": true,
-        "done_at": "2026-11-14T15:16:59.278189+00:00",
-        "tt": "Belum",
+        "done_at": "2026-11-18T03:25:32.277005+00:00",
+        "tt": "Done",
         "yt": "Belum"
       },
       "79": {
@@ -193,8 +193,8 @@
         "due": "2026-11-16T15:15:00+00:00",
         "rep": 397,
         "delivered": true,
-        "done_at": "2026-11-16T15:18:05.724575+00:00",
-        "tt": "Belum",
+        "done_at": "2026-11-18T03:25:19.632983+00:00",
+        "tt": "Done",
         "yt": "Belum"
       },
       "93": {
@@ -205,18 +205,18 @@
         "due": "2026-11-17T03:15:00+00:00",
         "rep": 446,
         "delivered": true,
-        "done_at": "2026-11-17T03:17:12.487975+00:00",
-        "tt": "Belum",
+        "done_at": "2026-11-18T03:25:37.321464+00:00",
+        "tt": "Done",
         "yt": "Belum"
       }
     },
     "dash": {
       "chat": -1004451110392,
       "mid": 33,
-      "text": "<b>STATUS MEDIA POSTING</b>\n\n<b>1️⃣ ON SCHEDULE</b>\n\nTiada posting dijadualkan.\n\n<b>2️⃣ PENDING POST</b>\n\nTiada posting menunggu kelulusan.\n\n<b>3️⃣ TIKTOK POST</b>\n\n1. 🟡 Video #TikTok_Belum\nLink : https://t.me/c/4451110392/73\n\n2. 🟡 Video #TikTok_Belum\nLink : https://t.me/c/4451110392/79\n\n3. 🟡 Video #TikTok_Belum\nLink : https://t.me/c/4451110392/93\n\n<b>4️⃣ YOUTUBE POST</b>\n\n1. 🟡 Video #YouTube_Belum\nLink : https://t.me/c/4451110392/73\n\n2. 🟡 Video #YouTube_Belum\nLink : https://t.me/c/4451110392/79\n\n3. 🟡 Video #YouTube_Belum\nLink : https://t.me/c/4451110392/93\n\n<b>5️⃣ LEGEND</b>\n\n🔴 VIDEO @ 5 PLATFORM\nTiada video dalam proses.\n\n🟡 VIDEO @ TIKTOK\nJumlah: 3 Belum\n\n▶️ VIDEO @ YOUTUBE\nJumlah: 3 Belum\n\n🟢 NON VIDEO @ 5 PLATFORM\nTiada gambar / ayat dalam senarai.\n\n<b>6️⃣ 🙋🏻‍♂️ TESTIMONI (Auto push)</b>\nJumlah: 3\n\n<b>7️⃣ HASHTAG SEARCH</b>\n\n#Schedule\n#BelumPost\n#DonePost\n#TikTok_Belum\n#TikTok_Done\n#YouTube_Belum\n#YouTube_Done\n#testimoni"
+      "text": "<b>STATUS MEDIA POSTING</b>\n\n<b>1️⃣ ON SCHEDULE</b>\n\nTiada posting dijadualkan.\n\n<b>2️⃣ PENDING POST</b>\n\nTiada posting menunggu kelulusan.\n\n<b>3️⃣ TIKTOK POST</b>\n\nTiada video TikTok dalam senarai.\n\n<b>4️⃣ YOUTUBE POST</b>\n\n1. 🟡 Video #YouTube_Belum\nLink : https://t.me/c/4451110392/73\n\n2. 🟡 Video #YouTube_Belum\nLink : https://t.me/c/4451110392/79\n\n3. 🟡 Video #YouTube_Belum\nLink : https://t.me/c/4451110392/93\n\n<b>5️⃣ LEGEND</b>\n\n🔴 VIDEO @ 5 PLATFORM\nTiada video dalam proses.\n\n🟡 VIDEO @ TIKTOK\nTiada video TikTok dalam senarai.\n\n▶️ VIDEO @ YOUTUBE\nJumlah: 3 Belum\n\n🟢 NON VIDEO @ 5 PLATFORM\nTiada gambar / ayat dalam senarai.\n\n<b>6️⃣ 🙋🏻‍♂️ TESTIMONI (Auto push)</b>\nJumlah: 3\n\n<b>7️⃣ HASHTAG SEARCH</b>\n\n#Schedule\n#BelumPost\n#DonePost\n#TikTok_Belum\n#TikTok_Done\n#YouTube_Belum\n#YouTube_Done\n#testimoni"
     },
     "title_try": true,
-    "sweep_at": "2026-11-18T03:24:20.316351+00:00"
+    "sweep_at": "2026-11-18T03:26:04.728034+00:00"
   },
   "testi": {
     "used": [

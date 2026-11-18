@@ -306,7 +306,7 @@ def gap_text_and_card(p, st, diff, ts, base=None):
     img = f"{OUT}/gap.png"
     try:
         card.gap_card(img, price, p["gap_gram_per_rm100"], trend_text(diff),
-                      f"{g['low']['price']:,.0f}", f"{g['high']['price']:,.0f}", ts, series_30(st, base, price))
+                      f"{g['low']['price']:,.0f} ({d_my(g['low']['date'])})", f"{g['high']['price']:,.0f} ({d_my(g['high']['date'])})", ts, series_30(st, base, price))
     except Exception as e:  # imej gagal -> teks tetap dihantar
         print("Imej gagal:", e)
         img = None

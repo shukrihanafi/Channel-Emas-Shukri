@@ -173,9 +173,8 @@ def gap_card(path, per_gram, per100, trend, low, high, date_text, series):
     _chart(chart, series)
     ch = Image.open(chart).convert("RGBA")
     im.paste(ch, (40, 225), ch)
-    d.text((80, 916), f"RM 100 = {per100} gram", font=_f(BOLD, 40), fill=WHITE)
-    d.text((80, 966), f"Terendah RM {low}   |   Tertinggi RM {high}", font=_f(REG, 30), fill=GOLD_L)
-    d.text((80, 1008), f"Dikemaskini: {date_text}", font=_f(REG, 24), fill=(240, 210, 150))
+    d.text((80, 944), f"Terendah RM {low}   |   Tertinggi RM {high}", font=_f(REG, 30), fill=GOLD_L)
+    d.text((80, 996), f"Dikemaskini: {date_text}", font=_f(REG, 24), fill=(240, 210, 150))
     w, h = 600, 96
     x0, y0 = CW - 80 - w, 940
     d.rounded_rectangle([x0, y0, x0 + w, y0 + h], 48, fill=(0, 0, 0), outline=GOLD, width=3)

@@ -110,7 +110,8 @@
     "2026-11-18|07:09": "07:10",
     "2026-11-18|08:09": "08:10",
     "2026-11-18|08:39": "08:39",
-    "2026-11-18|10:09": "10:09"
+    "2026-11-18|10:09": "10:09",
+    "2026-11-18|13:09": "13:10"
   },
   "news": {
     "posted": [
@@ -129,9 +130,10 @@
       "https://theedgemalaysia.com/node/825584",
       "https://www.bernama.com/bm/pasaran/news.php?id=2634152",
       "https://goldseek.com/article/gold-snowed-buck-behold",
-      "https://theedgemalaysia.com/node/826044"
+      "https://theedgemalaysia.com/node/826044",
+      "https://www.bernama.com/bm/pasaran/news.php?id=2635732"
     ],
-    "rot": 1,
+    "rot": 2,
     "imgs": [
       "bar-bd-img-06.jpg",
       "bar-bd-vid-01.jpg"
@@ -280,7 +282,7 @@
   "fz_alert_at": "2026-11-18T10:57:40.139227+08:00",
   "wa_health": {
     "fails": 0,
-    "last_fail_alert": "2026-11-18T10:09:35.622546+08:00",
+    "last_fail_alert": "2026-11-18T13:10:06.465142+08:00",
     "bad": false,
     "last_alert": "2026-11-09T22:57:22.720833+08:00",
     "last_check": "2026-11-17T13:17:32.615667+08:00"

@@ -52,3 +52,22 @@ def health():
     s = j.get("status") or {}
     text = str(s.get("text") or j)[:80]
     return (s.get("code") == 4 or text.upper() == "AUTH"), text
+
+
+def set_offline_mode(on=True):
+    """Hidupkan offline_mode supaya telefon masih berbunyi bila notifikasi masuk. Baca tetapan dulu, kekalkan yang lain."""
+    r = requests.get(f"{API}/settings", headers=_headers(), timeout=60)
+    r.raise_for_status()
+    j = r.json()
+    cur = j.get("settings") if isinstance(j.get("settings"), dict) else j
+    before = cur.get("offline_mode")
+    body = dict(cur)
+    body["offline_mode"] = on
+    r2 = requests.patch(f"{API}/settings", json=body, headers=_headers(), timeout=60)
+    if r2.status_code >= 300:
+        r2 = requests.patch(f"{API}/settings", json={"offline_mode": on}, headers=_headers(), timeout=60)
+    r2.raise_for_status()
+    r3 = requests.get(f"{API}/settings", headers=_headers(), timeout=60)
+    j3 = r3.json()
+    after = (j3.get("settings") if isinstance(j3.get("settings"), dict) else j3).get("offline_mode")
+    return before, after

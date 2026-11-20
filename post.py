@@ -90,11 +90,11 @@ def wa_fail_alert(err):
 
 
 def wa_presence_reset(st):
-    """3 kali sehari (9 pagi, 5 petang, 10 malam): tetapkan status Whapi offline supaya telefon terus berbunyi. Jimat kuota (~90 request/bulan)."""
+    """sekali sehari (10 malam): tetapkan status Whapi offline supaya telefon terus berbunyi. Jimat kuota (~30 request/bulan)."""
     if os.getenv("WA_ENABLED") != "1" or not whapi.enabled():
         return
     dt = now_my()
-    if dt.hour not in (9, 17, 22):
+    if dt.hour != 22:
         return
     h = st.setdefault("wa_health", {})
     key = f"{dt.strftime('%Y-%m-%d')}-{dt.hour}"

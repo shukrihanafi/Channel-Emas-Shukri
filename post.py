@@ -89,6 +89,24 @@ def wa_fail_alert(err):
     wa_notify(f"⚠️ Gagal hantar ke WhatsApp Channel (mod {CURRENT_MODE}).\n{str(err)[:300]}\nSila semak Whapi (nombor WhatsApp Business mungkin terputus). Telegram & Facebook tidak terjejas.")
 
 
+def wa_presence_reset(st):
+    """3 kali sehari (9 pagi, 5 petang, 10 malam): tetapkan status Whapi offline supaya telefon terus berbunyi. Jimat kuota (~90 request/bulan)."""
+    if os.getenv("WA_ENABLED") != "1" or not whapi.enabled():
+        return
+    dt = now_my()
+    if dt.hour not in (9, 17, 22):
+        return
+    h = st.setdefault("wa_health", {})
+    key = f"{dt.strftime('%Y-%m-%d')}-{dt.hour}"
+    if h.get("pres_done") == key:
+        return
+    h["pres_done"] = key
+    try:
+        whapi.set_presence_offline()
+    except Exception as e:
+        print("Reset presence gagal:", e)
+
+
 def wa_health_check(st):
     """Semak sambungan Whapi setiap larian alert (20 minit). Alert bila terputus; ingatan semula setiap 3 jam; mesej bila pulih."""
     if os.getenv("WA_ENABLED") != "1" or not whapi.enabled():
@@ -462,6 +480,10 @@ def mode_alert(p, st):
         wa_health_check(st)
     except Exception as e:
         print("Semak Whapi gagal:", e)
+    try:
+        wa_presence_reset(st)
+    except Exception as e:
+        print("Reset presence gagal:", e)
     price = p["gap_rm_per_gram"]
     thr = float(os.getenv("ALERT_THRESHOLD", "3"))
     update_range(st, price, dt.strftime("%Y-%m-%d"))
@@ -676,7 +698,11 @@ def mode_wa_channels(p, st):
 def mode_wa_offline(p, st):
     """Hidupkan offline_mode di Whapi supaya notifikasi telefon berbunyi semula."""
     before, after = whapi.set_offline_mode(True)
-    tg_plain(f"Tetapan Whapi: offline_mode sebelum={before}, selepas={after}. Jika selepas=True, notifikasi telefon sepatutnya berbunyi semula.")
+    try:
+        pres = whapi.set_presence_offline()
+    except Exception as e:
+        pres = f"gagal: {str(e)[:100]}"
+    tg_plain(f"Tetapan Whapi: offline_mode sebelum={before}, selepas={after}. Reset status offline: {pres}.")
 
 
 def mode_fbcheck(p, st):

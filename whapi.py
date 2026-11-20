@@ -78,3 +78,10 @@ def get_offline_mode():
     r.raise_for_status()
     j = r.json()
     return (j.get("settings") if isinstance(j.get("settings"), dict) else j).get("offline_mode")
+
+
+def set_presence_offline():
+    """Tetapkan status offline (selepas telefon dibuka, status online boleh senyapkan notifikasi)."""
+    r = requests.put(f"{API}/presences/me", json={"presence": "offline"}, headers=_headers(), timeout=30)
+    r.raise_for_status()
+    return r.status_code

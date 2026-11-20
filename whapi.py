@@ -71,3 +71,10 @@ def set_offline_mode(on=True):
     j3 = r3.json()
     after = (j3.get("settings") if isinstance(j3.get("settings"), dict) else j3).get("offline_mode")
     return before, after
+
+
+def get_offline_mode():
+    r = requests.get(f"{API}/settings", headers=_headers(), timeout=30)
+    r.raise_for_status()
+    j = r.json()
+    return (j.get("settings") if isinstance(j.get("settings"), dict) else j).get("offline_mode")

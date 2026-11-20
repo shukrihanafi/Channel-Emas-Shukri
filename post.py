@@ -111,6 +111,13 @@ def wa_health_check(st):
         reason = f"Tidak dapat hubungi Whapi: {err}"
     elif ok:
         h["fails"] = 0
+        try:  # pastikan notifikasi telefon sentiasa berbunyi: offline_mode mesti kekal hidup
+            cur = whapi.get_offline_mode()
+            if cur is not True:
+                b, a = whapi.set_offline_mode(True)
+                tg_plain(f"🔧 Whapi: pilihan notifikasi telefon (offline_mode) telah terpadam sendiri ({b}). Bot dah hidupkan semula ({a}).")
+        except Exception as e:
+            print("Semak offline_mode gagal:", e)
         if h.get("bad"):
             h["bad"] = False
             wa_notify("✅ WhatsApp Channel (Whapi) sudah bersambung semula.")

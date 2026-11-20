@@ -183,45 +183,6 @@
     "sched_text": "#AllSchedule\nVIDEO POSTING SCHEDULE\n\n1. ⏰ 08/11 (Sun) 11:45 Video : https://t.me/c/4451110392/18\n2. ⏰ 09/11 (Mon) 23:15 Video : https://t.me/c/4451110392/32\n\nJumlah: 2 video dalam jadual",
     "sched_gone": true,
     "vids": {
-      "73": {
-        "chat": -1004451110392,
-        "mid": 73,
-        "status": "Schedule",
-        "type": "Video",
-        "due": "2026-11-14T15:15:00+00:00",
-        "rep": 386,
-        "delivered": true,
-        "done_at": "2026-11-18T03:25:32.277005+00:00",
-        "tt": "Done",
-        "yt": "Done",
-        "yt_done_at": "2026-11-18T03:27:36.301845+00:00"
-      },
-      "79": {
-        "chat": -1004451110392,
-        "mid": 79,
-        "status": "Schedule",
-        "type": "Video",
-        "due": "2026-11-16T15:15:00+00:00",
-        "rep": 397,
-        "delivered": true,
-        "done_at": "2026-11-18T03:25:19.632983+00:00",
-        "tt": "Done",
-        "yt": "Done",
-        "yt_done_at": "2026-11-18T03:27:21.864461+00:00"
-      },
-      "93": {
-        "chat": -1004451110392,
-        "mid": 93,
-        "status": "Schedule",
-        "type": "Video",
-        "due": "2026-11-17T03:15:00+00:00",
-        "rep": 446,
-        "delivered": true,
-        "done_at": "2026-11-18T03:25:37.321464+00:00",
-        "tt": "Done",
-        "yt": "Done",
-        "yt_done_at": "2026-11-18T03:27:25.048661+00:00"
-      },
       "130": {
         "chat": "-1004451110392",
         "mid": 130,
@@ -269,7 +230,7 @@
       "text": "<b>STATUS MEDIA POSTING</b>\n\n<b>1️⃣ ON SCHEDULE</b>\n\nTiada posting dijadualkan.\n\n<b>2️⃣ PENDING POST</b>\n\n1. 🔴 #BelumPost Video : https://t.me/c/4451110392/130\n\n2. 🔴 #BelumPost Video : https://t.me/c/4451110392/132\n\n3. 🔴 #BelumPost Video : https://t.me/c/4451110392/134\n\n4. 🔴 #BelumPost Video : https://t.me/c/4451110392/136\n\n5. 🔴 #BelumPost Video : https://t.me/c/4451110392/138\n\n6. 🔴 #BelumPost Video : https://t.me/c/4451110392/140\n\n7. 🔴 #BelumPost Video : https://t.me/c/4451110392/142\n\n8. 🔴 #BelumPost Video : https://t.me/c/4451110392/144\n\n<b>3️⃣ TIKTOK POST</b>\n\nTiada video TikTok dalam senarai.\n\n<b>4️⃣ YOUTUBE POST</b>\n\nTiada video YouTube dalam senarai.\n\n<b>5️⃣ LEGEND</b>\n\n🔴 VIDEO @ 5 PLATFORM\nJumlah: 8 BelumPost\n\n🟡 VIDEO @ TIKTOK\nTiada video TikTok dalam senarai.\n\n▶️ VIDEO @ YOUTUBE\nTiada video YouTube dalam senarai.\n\n🟢 NON VIDEO @ 5 PLATFORM\nTiada gambar / ayat dalam senarai.\n\n<b>6️⃣ 🙋🏻‍♂️ TESTIMONI (Auto push)</b>\nJumlah: 3\n\n<b>7️⃣ HASHTAG SEARCH</b>\n\n#Schedule\n#BelumPost\n#DonePost\n#TikTok_Belum\n#TikTok_Done\n#YouTube_Belum\n#YouTube_Done\n#testimoni"
     },
     "title_try": true,
-    "sweep_at": "2026-11-20T03:24:30.771500+00:00"
+    "sweep_at": "2026-11-20T03:26:14.417323+00:00"
   },
   "testi": {
     "used": [

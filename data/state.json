@@ -301,13 +301,14 @@
     "last_fail_alert": "2026-11-19T07:09:25.704746+08:00",
     "bad": false,
     "last_alert": "2026-11-18T13:17:23.783011+08:00",
-    "last_check": "2026-11-20T13:17:25.682239+08:00"
+    "last_check": "2026-11-20T13:17:25.682239+08:00",
+    "pres_done": "2026-11-20-22"
   },
   "threads": {
     "src": "24a290ce6f8b",
-    "enc": "gAAAAABq9xvzyeLazkGXGHGnWGPwBdhtLy-i2S1tUjoUyVSm9PBbtqDoMfGNxJBL3iM3pALBockfgc0A00xM0sE-gC8By2IAhm1OgMUSChmhAft5Jeni73a35oincT9R-Jli7MEGsg9jW7Z8oTQUunj3gzdPp_fUDxUPlLAueHso05m_vEz61bCFE0WdPANdSV3QOJW-7vf6mczs60ZCPcUdutS1lq1n3UKvy2nx1YtCakfWcz1Ptj_w3cfXDdQ2M_r-1GMBArHB2MiD_qqwwRy3F5u6RWaSQ2BmaohfYVyIEW5UMOVeeUJ7ETNB4gKUfczUKsq9r5Ac",
-    "refreshed": "2026-11-13T14:17:23.458603+00:00",
-    "expires_in_days": 60
+    "enc": "gAAAAABrAFZ1LeH98S5XEyckvJ0cxwx9j6QOjnVhsg1Ke0kF7BOPTG5SAlSBFk-RytnAOOzPpLL0rMKx8_2kHpDSU0H0rmCzG0K2iRnz-vMGqdKG9wKGDWdCKAFb3jHx9P0-WAJr254JV7sgtb9j3IZob440_gGn7GhWsIxuQl88ePL72Nv_gPjnDRAL8Z8mcjBSEci5Zg_O12k1aottEqUskl34BIErnzxKS1kd0xjryPF0ohH3f5v6wWkQdnE-TxoQD3xlOv1oJ1al5l5hmlp5JmDI2am9N0hsfDovWPowIJTGWaC1CP60Ro9HPQWTuBqJwoGMcrb0",
+    "refreshed": "2026-11-20T14:17:25.150208+00:00",
+    "expires_in_days": 59
   },
   "wa_usage": {
     "month": "2026-11",

@@ -825,6 +825,32 @@ def _sync_schedule(rs, base, owner, st=None):
     _tg(base, "pinChatMessage", chat_id=chat, message_id=mid, disable_notification="true")
 
 
+def _refresh_buttons(rs, base):
+    """Butang Schedule pada media yang belum diputuskan mesti sentiasa tunjuk slot terkini (bukan tarikh lama semasa media dihantar).
+    Semak setiap larian; hanya edit mesej bila label berubah (maksimum 8 sehari-larian)."""
+    pend, cbdone, n = rs.get("pending", {}), set(rs.get("cbdone", [])), 0
+    for v in list(rs.get("vids", {}).values()):
+        if n >= 8:
+            break
+        if v.get("status") != "BelumPost" or not v.get("chat") or not v.get("mid"):
+            continue
+        key = f"a{v['mid']}"
+        if key in pend or v["mid"] in cbdone:
+            continue
+        try:
+            lbl = sched_label(rs, key)
+        except Exception:
+            continue
+        if v.get("lbl") == lbl:
+            continue
+        v["lbl"] = lbl
+        kind = "video" if v.get("type", "Video") == "Video" else "other"
+        taken = {datetime.fromisoformat(p["due"]).astimezone(MYT).strftime("%Y-%m-%d %H:%M") for k, p in pend.items() if k != key}
+        _tg(base, "editMessageReplyMarkup", chat_id=v["chat"], message_id=v["mid"],
+            reply_markup=json.dumps(approval_keyboard("main", kind, taken, rs, key)))
+        n += 1
+
+
 def run(st, notify=print, poll=0):
     token, owner = os.getenv("TELEGRAM_BOT_TOKEN"), str(os.getenv("TELEGRAM_CHAT_ID", ""))
     if not token or not owner or not whapi.enabled():
@@ -841,6 +867,10 @@ def run(st, notify=print, poll=0):
         print("Relay: titik mula ditetapkan.")
         return 0
     done = 0
+    try:
+        _refresh_buttons(rs, base)
+    except Exception as e:
+        print("Kemas kini butang gagal:", e)
     tg_channel = os.getenv("TELEGRAM_CHANNEL", "").strip()
     for u in r.json().get("result", []):
         uid = u["update_id"]

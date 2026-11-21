@@ -267,7 +267,7 @@ def screenshot(url, path, title="", a=None, source=""):
     """Bina kad berita bersih (tajuk, gambar utama, perenggan pertama) TANPA iklan laman, lalu tangkap sebagai PNG."""
     from playwright.sync_api import sync_playwright
     a = a or {}
-    img = _dl_image(a.get("image", ""), url)
+    img = a["img_data"] if "img_data" in a else _dl_image(a.get("image", ""), url)
     if not img and a.get("fb_file"):
         try:
             img = "data:image/jpeg;base64," + base64.b64encode(open(a["fb_file"], "rb").read()).decode()
@@ -337,7 +337,8 @@ def run(st, send, dt, out="out", notify=print):
             tajuk, ringkas = res
             os.makedirs(out, exist_ok=True)
             src_name = a.get("site") or (name if name != "manual" else re.sub(r"^www\.", "", url.split("/")[2]))
-            a["fb_file"] = pick_fallback(a, n) if not a.get("image") else ""
+            a["img_data"] = _dl_image(a.get("image", ""), url)  # gagal dimuat turun (disekat) = sama seperti tiada gambar
+            a["fb_file"] = pick_fallback(a, n) if not a["img_data"] else ""
             try:
                 import threads
                 threads.PRESET = (a.get("threads") or "").strip()

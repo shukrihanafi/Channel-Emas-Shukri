@@ -126,7 +126,8 @@
     "2026-11-22|07:09": "07:10",
     "2026-11-22|08:09": "08:10",
     "2026-11-22|08:39": "08:39",
-    "2026-11-22|10:09": "10:09"
+    "2026-11-22|10:09": "10:09",
+    "2026-11-22|13:09": "13:11"
   },
   "news": {
     "posted": [
@@ -149,13 +150,15 @@
       "https://www.bernama.com/bm/pasaran/news.php?id=2635732",
       "https://www.kitco.com/news/article/2026-11-18/gold-plunges-below-3750-silver-tumbles-hawkish-fed-minutes-pressure-metals",
       "https://goldseek.com/article/strong-dollar-tighter-fed-policy-bets-leave-gold-languish-14-month-low",
-      "https://theedgemalaysia.com/node/826612"
+      "https://theedgemalaysia.com/node/826612",
+      "https://www.bernama.com/bm/pasaran/news.php?id=2637412"
     ],
-    "rot": 1,
+    "rot": 2,
     "imgs": [
       "bar-bd-img-06.jpg",
       "bar-bd-vid-01.jpg",
-      "bar-bd-img-05.jpg"
+      "bar-bd-img-05.jpg",
+      "bar-bd-vid-09.jpg"
     ]
   },
   "bb_last": 0,
@@ -346,7 +349,7 @@
   },
   "wa_usage": {
     "month": "2026-11",
-    "n": 157,
+    "n": 158,
     "day": "2026-11-22",
     "alerts": 0
   },

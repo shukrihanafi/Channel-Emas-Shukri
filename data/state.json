@@ -160,13 +160,13 @@
   },
   "bb_last": 0,
   "relay": {
-    "offset": 991464195,
-    "wa_done": "a130",
+    "offset": 991464196,
+    "wa_done": 991464195,
     "tries": 0,
     "tg_done": "a130",
-    "fb_done": "a130",
-    "th_done": "a130",
-    "ig_done": "a130",
+    "fb_done": 991464195,
+    "th_done": 991464195,
+    "ig_done": 991464195,
     "pending": {},
     "cbdone": [
       228,
@@ -275,7 +275,7 @@
       "text": "<b>STATUS MEDIA POSTING</b>\n\n<b>1️⃣ ON SCHEDULE</b>\n\nTiada posting dijadualkan.\n\n<b>2️⃣ PENDING POST</b>\n\n1. 🔴 #BelumPost Video : https://t.me/c/4451110392/132\n\n2. 🔴 #BelumPost Video : https://t.me/c/4451110392/134\n\n3. 🔴 #BelumPost Video : https://t.me/c/4451110392/136\n\n4. 🔴 #BelumPost Video : https://t.me/c/4451110392/138\n\n5. 🔴 #BelumPost Video : https://t.me/c/4451110392/140\n\n6. 🔴 #BelumPost Video : https://t.me/c/4451110392/142\n\n7. 🔴 #BelumPost Video : https://t.me/c/4451110392/144\n\n8. 🔴 #BelumPost Video : https://t.me/c/4451110392/146\n\n9. 🔴 #BelumPost Video : https://t.me/c/4451110392/148\n\n10. 🔴 #BelumPost Video : https://t.me/c/4451110392/150\n\n<b>3️⃣ TIKTOK POST</b>\n\n1. 🟡 Video #TikTok_Belum\nLink : https://t.me/c/4451110392/130\n\n<b>4️⃣ YOUTUBE POST</b>\n\n1. 🟡 Video #YouTube_Belum\nLink : https://t.me/c/4451110392/130\n\n<b>5️⃣ LEGEND</b>\n\n🔴 VIDEO @ 5 PLATFORM\nJumlah: 10 BelumPost\n\n🟡 VIDEO @ TIKTOK\nJumlah: 1 Belum\n\n▶️ VIDEO @ YOUTUBE\nJumlah: 1 Belum\n\n🟢 NON VIDEO @ 5 PLATFORM\nTiada gambar / ayat dalam senarai.\n\n<b>6️⃣ 🙋🏻‍♂️ TESTIMONI (Auto push)</b>\nJumlah: 3\n\n<b>7️⃣ HASHTAG SEARCH</b>\n\n#Schedule\n#BelumPost\n#DonePost\n#TikTok_Belum\n#TikTok_Done\n#YouTube_Belum\n#YouTube_Done\n#testimoni"
     },
     "title_try": true,
-    "sweep_at": "2026-11-22T03:30:39.213416+00:00"
+    "sweep_at": "2026-11-22T03:32:33.776444+00:00"
   },
   "testi": {
     "used": [

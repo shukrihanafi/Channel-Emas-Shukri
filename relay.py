@@ -605,12 +605,14 @@ def _handle_callback(rs, cb, owner, base, notify):
     if not vid:  # gambar / ayat: tiada peringatan TikTok
         tt = False
         label = label.replace(" + 📣 peringatan TikTok", "")
-    pend[key] = {"vid": vid, "photo": photo, "text": text, "due": due.isoformat(), "tries": 0, "mid": mid, "tt": tt, "chat": chat}
+    pend[key] = {"vid": vid, "photo": photo, "text": text, "due": due.isoformat(), "tries": 0, "mid": mid, "tt": tt, "chat": chat, "sid": sid}
     done.append(mid)
     rs["cbdone"] = done[-50:]
     sched = data not in ("ap", "ts")
     rec = _vrec(rs, chat, mid)
     rec["status"], rec["due"], rec["type"] = ("Schedule" if sched else "Approve"), due.isoformat(), typ
+    if sid:
+        rec["sid"] = sid
     CHECKPOINT()
     rows = [[{"text": label, "callback_data": "noop"}]] + ([[{"text": "❌ Batal jadual", "callback_data": "cx"}]] if sched else [])
     retag("#Schedule" if sched else "#DonePost", {"inline_keyboard": rows})
@@ -640,6 +642,9 @@ def _process_pending(st, rs, base, token, tg_channel, notify):
             rec = _vrec(rs, it.get("chat"), it.get("mid"))
             rec["delivered"] = True
             rec["done_at"] = _now().isoformat()
+            if it.get("sid"):
+                rec["sid"] = it["sid"]
+            _mark_done(base, rec)
             if it.get("tt"):
                 tt_reminder(base, it.get("chat") or os.getenv("TELEGRAM_CHAT_ID", ""), it["text"], it.get("mid"), notify)
                 rec["tt"] = "Belum"
@@ -825,6 +830,29 @@ def _sync_schedule(rs, base, owner, st=None):
     _tg(base, "pinChatMessage", chat_id=chat, message_id=mid, disable_notification="true")
 
 
+def _mark_done(base, rec):
+    """Selepas media benar-benar disiar: tukar hashtag status kepada #DonePost dan gantikan butang (buang 'Batal jadual')."""
+    chat, mid = rec.get("chat"), rec.get("mid")
+    if not chat or not mid:
+        return
+    sid = rec.get("sid") or (int(mid) - 1)  # mesej status dihantar tepat sebelum media
+    _tg(base, "editMessageText", chat_id=chat, message_id=sid, text="#DonePost")
+    _tg(base, "editMessageReplyMarkup", chat_id=chat, message_id=mid,
+        reply_markup=json.dumps({"inline_keyboard": [[{"text": "✅ Sudah disiar ke 5 platform", "callback_data": "noop"}]]}))
+    rec["fixed"] = True
+
+
+def _fix_delivered(rs, base):
+    """Betulkan media yang sudah disiar tetapi masih tunjuk #Schedule / butang Batal jadual (maksimum 5 setiap larian)."""
+    n = 0
+    for v in list(rs.get("vids", {}).values()):
+        if n >= 5:
+            break
+        if v.get("delivered") and not v.get("fixed") and v.get("status") in ("Schedule", "Approve"):
+            _mark_done(base, v)
+            n += 1
+
+
 def _refresh_buttons(rs, base):
     """Butang Schedule pada media yang belum diputuskan mesti sentiasa tunjuk slot terkini (bukan tarikh lama semasa media dihantar).
     Semak setiap larian; hanya edit mesej bila label berubah (maksimum 8 sehari-larian)."""
@@ -868,6 +896,7 @@ def run(st, notify=print, poll=0):
         return 0
     done = 0
     try:
+        _fix_delivered(rs, base)
         _refresh_buttons(rs, base)
     except Exception as e:
         print("Kemas kini butang gagal:", e)

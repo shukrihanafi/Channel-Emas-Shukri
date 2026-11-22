@@ -5,7 +5,7 @@ Sumber diputar bergilir (lihat SOURCES), emas sahaja.
 Env:   NEWS_URL (pilihan: paksa satu artikel), ANTHROPIC_API_KEY (pilihan: ringkasan BM oleh AI;
        jika tiada, guna tajuk + penerangan asal artikel).
 """
-import json, os, re, sys, html
+import base64, json, os, re, sys, html
 import requests
 
 UA = {"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124 Safari/537.36",

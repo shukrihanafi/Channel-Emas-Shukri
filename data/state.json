@@ -156,14 +156,16 @@
       "https://goldseek.com/article/strong-dollar-tighter-fed-policy-bets-leave-gold-languish-14-month-low",
       "https://theedgemalaysia.com/node/826612",
       "https://www.bernama.com/bm/pasaran/news.php?id=2637412",
-      "https://www.astroawani.com/berita-malaysia/indonesia-gagalkan-cubaan-seludup-258kg-emas-ke-malaysia"
+      "https://www.astroawani.com/berita-malaysia/indonesia-gagalkan-cubaan-seludup-258kg-emas-ke-malaysia",
+      "https://goldseek.com/article/stocks-slide-crypto-crashes-gold-silver-meltdown"
     ],
-    "rot": 4,
+    "rot": 5,
     "imgs": [
       "bar-bd-img-06.jpg",
       "bar-bd-vid-01.jpg",
       "bar-bd-img-05.jpg",
-      "bar-bd-vid-09.jpg"
+      "bar-bd-vid-09.jpg",
+      "bar-bd-vid-14.jpg"
     ]
   },
   "bb_last": 2,
@@ -365,7 +367,7 @@
   },
   "wa_usage": {
     "month": "2026-11",
-    "n": 171,
+    "n": 172,
     "day": "2026-11-23",
     "alerts": 2
   },

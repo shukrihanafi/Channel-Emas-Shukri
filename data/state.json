@@ -163,13 +163,13 @@
   },
   "bb_last": 0,
   "relay": {
-    "offset": 991464199,
-    "wa_done": 991464196,
+    "offset": 991464200,
+    "wa_done": "a150",
     "tries": 0,
-    "tg_done": "a130",
-    "fb_done": 991464196,
-    "th_done": 991464196,
-    "ig_done": 991464196,
+    "tg_done": "a150",
+    "fb_done": "a150",
+    "th_done": "a150",
+    "ig_done": "a150",
     "pending": {},
     "cbdone": [
       228,
@@ -190,7 +190,8 @@
       93,
       105,
       111,
-      130
+      130,
+      150
     ],
     "redo": {},
     "video_chat": -1004451110392,
@@ -270,17 +271,26 @@
       "150": {
         "chat": "-1004451110392",
         "mid": 150,
-        "status": "BelumPost",
-        "lbl": "⏰ Schedule @ 23/11 (Mon) 11:15"
+        "status": "Approve",
+        "lbl": "⏰ Schedule @ 23/11 (Mon) 11:15",
+        "due": "2026-11-23T00:18:24.691063+00:00",
+        "type": "Video",
+        "sid": 149,
+        "rep": 794,
+        "delivered": true,
+        "done_at": "2026-11-23T00:23:01.927064+00:00",
+        "fixed": true,
+        "tt": "Belum",
+        "yt": "Belum"
       }
     },
     "dash": {
       "chat": -1004451110392,
       "mid": 33,
-      "text": "<b>STATUS MEDIA POSTING</b>\n\n<b>1️⃣ ON SCHEDULE</b>\n\nTiada posting dijadualkan.\n\n<b>2️⃣ PENDING POST</b>\n\n1. 🔴 #BelumPost Video : https://t.me/c/4451110392/132\n\n2. 🔴 #BelumPost Video : https://t.me/c/4451110392/134\n\n3. 🔴 #BelumPost Video : https://t.me/c/4451110392/136\n\n4. 🔴 #BelumPost Video : https://t.me/c/4451110392/138\n\n5. 🔴 #BelumPost Video : https://t.me/c/4451110392/140\n\n6. 🔴 #BelumPost Video : https://t.me/c/4451110392/142\n\n7. 🔴 #BelumPost Video : https://t.me/c/4451110392/144\n\n8. 🔴 #BelumPost Video : https://t.me/c/4451110392/146\n\n9. 🔴 #BelumPost Video : https://t.me/c/4451110392/148\n\n10. 🔴 #BelumPost Video : https://t.me/c/4451110392/150\n\n<b>3️⃣ TIKTOK POST</b>\n\nTiada video TikTok dalam senarai.\n\n<b>4️⃣ YOUTUBE POST</b>\n\nTiada video YouTube dalam senarai.\n\n<b>5️⃣ LEGEND</b>\n\n🔴 VIDEO @ 5 PLATFORM\nJumlah: 10 BelumPost\n\n🟡 VIDEO @ TIKTOK\nTiada video TikTok dalam senarai.\n\n▶️ VIDEO @ YOUTUBE\nTiada video YouTube dalam senarai.\n\n🟢 NON VIDEO @ 5 PLATFORM\nTiada gambar / ayat dalam senarai.\n\n<b>6️⃣ 🙋🏻‍♂️ TESTIMONI (Auto push)</b>\nJumlah: 3\n\n<b>7️⃣ HASHTAG SEARCH</b>\n\n#Schedule\n#BelumPost\n#DonePost\n#TikTok_Belum\n#TikTok_Done\n#YouTube_Belum\n#YouTube_Done\n#testimoni"
+      "text": "<b>STATUS MEDIA POSTING</b>\n\n<b>1️⃣ ON SCHEDULE</b>\n\nTiada posting dijadualkan.\n\n<b>2️⃣ PENDING POST</b>\n\n1. 🔴 #BelumPost Video : https://t.me/c/4451110392/132\n\n2. 🔴 #BelumPost Video : https://t.me/c/4451110392/134\n\n3. 🔴 #BelumPost Video : https://t.me/c/4451110392/136\n\n4. 🔴 #BelumPost Video : https://t.me/c/4451110392/138\n\n5. 🔴 #BelumPost Video : https://t.me/c/4451110392/140\n\n6. 🔴 #BelumPost Video : https://t.me/c/4451110392/142\n\n7. 🔴 #BelumPost Video : https://t.me/c/4451110392/144\n\n8. 🔴 #BelumPost Video : https://t.me/c/4451110392/146\n\n9. 🔴 #BelumPost Video : https://t.me/c/4451110392/148\n\n<b>3️⃣ TIKTOK POST</b>\n\n1. 🟡 Video #TikTok_Belum\nLink : https://t.me/c/4451110392/150\n\n<b>4️⃣ YOUTUBE POST</b>\n\n1. 🟡 Video #YouTube_Belum\nLink : https://t.me/c/4451110392/150\n\n<b>5️⃣ LEGEND</b>\n\n🔴 VIDEO @ 5 PLATFORM\nJumlah: 9 BelumPost\n\n🟡 VIDEO @ TIKTOK\nJumlah: 1 Belum\n\n▶️ VIDEO @ YOUTUBE\nJumlah: 1 Belum\n\n🟢 NON VIDEO @ 5 PLATFORM\nTiada gambar / ayat dalam senarai.\n\n<b>6️⃣ 🙋🏻‍♂️ TESTIMONI (Auto push)</b>\nJumlah: 3\n\n<b>7️⃣ HASHTAG SEARCH</b>\n\n#Schedule\n#BelumPost\n#DonePost\n#TikTok_Belum\n#TikTok_Done\n#YouTube_Belum\n#YouTube_Done\n#testimoni"
     },
     "title_try": true,
-    "sweep_at": "2026-11-23T00:17:16.105124+00:00"
+    "sweep_at": "2026-11-23T00:23:09.068301+00:00"
   },
   "testi": {
     "used": [

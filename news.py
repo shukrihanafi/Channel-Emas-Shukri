@@ -18,6 +18,8 @@ MODEL = os.getenv("NEWS_MODEL", "claude-haiku-5-5")
 KEYWORDS = re.compile(r"\b(gold|bullion|precious metals?|emas|dinar|xau)\b", re.I)
 # Fokus emas sahaja: buang berita sukan (pingat emas, dll.) dan sebutan "emas" yang bukan berkaitan logam
 NEGATIVE = re.compile(r"pingat|medal|olimpik|olympic|sukan|sea games|juara|kejohanan|gold coast|gold cup|golden globe|piala|warga emas|sindiket|scam|ditahan|penipuan|bunuh|samun|rompak", re.I)
+# Berita jenayah/tangkapan/penyeludupan bukan untuk saluran ini (diperiksa pada tajuk, ringkasan dan perenggan awal, semua sumber)
+CRIME = re.compile(r"\b(seludup\w*|menyeludup\w*|smuggl\w*|tangkap\w*|ditangkap|ditahan|tahanan|arrest\w*|detain\w*|curi\w*|dicuri|theft|stolen|burglar\w*|jenayah|crime\w*|criminal\w*|fraud\w*|heist|penjara|dipenjara|jail\w*|rasuah|corrupt\w*|ragut\w*|rompak\w*|samun\w*|bunuh\w*|murder\w*|culik\w*|kidnap\w*|sindiket|syndicate|penipuan|scam\w*|pengubahan wang haram|money laundering|ditahan|didakwa|charged with)\b", re.I)
 # Sumber berita, diputar bergilir (satu sumber setiap hari); sumber tanpa berita emas terkini dilangkau
 SOURCES = [
     ("The Edge Malaysia", None),
@@ -160,7 +162,8 @@ def fetch_article(url):
     page = r.text
     body = re.sub(r"(?is)<(script|style|nav|header|footer).*?</\1>", " ", page)
     paras = [html.unescape(re.sub(r"<[^>]+>", " ", p)).strip() for p in re.findall(r"(?is)<p[^>]*>(.*?)</p>", body)]
-    paras = [re.sub(r"\s+", " ", p) for p in paras if len(p) > 60]
+    paras = [re.sub(r"\s+", " ", re.sub(r"\$\{[^}]*\}", " ", p)).strip() for p in paras]
+    paras = [p for p in paras if len(p) > 60]
     return {"url": url, "title": _meta(page, "og:title") or "", "desc": _meta(page, "og:description"),
             "date": _meta(page, "article:published_time"), "text": "\n".join(paras)[:12000],
             "image": _meta(page, "og:image"), "site": _meta(page, "og:site_name"), "paras": paras[:4]}
@@ -326,6 +329,10 @@ def run(st, send, dt, out="out", notify=print):
         tries += 1
         try:
             a = fetch_article(url)
+            if not forced and CRIME.search(" ".join([a["title"], a["desc"]] + a["paras"][:2])):
+                print(f"Calon {name} dilangkau (berita jenayah): {a['title'][:80]}")
+                n["posted"].append(url)  # jangan pilih lagi
+                continue
             res = summarise(a)
             if res is None:
                 if not test:

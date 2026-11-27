@@ -726,6 +726,8 @@ def mode_tg_cleanup(p, st):
             time.sleep(r.get("parameters", {}).get("retry_after", 5) + 1)
             continue
         if not r.get("ok"):
+            if scanned < 4 or mid % 25 == 0:
+                print("forward", mid, r.get("error_code"), r.get("description"))
             continue
         m = r["result"]
         requests.post(f"{base}/deleteMessage", data={"chat_id": owner, "message_id": m["message_id"]}, timeout=30)

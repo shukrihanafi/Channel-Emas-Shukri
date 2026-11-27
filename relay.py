@@ -622,11 +622,11 @@ def _handle_callback(rs, cb, owner, base, notify):
     if data == "ap":
         due, label = _now(), "✅ 5 platform sekarang (tiada TikTok)"
     elif data == "ts":
-        due, label, tt = _now(), "✅ 5 platform sekarang + 📣 peringatan TikTok", True
+        due, label, tt = _now(), "✅ 5 platform sekarang", True
     elif data == "sn":
         t = next_sched_slot(rs, key)
         due, tt = t.astimezone(timezone.utc), True
-        label = f"⏰ Dijadual {t:%d/%m %H:%M} + 📣 peringatan TikTok"
+        label = f"⏰ Dijadual {t:%d/%m %H:%M}"
     elif re.fullmatch(r"sm\d+_\d\d_\d\d", data):
         off, hh, mm = data[2:].split("_")
         t = (_now().astimezone(MYT) + timedelta(days=int(off))).replace(hour=int(hh), minute=int(mm), second=0, microsecond=0)
@@ -637,7 +637,7 @@ def _handle_callback(rs, cb, owner, base, notify):
             mark(kb("dates"))
             return ans("Hari itu sudah ada jadual posting lain, pilih hari lain.")
         due, tt = t.astimezone(timezone.utc), True
-        label = f"⏰ Dijadual {t:%d/%m %H:%M} + 📣 peringatan TikTok"
+        label = f"⏰ Dijadual {t:%d/%m %H:%M}"
     elif data == "n20" or data == "m07" or (data.startswith("h") and data[1:].isdigit()):
         if data == "n20":
             due = _next_slot(20)
@@ -645,7 +645,7 @@ def _handle_callback(rs, cb, owner, base, notify):
             due = _next_slot(7, tomorrow=True)
         else:
             due = _next_slot(int(data[1:]))
-        label, tt = f"⏰ Dijadual {due.astimezone(MYT):%d/%m %H:%M} + 📣 peringatan TikTok", True
+        label, tt = f"⏰ Dijadual {due.astimezone(MYT):%d/%m %H:%M}", True
     else:
         return ans("Butang tidak dikenali.")
     if not vid:  # gambar / ayat: tiada peringatan TikTok
@@ -924,6 +924,18 @@ def _fix_delivered(rs, base):
             n += 1
 
 
+def _fix_sched_labels(rs, base):
+    """Satu kali: buang '+ peringatan TikTok' daripada label butang media yang sudah dijadualkan."""
+    for key, it in list(rs.get("pending", {}).items()):
+        rec = rs.get("vids", {}).get(str(it.get("mid")))
+        if not rec or rec.get("lblfix") or not it.get("chat") or not it.get("mid"):
+            continue
+        t = datetime.fromisoformat(it["due"]).astimezone(MYT)
+        rows = [[{"text": f"⏰ Dijadual {t:%d/%m %H:%M}", "callback_data": "noop"}], [{"text": "❌ Batal jadual", "callback_data": "cx"}]]
+        _tg(base, "editMessageReplyMarkup", chat_id=it["chat"], message_id=it["mid"], reply_markup=json.dumps({"inline_keyboard": rows}))
+        rec["lblfix"] = True
+
+
 def _refresh_buttons(rs, base):
     """Butang Schedule pada media yang belum diputuskan mesti sentiasa tunjuk slot terkini (bukan tarikh lama semasa media dihantar).
     Semak setiap larian; hanya edit mesej bila label berubah (maksimum 8 sehari-larian)."""
@@ -969,6 +981,7 @@ def run(st, notify=print, poll=0):
     try:
         _fix_delivered(rs, base)
         _refresh_buttons(rs, base)
+        _fix_sched_labels(rs, base)
     except Exception as e:
         print("Kemas kini butang gagal:", e)
     tg_channel = os.getenv("TELEGRAM_CHANNEL", "").strip()

@@ -705,6 +705,39 @@ def mode_wa_offline(p, st):
     tg_plain(f"Tetapan Whapi: offline_mode sebelum={before}, selepas={after}. Reset status offline: {pres}.")
 
 
+def mode_tg_cleanup(p, st):
+    """Padam mesej 'salin caption' TikTok/YouTube lama dalam MEDIA APPROVAL (mesej kod yang bot hantar). Tidak sentuh video atau status."""
+    import requests
+    token, owner = os.environ["TELEGRAM_BOT_TOKEN"], str(os.environ["TELEGRAM_CHAT_ID"])
+    base = f"https://api.telegram.org/bot{token}"
+    rs = st.get("relay", {})
+    chat = rs.get("video_chat")
+    ids = [int(k) for k in rs.get("vids", {})]
+    if not chat or not ids:
+        return tg_plain("Cleanup: kumpulan MEDIA APPROVAL tidak dijumpai.")
+    n = scanned = 0
+    for mid in range(max(1, min(ids) - 3), max(ids) + 40):
+        scanned += 1
+        try:
+            r = requests.post(f"{base}/forwardMessage", data={"chat_id": owner, "from_chat_id": chat, "message_id": mid, "disable_notification": "true"}, timeout=30).json()
+        except Exception:
+            continue
+        if r.get("error_code") == 429:
+            time.sleep(r.get("parameters", {}).get("retry_after", 5) + 1)
+            continue
+        if not r.get("ok"):
+            continue
+        m = r["result"]
+        requests.post(f"{base}/deleteMessage", data={"chat_id": owner, "message_id": m["message_id"]}, timeout=30)
+        ents = m.get("entities") or []
+        origin = m.get("forward_origin", {}).get("sender_user", {})
+        if m.get("text") and ents and ents[0].get("type") == "pre" and ents[0].get("offset") == 0 and origin.get("is_bot"):
+            d = requests.post(f"{base}/deleteMessage", data={"chat_id": chat, "message_id": mid}, timeout=30).json()
+            n += 1 if d.get("ok") else 0
+        time.sleep(0.4)
+    tg_plain(f"Kemas MEDIA APPROVAL: {n} mesej salin caption TikTok/YouTube lama dipadam ({scanned} mesej disemak).")
+
+
 def mode_fbcheck(p, st):
     """Semak token Facebook tanpa membuat hantaran awam; keputusan ke Telegram peribadi."""
     if not fb.enabled():
@@ -1001,7 +1034,7 @@ def mode_igdiag(p, st):
         tg_plain(f"⚠️ Diagnosis gagal: {e}")
 
 
-MODES = {"ig-diag": mode_igdiag, "gapig-test": mode_gapig, "berita-ig": mode_beritaig, "ig-check": mode_igcheck, "gapthreads-test": mode_gapthreads, "berita-threads": mode_beritathreads, "threads-casual-test": mode_threadscasual, "threads-test": mode_threadstest, "threads-check": mode_threadscheck, "fb-check": mode_fbcheck, "relay": mode_relay, "pinjadual": mode_pinjadual, "wa-channels": mode_wa_channels, "wa-offline": mode_wa_offline, "berita": mode_berita, "berita-test": mode_berita, "fizikal": mode_fizikal, "fizikal-test": mode_fizikal, "fizikal-alert-test": mode_fizikal_alert, "semangat": mode_semangat, "semangat-test": mode_semangat, "testimoni": mode_testimoni, "testimoni-test": mode_testimoni, "testimoni-check": mode_testimoni, "gap": mode_gap, "jewel": mode_jewel, "alert": mode_alert, "ilmu": mode_ilmu, "item": mode_item, "pgitem": mode_pgitem, "pgitem-test": mode_pgitem, "pgitem-all": mode_pgitem,
+MODES = {"ig-diag": mode_igdiag, "gapig-test": mode_gapig, "berita-ig": mode_beritaig, "ig-check": mode_igcheck, "gapthreads-test": mode_gapthreads, "berita-threads": mode_beritathreads, "threads-casual-test": mode_threadscasual, "threads-test": mode_threadstest, "threads-check": mode_threadscheck, "fb-check": mode_fbcheck, "relay": mode_relay, "pinjadual": mode_pinjadual, "wa-channels": mode_wa_channels, "wa-offline": mode_wa_offline, "tg-cleanup": mode_tg_cleanup, "berita": mode_berita, "berita-test": mode_berita, "fizikal": mode_fizikal, "fizikal-test": mode_fizikal, "fizikal-alert-test": mode_fizikal_alert, "semangat": mode_semangat, "semangat-test": mode_semangat, "testimoni": mode_testimoni, "testimoni-test": mode_testimoni, "testimoni-check": mode_testimoni, "gap": mode_gap, "jewel": mode_jewel, "alert": mode_alert, "ilmu": mode_ilmu, "item": mode_item, "pgitem": mode_pgitem, "pgitem-test": mode_pgitem, "pgitem-all": mode_pgitem,
          "item-jewel": lambda p, st: mode_item(p, st, "jewel"),
          "item-mall": lambda p, st: mode_item(p, st, "mall")}
 

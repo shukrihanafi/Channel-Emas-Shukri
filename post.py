@@ -707,7 +707,7 @@ def mode_wa_offline(p, st):
 
 def mode_tg_cleanup(p, st):
     """Padam mesej 'salin caption' TikTok/YouTube lama dalam MEDIA APPROVAL (mesej kod yang bot hantar). Tidak sentuh video atau status."""
-    import requests
+    import time
     token, owner = os.environ["TELEGRAM_BOT_TOKEN"], str(os.environ["TELEGRAM_CHAT_ID"])
     base = f"https://api.telegram.org/bot{token}"
     rs = st.get("relay", {})

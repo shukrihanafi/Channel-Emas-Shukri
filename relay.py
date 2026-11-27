@@ -195,6 +195,26 @@ def _yt_keyboard(done):
                                 [{"text": "✅ Dah post di YouTube", "callback_data": "ytd"}]]}
 
 
+def _sent_id(resp):
+    try:
+        return resp.json()["result"]["message_id"]
+    except Exception:
+        return None
+
+
+def _send_reminders(base, ch, text, mid, rec, notify=print):
+    """Hantar peringatan TikTok / YouTube / FB Personal (kecuali yang sudah ditanda DonePost). Simpan id mesej supaya boleh dipadam bila jadual dibatalkan."""
+    ids = []
+    for flag, k, fn in (("tt_skip", "tt", tt_reminder), ("yt_skip", "yt", yt_reminder), ("fb_skip", "fb", fb_reminder)):
+        if rec.get(flag):
+            rec[k] = "Done"
+        else:
+            ids.append(fn(base, ch, text, mid, notify))
+            rec[k] = "Belum"
+    rec["rem_ids"] = [i for i in ids if i]
+    rec["rem_sent"] = True
+
+
 def _fb_status_text(done, text=""):
     """Status FB Personal manual: #FB_Belum / #FB_Done."""
     first = _first_line(text)
@@ -209,16 +229,18 @@ def _fb_keyboard(done):
 
 def fb_reminder(base, owner, text, mid, notify=print):
     """Peringatan FB Personal manual: satu mesej status (#FB_Belum) + butang 'Dah post'."""
-    _tg(base, "sendMessage", chat_id=owner, text=_fb_status_text(False, text) + "\n\n"
+    r = _tg(base, "sendMessage", chat_id=owner, text=_fb_status_text(False, text) + "\n\n"
         "1) Simpan video di atas ke galeri\n2) Facebook profil > Apa yang anda fikirkan > tambah video, salin caption daripada video di atas\n3) Siar, kemudian tekan butang di bawah",
         reply_to_message_id=mid, reply_markup=json.dumps(_fb_keyboard(False)))
+    return _sent_id(r)
 
 
 def yt_reminder(base, owner, text, mid, notify=print):
     """Peringatan YouTube Shorts manual: status (#YouTube_Belum) + butang, kemudian tajuk dan keterangan siap salin."""
-    _tg(base, "sendMessage", chat_id=owner, text=_yt_status_text(False, text) + "\n\n"
+    r = _tg(base, "sendMessage", chat_id=owner, text=_yt_status_text(False, text) + "\n\n"
         "1) Simpan video di atas ke galeri\n2) YouTube > + > Muat naik Shorts > salin caption daripada video di atas\n3) Siar, kemudian tekan butang di bawah",
         reply_to_message_id=mid, reply_markup=json.dumps(_yt_keyboard(False)))
+    return _sent_id(r)
 
 
 def tt_reminder(base, owner, text, mid, notify=print):
@@ -226,6 +248,7 @@ def tt_reminder(base, owner, text, mid, notify=print):
     sresp = _tg(base, "sendMessage", chat_id=owner, text=_tt_status_text(False, text) + "\n\n"
         "1) Simpan video di atas ke galeri\n2) TikTok > Upload > salin caption daripada video di atas\n3) Siar atau jadual, kemudian tekan butang di bawah",
         reply_to_message_id=mid, reply_markup=json.dumps(_tt_keyboard(False)))
+    return _sent_id(sresp)
 
 
 def _next_slot(hour, tomorrow=False):
@@ -531,6 +554,10 @@ def _handle_callback(rs, cb, owner, base, notify):
             rec = _vrec(rs, chat, mid)
             rec["status"] = "BelumPost"
             rec.pop("due", None)
+            for rid in rec.pop("rem_ids", []):  # padam peringatan yang sudah dihantar semasa jadual
+                _tg(base, "deleteMessage", chat_id=chat, message_id=rid)
+            for k in ("tt", "yt", "fb", "rem_sent"):
+                rec.pop(k, None)
             _unreport(base, owner, rec)
             return ans("Jadual dibatalkan")
         return ans("Sudah disiar, tidak boleh dibatalkan.")
@@ -545,7 +572,8 @@ def _handle_callback(rs, cb, owner, base, notify):
         if vm:
             rec = _vrec(rs, chat, vm)
             rec["tt"] = "Done" if isdone else "Belum"
-            rec["delivered"] = True
+            if f"a{vm}" not in pend:
+                rec["delivered"] = True
             if isdone:
                 rec["done_at"] = _now().isoformat()
         return ans("Ditanda: sudah post ✅" if isdone else "Ditanda: belum post")
@@ -560,7 +588,8 @@ def _handle_callback(rs, cb, owner, base, notify):
         if vm:
             rec = _vrec(rs, chat, vm)
             rec["yt"] = "Done" if isdone else "Belum"
-            rec["delivered"] = True
+            if f"a{vm}" not in pend:
+                rec["delivered"] = True
             if isdone:
                 rec["yt_done_at"] = _now().isoformat()
         return ans("Ditanda: sudah post ✅" if isdone else "Ditanda: belum post")
@@ -592,7 +621,8 @@ def _handle_callback(rs, cb, owner, base, notify):
         if vm:
             rec = _vrec(rs, chat, vm)
             rec["fb"] = "Done" if isdone else "Belum"
-            rec["delivered"] = True
+            if f"a{vm}" not in pend:
+                rec["delivered"] = True
             if isdone:
                 rec["fb_done_at"] = _now().isoformat()
         return ans("Ditanda: sudah post ✅" if isdone else "Ditanda: belum post")
@@ -659,6 +689,8 @@ def _handle_callback(rs, cb, owner, base, notify):
     rec["status"], rec["due"], rec["type"] = ("Schedule" if sched else "Approve"), due.isoformat(), typ
     if sid:
         rec["sid"] = sid
+    if sched and tt and not rec.get("rem_sent"):  # jadual: peringatan TikTok / YouTube / FB keluar terus
+        _send_reminders(base, chat, text, mid, rec)
     CHECKPOINT()
     rows = [[{"text": label, "callback_data": "noop"}]] + ([[{"text": "❌ Batal jadual", "callback_data": "cx"}]] if sched else [])
     retag("#Schedule" if sched else "#DonePost", {"inline_keyboard": rows})
@@ -691,23 +723,8 @@ def _process_pending(st, rs, base, token, tg_channel, notify):
             if it.get("sid"):
                 rec["sid"] = it["sid"]
             _mark_done(base, rec)
-            if it.get("tt"):
-                ch = it.get("chat") or os.getenv("TELEGRAM_CHAT_ID", "")
-                if rec.get("tt_skip"):
-                    rec["tt"] = "Done"
-                else:
-                    tt_reminder(base, ch, it["text"], it.get("mid"), notify)
-                    rec["tt"] = "Belum"
-                if rec.get("yt_skip"):
-                    rec["yt"] = "Done"
-                else:
-                    yt_reminder(base, ch, it["text"], it.get("mid"), notify)
-                    rec["yt"] = "Belum"
-                if rec.get("fb_skip"):
-                    rec["fb"] = "Done"
-                else:
-                    fb_reminder(base, ch, it["text"], it.get("mid"), notify)
-                    rec["fb"] = "Belum"
+            if it.get("tt") and not rec.get("rem_sent"):
+                _send_reminders(base, it.get("chat") or os.getenv("TELEGRAM_CHAT_ID", ""), it["text"], it.get("mid"), rec, notify)
         except Exception as e:
             it["tries"] = it.get("tries", 0) + 1
             if it["tries"] >= 5:

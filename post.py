@@ -740,6 +740,48 @@ def mode_tg_cleanup(p, st):
     tg_plain(f"Kemas MEDIA APPROVAL: {n} mesej salin caption TikTok/YouTube lama dipadam ({scanned} mesej disemak).")
 
 
+def mode_tg_simplify(p, st):
+    """Buang langkah 1) 2) 3) daripada mesej peringatan TikTok/YouTube/FB lama dalam MEDIA APPROVAL (kekalkan status dan butang)."""
+    import time
+    token, owner = os.environ["TELEGRAM_BOT_TOKEN"], str(os.environ["TELEGRAM_CHAT_ID"])
+    base = f"https://api.telegram.org/bot{token}"
+    rs = st.get("relay", {})
+    chat = rs.get("video_chat")
+    ids = [int(k) for k in rs.get("vids", {})]
+    if not chat or not ids:
+        return tg_plain("Kemas peringatan: kumpulan MEDIA APPROVAL tidak dijumpai.")
+    kb = {"TikTok": ("ttd", "ttu"), "YouTube": ("ytd", "ytu"), "FB Personal": ("fbd", "fbu")}
+    n = 0
+    for mid in range(max(1, min(ids) - 3), max(ids) + 60):
+        try:
+            r = requests.post(f"{base}/forwardMessage", data={"chat_id": owner, "from_chat_id": chat, "message_id": mid, "disable_notification": "true"}, timeout=30).json()
+        except Exception:
+            continue
+        if r.get("error_code") == 429:
+            time.sleep(r.get("parameters", {}).get("retry_after", 5) + 1)
+            continue
+        if not r.get("ok"):
+            continue
+        m = r["result"]
+        requests.post(f"{base}/deleteMessage", data={"chat_id": owner, "message_id": m["message_id"]}, timeout=30)
+        t = m.get("text") or ""
+        if "\n\n1) " not in t or "BELUM POST" not in t.split("\n")[0] + t.split("\n")[0] and "SUDAH POST" not in t.split("\n")[0]:
+            continue
+        head = t.split("\n\n", 1)[0]
+        line0 = head.split("\n")[0]
+        plat = next((k for k in kb if f"{k}:" in line0), None)
+        if not plat:
+            continue
+        done = "SUDAH POST" in line0
+        d, u = kb[plat]
+        markup = {"inline_keyboard": [[{"text": "↩️ Batal (belum post)", "callback_data": u}] if done else
+                                      [{"text": f"✅ Dah post di {plat}", "callback_data": d}]]}
+        e = requests.post(f"{base}/editMessageText", data={"chat_id": chat, "message_id": mid, "text": head, "reply_markup": json.dumps(markup)}, timeout=30).json()
+        n += 1 if e.get("ok") else 0
+        time.sleep(0.4)
+    tg_plain(f"Kemas peringatan MEDIA APPROVAL: {n} mesej dipermudahkan (langkah dibuang).")
+
+
 def mode_fbcheck(p, st):
     """Semak token Facebook tanpa membuat hantaran awam; keputusan ke Telegram peribadi."""
     if not fb.enabled():
@@ -1036,7 +1078,7 @@ def mode_igdiag(p, st):
         tg_plain(f"⚠️ Diagnosis gagal: {e}")
 
 
-MODES = {"ig-diag": mode_igdiag, "gapig-test": mode_gapig, "berita-ig": mode_beritaig, "ig-check": mode_igcheck, "gapthreads-test": mode_gapthreads, "berita-threads": mode_beritathreads, "threads-casual-test": mode_threadscasual, "threads-test": mode_threadstest, "threads-check": mode_threadscheck, "fb-check": mode_fbcheck, "relay": mode_relay, "pinjadual": mode_pinjadual, "wa-channels": mode_wa_channels, "wa-offline": mode_wa_offline, "tg-cleanup": mode_tg_cleanup, "berita": mode_berita, "berita-test": mode_berita, "fizikal": mode_fizikal, "fizikal-test": mode_fizikal, "fizikal-alert-test": mode_fizikal_alert, "semangat": mode_semangat, "semangat-test": mode_semangat, "testimoni": mode_testimoni, "testimoni-test": mode_testimoni, "testimoni-check": mode_testimoni, "gap": mode_gap, "jewel": mode_jewel, "alert": mode_alert, "ilmu": mode_ilmu, "item": mode_item, "pgitem": mode_pgitem, "pgitem-test": mode_pgitem, "pgitem-all": mode_pgitem,
+MODES = {"ig-diag": mode_igdiag, "gapig-test": mode_gapig, "berita-ig": mode_beritaig, "ig-check": mode_igcheck, "gapthreads-test": mode_gapthreads, "berita-threads": mode_beritathreads, "threads-casual-test": mode_threadscasual, "threads-test": mode_threadstest, "threads-check": mode_threadscheck, "fb-check": mode_fbcheck, "relay": mode_relay, "pinjadual": mode_pinjadual, "wa-channels": mode_wa_channels, "wa-offline": mode_wa_offline, "tg-cleanup": mode_tg_cleanup, "tg-simplify": mode_tg_simplify, "berita": mode_berita, "berita-test": mode_berita, "fizikal": mode_fizikal, "fizikal-test": mode_fizikal, "fizikal-alert-test": mode_fizikal_alert, "semangat": mode_semangat, "semangat-test": mode_semangat, "testimoni": mode_testimoni, "testimoni-test": mode_testimoni, "testimoni-check": mode_testimoni, "gap": mode_gap, "jewel": mode_jewel, "alert": mode_alert, "ilmu": mode_ilmu, "item": mode_item, "pgitem": mode_pgitem, "pgitem-test": mode_pgitem, "pgitem-all": mode_pgitem,
          "item-jewel": lambda p, st: mode_item(p, st, "jewel"),
          "item-mall": lambda p, st: mode_item(p, st, "mall")}
 

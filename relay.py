@@ -229,24 +229,21 @@ def _fb_keyboard(done):
 
 def fb_reminder(base, owner, text, mid, notify=print):
     """Peringatan FB Personal manual: satu mesej status (#FB_Belum) + butang 'Dah post'."""
-    r = _tg(base, "sendMessage", chat_id=owner, text=_fb_status_text(False, text) + "\n\n"
-        "1) Simpan video di atas ke galeri\n2) Facebook profil > Apa yang anda fikirkan > tambah video, salin caption daripada video di atas\n3) Siar, kemudian tekan butang di bawah",
+    r = _tg(base, "sendMessage", chat_id=owner, text=_fb_status_text(False, text),
         reply_to_message_id=mid, reply_markup=json.dumps(_fb_keyboard(False)))
     return _sent_id(r)
 
 
 def yt_reminder(base, owner, text, mid, notify=print):
     """Peringatan YouTube Shorts manual: status (#YouTube_Belum) + butang, kemudian tajuk dan keterangan siap salin."""
-    r = _tg(base, "sendMessage", chat_id=owner, text=_yt_status_text(False, text) + "\n\n"
-        "1) Simpan video di atas ke galeri\n2) YouTube > + > Muat naik Shorts > salin caption daripada video di atas\n3) Siar, kemudian tekan butang di bawah",
+    r = _tg(base, "sendMessage", chat_id=owner, text=_yt_status_text(False, text),
         reply_to_message_id=mid, reply_markup=json.dumps(_yt_keyboard(False)))
     return _sent_id(r)
 
 
 def tt_reminder(base, owner, text, mid, notify=print):
     """Peringatan TikTok manual: mesej status (#TikTok_Belum) dengan butang 'Dah post', diikuti caption siap salin. Tanpa Claude."""
-    sresp = _tg(base, "sendMessage", chat_id=owner, text=_tt_status_text(False, text) + "\n\n"
-        "1) Simpan video di atas ke galeri\n2) TikTok > Upload > salin caption daripada video di atas\n3) Siar atau jadual, kemudian tekan butang di bawah",
+    sresp = _tg(base, "sendMessage", chat_id=owner, text=_tt_status_text(False, text),
         reply_to_message_id=mid, reply_markup=json.dumps(_tt_keyboard(False)))
     return _sent_id(sresp)
 
@@ -565,8 +562,7 @@ def _handle_callback(rs, cb, owner, base, notify):
         isdone = data == "ttd"
         body = (m.get("text") or "")
         first = next((l[2:].strip() for l in body.splitlines() if l.startswith("🎬")), "")
-        steps = body.split("\n\n", 1)[1] if "\n\n" in body else ""
-        txt = _tt_status_text(isdone, first) + ("\n\n" + steps if steps else "")
+        txt = _tt_status_text(isdone, first)
         _tg(base, "editMessageText", chat_id=chat, message_id=mid, text=txt, reply_markup=json.dumps(_tt_keyboard(isdone)))
         vm = (m.get("reply_to_message") or {}).get("message_id")
         if vm:
@@ -581,8 +577,7 @@ def _handle_callback(rs, cb, owner, base, notify):
         isdone = data == "ytd"
         body = (m.get("text") or "")
         first = next((l[2:].strip() for l in body.splitlines() if l.startswith("▶️")), "")
-        steps = body.split("\n\n", 1)[1] if "\n\n" in body else ""
-        txt = _yt_status_text(isdone, first) + ("\n\n" + steps if steps else "")
+        txt = _yt_status_text(isdone, first)
         _tg(base, "editMessageText", chat_id=chat, message_id=mid, text=txt, reply_markup=json.dumps(_yt_keyboard(isdone)))
         vm = (m.get("reply_to_message") or {}).get("message_id")
         if vm:
@@ -614,8 +609,7 @@ def _handle_callback(rs, cb, owner, base, notify):
         isdone = data == "fbd"
         body = (m.get("text") or "")
         first = next((l[2:].strip() for l in body.splitlines() if l.startswith("⭐️")), "")
-        steps = body.split("\n\n", 1)[1] if "\n\n" in body else ""
-        txt = _fb_status_text(isdone, first) + ("\n\n" + steps if steps else "")
+        txt = _fb_status_text(isdone, first)
         _tg(base, "editMessageText", chat_id=chat, message_id=mid, text=txt, reply_markup=json.dumps(_fb_keyboard(isdone)))
         vm = (m.get("reply_to_message") or {}).get("message_id")
         if vm:

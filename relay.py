@@ -156,7 +156,14 @@ def approval_keyboard(page="main", kind="video", taken=(), rs=None, exclude=None
     sch = [{"text": sched_label(rs, exclude) if rs is not None else "⏰ Schedule seterusnya", "callback_data": "sn"}]
     if kind != "video":  # gambar / ayat: tiada TikTok
         return {"inline_keyboard": [[{"text": "✅ Post 5 (Now)", "callback_data": "ts"}], sch]}
-    return {"inline_keyboard": [[{"text": "✅ Post 5 (Now) + TikTok Manual", "callback_data": "ts"}], sch]}
+    skip = {}
+    try:  # TikTok / YouTube yang Shukri sudah post (atau jadual) sendiri: tiada peringatan "belum post" selepas siaran
+        skip = (rs or {}).get("vids", {}).get(str(exclude or "")[1:], {})
+    except Exception:
+        pass
+    pre = [{"text": "✅ TikTok: dah post sendiri" if skip.get("tt_skip") else "📣 TikTok: aku post sendiri", "callback_data": "tkp"},
+           {"text": "✅ YouTube: dah post sendiri" if skip.get("yt_skip") else "▶️ YouTube: aku post sendiri", "callback_data": "ytp"}]
+    return {"inline_keyboard": [[{"text": "✅ Post 5 (Now) + TikTok Manual", "callback_data": "ts"}], sch, pre]}
 
 
 def _tt_status_text(done, text=""):
@@ -554,6 +561,15 @@ def _handle_callback(rs, cb, owner, base, notify):
     if data == "bk":
         mark(kb())
         return ans("")
+    if data in ("tkp", "ytp"):  # tanda TikTok / YouTube sudah (atau akan) di-post sendiri, tidak perlu tunggu siaran 5 platform
+        if key in pend or mid in done:
+            return ans("Sudah diproses.")
+        rec = _vrec(rs, chat, mid)
+        f = "tt_skip" if data == "tkp" else "yt_skip"
+        rec[f] = not rec.get(f)
+        mark(kb())
+        nm = "TikTok" if data == "tkp" else "YouTube"
+        return ans(f"{nm}: tiada peringatan 'belum post' selepas siaran ✅" if rec[f] else f"{nm}: peringatan dihidupkan semula")
     if not (vid or photo or m.get("text")):
         return ans("Mesej ini bukan media kelulusan.")
     if key in pend or mid in done:
@@ -641,10 +657,17 @@ def _process_pending(st, rs, base, token, tg_channel, notify):
                 rec["sid"] = it["sid"]
             _mark_done(base, rec)
             if it.get("tt"):
-                tt_reminder(base, it.get("chat") or os.getenv("TELEGRAM_CHAT_ID", ""), it["text"], it.get("mid"), notify)
-                rec["tt"] = "Belum"
-                yt_reminder(base, it.get("chat") or os.getenv("TELEGRAM_CHAT_ID", ""), it["text"], it.get("mid"), notify)
-                rec["yt"] = "Belum"
+                ch = it.get("chat") or os.getenv("TELEGRAM_CHAT_ID", "")
+                if rec.get("tt_skip"):
+                    rec["tt"] = "Done"
+                else:
+                    tt_reminder(base, ch, it["text"], it.get("mid"), notify)
+                    rec["tt"] = "Belum"
+                if rec.get("yt_skip"):
+                    rec["yt"] = "Done"
+                else:
+                    yt_reminder(base, ch, it["text"], it.get("mid"), notify)
+                    rec["yt"] = "Belum"
         except Exception as e:
             it["tries"] = it.get("tries", 0) + 1
             if it["tries"] >= 5:

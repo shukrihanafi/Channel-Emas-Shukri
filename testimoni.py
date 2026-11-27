@@ -336,6 +336,23 @@ def run(st, send, dt, out="out", notify=print):
         fresh = items
     random.shuffle(fresh)
     os.makedirs(out, exist_ok=True)
+    check = getattr(sys.modules.get("__main__"), "CURRENT_MODE", "") == "testimoni-check"
+    if check:  # semakan sahaja: laporkan keputusan setiap calon, tiada hantaran
+        for key, text, url in items[:30]:
+            try:
+                if url.startswith("tgfile:"):
+                    base = f"https://api.telegram.org/bot{os.getenv('TELEGRAM_BOT_TOKEN')}"
+                    fp = requests.get(f"{base}/getFile", params={"file_id": url[7:]}, timeout=30).json()["result"]["file_path"]
+                    r = requests.get(f"{base.replace('/bot', '/file/bot')}/{fp}", timeout=60)
+                else:
+                    r = requests.get(url, headers=UA, timeout=60)
+                img = _to_pil(r.content)
+                _, words = find_boxes(img)
+                lama, sebab = _outdated(img, text, words, dt.year)
+                print(f"SEMAK {key}: {'LAMA - ' + sebab if lama else 'sesuai'} | {(text or '')[:60]!r}")
+            except Exception as e:
+                print(f"SEMAK {key}: ralat {str(e)[:100]}")
+        return
     for key, text, url in fresh[:8]:
         try:
             if url.startswith("tgfile:"):

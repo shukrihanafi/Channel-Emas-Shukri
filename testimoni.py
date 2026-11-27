@@ -245,6 +245,53 @@ def fit_ratio(img):
     return img
 
 
+YEAR_RE = re.compile(r"(?<!\d)(20\d\d)(?!\d)")
+
+
+def _years_old(txt, year):
+    """Tahun eksplisit yang lebih lama daripada tahun semasa dalam teks (caption / OCR)."""
+    return sorted({int(y) for y in YEAR_RE.findall(txt or "") if int(y) < year})
+
+
+def _outdated(img, caption, words, year):
+    """Testimoni mesti sesuai untuk tahun semasa. Tidak sesuai jika gambar atau caption menyebut tahun/tarikh lama
+    (cth 'MAY 2024'). Tiada sebutan tahun = sesuai. Kembalikan (tidak_sesuai, sebab)."""
+    old = _years_old(caption, year)
+    if old:
+        return True, f"caption menyebut tahun {old}"
+    key = os.getenv("ANTHROPIC_API_KEY")
+    if key:
+        try:
+            import base64
+            import json
+            im = img.copy()
+            im.thumbnail((1100, 1100))
+            buf = io.BytesIO()
+            im.save(buf, "JPEG", quality=85)
+            prompt = (f"Tahun semasa ialah {year}. Lihat gambar testimoni ini dan caption di bawah. Adakah gambar ATAU caption menyebut "
+                      f"secara jelas satu tarikh, bulan bersama tahun, atau tahun yang LEBIH LAMA daripada {year} (contoh 'MAY 2024', '2023', 'Disember 2025')? "
+                      "Abaikan tarikh/masa dalam perbualan WhatsApp biasa tanpa tahun, dan nombor biasa seperti 'kali ke 24'. "
+                      'Balas JSON sahaja: {"lama": true atau false, "tahun": "tahun/tarikh yang dilihat atau kosong"}.\n\nCAPTION:\n' + (caption or "")[:1500])
+            import news
+            r = requests.post("https://api.anthropic.com/v1/messages", timeout=90,
+                              headers={"x-api-key": key, "anthropic-version": "2023-06-01", "content-type": "application/json"},
+                              json={"model": news.MODEL, "max_tokens": 200, "messages": [{"role": "user", "content": [
+                                  {"type": "image", "source": {"type": "base64", "media_type": "image/jpeg", "data": base64.b64encode(buf.getvalue()).decode()}},
+                                  {"type": "text", "text": prompt}]}]})
+            r.raise_for_status()
+            txt = "".join(b.get("text", "") for b in r.json().get("content", []) if b.get("type") == "text")
+            j = json.loads(re.search(r"\{.*\}", txt, re.S).group(0))
+            if j.get("lama"):
+                return True, f"gambar menyebut tahun lama ({j.get('tahun', '')})"
+            return False, ""
+        except Exception as e:
+            print("Semakan tahun (AI) gagal, guna semakan teks sahaja:", str(e)[:120])
+    old = _years_old(" ".join(w[0] for w in words), year)
+    if old:
+        return True, f"teks dalam gambar menyebut tahun {old}"
+    return False, ""
+
+
 def _deleted(chat, mid):
     """Semak sama ada mesej sudah dipadam (setMessageReaction kosong: tiada kesan nampak; 'not found' = sudah padam)."""
     try:
@@ -277,6 +324,11 @@ def run(st, send, dt, out="out", notify=print):
     if not items:
         notify("⚠️ Tiada siaran #testimoni berserta gambar ditemui di @kenaliemas.")
         return
+    n.setdefault("old", [])  # testimoni yang mengandungi tahun lama: jangan semak/guna lagi
+    items = [i for i in items if i[0] not in n["old"]]
+    if not items:
+        notify("⚠️ Testimoni: semua calon mengandungi tahun lama. Tiada hantaran.")
+        return
     fresh = [i for i in items if i[0] not in n["used"]]
     if not fresh:  # semua sudah dikitar: mula pusingan baharu
         print("Semua testimoni sudah dihantar: mula pusingan baharu.")
@@ -297,6 +349,12 @@ def run(st, send, dt, out="out", notify=print):
             boxes, words = find_boxes(img)
         except Exception as e:
             print(f"Testimoni {key} dilangkau: {str(e)[:120]}")
+            continue
+        lama, sebab = _outdated(img, text, words, dt.year)
+        if lama:  # tahun lama: tidak sesuai untuk tahun semasa, langkau
+            print(f"Testimoni {key} dilangkau (tidak sesuai untuk {dt.year}): {sebab}")
+            if not test:
+                n["old"] = (n["old"] + [key])[-400:]
             continue
         if boxes:  # tarikh dibuang terus: ditutup dengan watermark shukriee.com
             img = cover(img, boxes)

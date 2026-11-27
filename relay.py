@@ -978,10 +978,10 @@ def _fill_titles(rs, base, token, owner):
     for v in list(rs.get("vids", {}).values()):
         if n >= 3:
             break
-        if v.get("title_v") != 2:  # versi baharu: baca bingkai pertama video (bukan caption)
+        if v.get("title_v") != 3:  # versi baharu: baca bingkai pertama video (bukan caption)
             v.pop("title", None)
             v.pop("title_tries", None)
-            v["title_v"] = 2
+            v["title_v"] = 3
         if v.get("title") is not None or v.get("type", "Video") != "Video" or not v.get("chat") or not v.get("mid"):
             continue
         if v.get("delivered") and v.get("tt") != "Belum" and v.get("yt") != "Belum" and v.get("fb") != "Belum":
@@ -1002,7 +1002,12 @@ def _fill_titles(rs, base, token, owner):
                 vpath = _fetch_file(base, token, vd["file_id"])  # bingkai pertama (0.05 saat) ialah thumbnail bertajuk
                 frame = vpath + ".jpg"
                 import subprocess
-                subprocess.run(["ffmpeg", "-y", "-v", "error", "-ss", "0.05", "-i", vpath, "-frames:v", "1", "-vf", "scale=720:-2", frame], check=True, timeout=60)
+                import shutil
+                ff = shutil.which("ffmpeg")
+                if not ff:
+                    import imageio_ffmpeg
+                    ff = imageio_ffmpeg.get_ffmpeg_exe()
+                subprocess.run([ff, "-y", "-v", "error", "-ss", "0.05", "-i", vpath, "-frames:v", "1", "-vf", "scale=720:-2", frame], check=True, timeout=60)
                 title = _read_title(frame)
         except Exception as e:
             print("Tajuk thumbnail gagal:", str(e)[:120])

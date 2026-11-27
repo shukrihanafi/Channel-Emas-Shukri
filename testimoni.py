@@ -275,12 +275,16 @@ def _outdated(img, caption, words, year):
             import news
             r = requests.post("https://api.anthropic.com/v1/messages", timeout=90,
                               headers={"x-api-key": key, "anthropic-version": "2023-06-01", "content-type": "application/json"},
-                              json={"model": news.MODEL, "max_tokens": 200, "messages": [{"role": "user", "content": [
+                              json={"model": news.MODEL, "max_tokens": 500, "messages": [{"role": "user", "content": [
                                   {"type": "image", "source": {"type": "base64", "media_type": "image/jpeg", "data": base64.b64encode(buf.getvalue()).decode()}},
                                   {"type": "text", "text": prompt}]}]})
             r.raise_for_status()
             txt = "".join(b.get("text", "") for b in r.json().get("content", []) if b.get("type") == "text")
-            j = json.loads(re.search(r"\{.*\}", txt, re.S).group(0))
+            m_ = re.search(r"\{.*?\}", txt, re.S)
+            if not m_:
+                print("Semakan tahun: balasan AI bukan JSON:", repr(txt[:160]), "stop:", r.json().get("stop_reason"))
+                raise ValueError("bukan JSON")
+            j = json.loads(m_.group(0), strict=False)
             if j.get("lama"):
                 return True, f"gambar menyebut tahun lama ({j.get('tahun', '')})"
             return False, ""

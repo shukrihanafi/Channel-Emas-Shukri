@@ -245,6 +245,8 @@ def fit_ratio(img):
     return img
 
 
+_ALERTED = False
+_NOTIFY = print
 YEAR_RE = re.compile(r"(?<!\d)(20\d\d)(?!\d)")
 
 
@@ -290,6 +292,16 @@ def _outdated(img, caption, words, year):
             return False, ""
         except Exception as e:
             print("Semakan tahun (AI) gagal, guna semakan teks sahaja:", str(e)[:120])
+            resp = getattr(e, "response", None)
+            if resp is not None and (resp.status_code in (401, 402, 403, 429) or "credit" in (resp.text or "").lower()):
+                global _ALERTED
+                if not _ALERTED:  # sekali setiap larian
+                    _ALERTED = True
+                    try:
+                        _NOTIFY("⚠️ Testimoni: kredit atau kunci API Anthropic bermasalah, semakan tahun pada gambar tidak dapat dibuat "
+                                "(hanya teks diperiksa). Semak baki di platform.claude.com/settings/billing.\n" + (resp.text or "")[:160])
+                    except Exception:
+                        pass
     old = _years_old(" ".join(w[0] for w in words), year)
     if old:
         return True, f"teks dalam gambar menyebut tahun {old}"
@@ -307,6 +319,8 @@ def _deleted(chat, mid):
 
 
 def run(st, send, dt, out="out", notify=print):
+    global _NOTIFY, _ALERTED
+    _NOTIFY, _ALERTED = notify, False
     n = st.setdefault("testi", {"used": []})
     test = getattr(sys.modules.get("__main__"), "CURRENT_MODE", "").endswith("-test")
     try:

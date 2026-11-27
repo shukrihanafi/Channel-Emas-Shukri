@@ -961,8 +961,9 @@ def _read_title(path):
                       headers={"x-api-key": key, "anthropic-version": "2023-06-01", "content-type": "application/json"},
                       json={"model": news.MODEL, "max_tokens": 120, "messages": [{"role": "user", "content": [
                           {"type": "image", "source": {"type": "base64", "media_type": mt, "data": data}},
-                          {"type": "text", "text": "Ini thumbnail video. Baca TAJUK utama yang tertulis pada gambar (huruf besar di atas). Abaikan 'shukriee.com'. "
-                                                   "Balas tajuk itu sahaja, satu baris, tanpa tanda petik. Jika tiada tulisan, balas 'TIADA'."}]}]})
+                          {"type": "text", "text": "Ini bingkai pertama (thumbnail) sebuah video. Baca TAJUK besar yang tertulis di bahagian atas gambar. "
+                                                   "Jika tajuk terdiri daripada beberapa baris, gabungkan jadi satu baris pendek mengikut susunan atas ke bawah (cth 'DUIT KITA BOCOR?'). "
+                                                   "Abaikan 'shukriee.com' dan apa-apa teks kecil. Balas tajuk itu sahaja, tanpa tanda petik. Jika tiada tajuk tertulis, balas 'TIADA'."}]}]})
     r.raise_for_status()
     t = "".join(b.get("text", "") for b in r.json().get("content", []) if b.get("type") == "text").strip().splitlines()
     t = (t[0] if t else "").strip().strip('"')
@@ -975,6 +976,10 @@ def _fill_titles(rs, base, token, owner):
     for v in list(rs.get("vids", {}).values()):
         if n >= 3:
             break
+        if v.get("title_v") != 2:  # versi baharu: baca bingkai pertama video (bukan caption)
+            v.pop("title", None)
+            v.pop("title_tries", None)
+            v["title_v"] = 2
         if v.get("title") is not None or v.get("type", "Video") != "Video" or not v.get("chat") or not v.get("mid"):
             continue
         if v.get("delivered") and v.get("tt") != "Belum" and v.get("yt") != "Belum" and v.get("fb") != "Belum":
@@ -991,11 +996,12 @@ def _fill_titles(rs, base, token, owner):
                 continue
             _tg(base, "deleteMessage", chat_id=owner, message_id=m["message_id"])
             vd = m.get("video") or {}
-            th = vd.get("thumbnail") or vd.get("thumb") or {}
-            if th.get("file_id"):
-                title = _read_title(_fetch_file(base, token, th["file_id"]))
-            if not title:
-                title = next((l.strip() for l in (m.get("caption") or "").splitlines() if l.strip() and not l.strip().lower().startswith(("amboi", "shukriee"))), "")[:60]
+            if vd.get("file_id") and (vd.get("file_size") or 0) <= MAX_VIDEO:
+                vpath = _fetch_file(base, token, vd["file_id"])  # bingkai pertama (0.05 saat) ialah thumbnail bertajuk
+                frame = vpath + ".jpg"
+                import subprocess
+                subprocess.run(["ffmpeg", "-y", "-v", "error", "-ss", "0.05", "-i", vpath, "-frames:v", "1", "-vf", "scale=720:-2", frame], check=True, timeout=60)
+                title = _read_title(frame)
         except Exception as e:
             print("Tajuk thumbnail gagal:", str(e)[:120])
             v["title_tries"] = v.get("title_tries", 0) + 1

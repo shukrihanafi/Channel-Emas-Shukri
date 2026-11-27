@@ -158,6 +158,8 @@ def casual(text):
     r = requests.post("https://api.anthropic.com/v1/messages", timeout=90,
                       headers={"x-api-key": key, "anthropic-version": "2023-06-01", "content-type": "application/json"},
                       json={"model": "claude-haiku-5-5", "max_tokens": 8000, "messages": [{"role": "user", "content": prompt}]})
+    import aiwatch
+    aiwatch.check(r, "Threads")
     r.raise_for_status()
     return "".join(b.get("text", "") for b in r.json()["content"]).strip()
 
@@ -184,6 +186,8 @@ def summarize(text, limit=450):
         r = requests.post("https://api.anthropic.com/v1/messages", timeout=90,
                           headers={"x-api-key": key, "anthropic-version": "2023-06-01", "content-type": "application/json"},
                           json={"model": "claude-haiku-5-5", "max_tokens": 4000, "messages": [{"role": "user", "content": prompt}]})
+        import aiwatch
+        aiwatch.check(r, "Threads")
         r.raise_for_status()
         out = "".join(b.get("text", "") for b in r.json()["content"]).strip()
         return out if out and len(out) <= limit else text

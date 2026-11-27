@@ -964,6 +964,8 @@ def _read_title(path):
                           {"type": "text", "text": "Ini bingkai pertama (thumbnail) sebuah video. Baca TAJUK besar yang tertulis di bahagian atas gambar. "
                                                    "Jika tajuk terdiri daripada beberapa baris, gabungkan jadi satu baris pendek mengikut susunan atas ke bawah (cth 'DUIT KITA BOCOR?'). "
                                                    "Abaikan 'shukriee.com' dan apa-apa teks kecil. Balas tajuk itu sahaja, tanpa tanda petik. Jika tiada tajuk tertulis, balas 'TIADA'."}]}]})
+    import aiwatch
+    aiwatch.check(r, "tajuk thumbnail")
     r.raise_for_status()
     t = "".join(b.get("text", "") for b in r.json().get("content", []) if b.get("type") == "text").strip().splitlines()
     t = (t[0] if t else "").strip().strip('"')

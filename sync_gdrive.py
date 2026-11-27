@@ -95,6 +95,8 @@ def auto_caption(video):
         r = requests.post("https://api.anthropic.com/v1/messages", timeout=120,
                           headers={"x-api-key": key, "anthropic-version": "2023-06-01", "content-type": "application/json"},
                           json={"model": "claude-haiku-5-5", "max_tokens": 1000, "messages": [{"role": "user", "content": content}]})
+        import aiwatch
+        aiwatch.check(r, "caption video")
         r.raise_for_status()
         out = "".join(b.get("text", "") for b in r.json()["content"]).strip()
         return out if out.startswith("Amboi...") and out.endswith("shukriee.com") and len(out) <= 1024 else None

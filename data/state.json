@@ -452,13 +452,13 @@
     "bad": false,
     "last_alert": "2026-11-18T13:17:23.783011+08:00",
     "last_check": "2026-11-27T13:17:23.821755+08:00",
-    "pres_done": "2026-11-26-22"
+    "pres_done": "2026-11-27-22"
   },
   "threads": {
     "src": "24a290ce6f8b",
-    "enc": "gAAAAABrAFZ1LeH98S5XEyckvJ0cxwx9j6QOjnVhsg1Ke0kF7BOPTG5SAlSBFk-RytnAOOzPpLL0rMKx8_2kHpDSU0H0rmCzG0K2iRnz-vMGqdKG9wKGDWdCKAFb3jHx9P0-WAJr254JV7sgtb9j3IZob440_gGn7GhWsIxuQl88ePL72Nv_gPjnDRAL8Z8mcjBSEci5Zg_O12k1aottEqUskl34BIErnzxKS1kd0xjryPF0ohH3f5v6wWkQdnE-TxoQD3xlOv1oJ1al5l5hmlp5JmDI2am9N0hsfDovWPowIJTGWaC1CP60Ro9HPQWTuBqJwoGMcrb0",
-    "refreshed": "2026-11-20T14:17:25.150208+00:00",
-    "expires_in_days": 59
+    "enc": "gAAAAABrCZD7J13cPCPLcxP1Q4OLNNah-KC9p5RREwyi-R_TkuZW_O2KDlpaWYs6my-6xkpdJUXshqWq6TZUN3d_0IhCEYhX3caJ4Dnbf6uTSNp_sTLeKhltgo2CoGj94z1ctbl65d26hadMncXseozFyWTfJo0D_Jf79kImE657ZPrL7wrbJbM5ZKYmb5nCHypot0sVB5bUnfsDv2c7pkzvauLz_JmZJF_f0WpFds17xLRQ65aAvr3mnaA3C18DbyyJU0xiRl_7EYp5O8h4EqN6SjWlepxtAUY_SM-NPZVbmKXyumXZU0hHbpebnusFVOCV11hVh2FY",
+    "refreshed": "2026-11-27T14:17:31.370435+00:00",
+    "expires_in_days": 60
   },
   "wa_usage": {
     "month": "2026-11",

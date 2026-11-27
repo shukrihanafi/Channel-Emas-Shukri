@@ -188,7 +188,20 @@
     "fb_done": 991464201,
     "th_done": 991464201,
     "ig_done": 991464201,
-    "pending": {},
+    "pending": {
+      "a163": {
+        "vid": {
+          "file_id": "BAACAgUAAyEGAAMBCU6N-AADo2sJMB4B5n-owsiT1MKaBc2dKdfPAAKgLgACh7lJVM3GgILzYo5IPQQ",
+          "file_size": 20234809
+        },
+        "text": "Amboi... nak tunggu duit banyak dulu baru nak simpan emas? Sampai bila agaknya?\n\nGaji naik, belanja pun ikut naik. Bonus masuk, ada saja yang nak dibeli. Tup-tup dah bertahun, simpanan masih kosong.\n\nRupanya mula kecil pun boleh, asalkan jalan terus. Tengok video ni sebelum anda tunggu lagi.\n\nshukriee.com\n",
+        "due": "2026-11-27T07:24:14.770655+00:00",
+        "tries": 0,
+        "mid": 163,
+        "tt": true,
+        "chat": "-1004451110392"
+      }
+    },
     "cbdone": [
       228,
       231,

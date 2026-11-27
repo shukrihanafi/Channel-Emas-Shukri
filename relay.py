@@ -164,7 +164,7 @@ def approval_keyboard(page="main", kind="video", taken=(), rs=None, exclude=None
     pre = [[{"text": "✅ FB Personal: DonePost" if skip.get("fb_skip") else "⭐️ FB Personal: DonePost", "callback_data": "fbp"}],
            [{"text": "✅ TikTok: DonePost" if skip.get("tt_skip") else "📣 TikTok: DonePost", "callback_data": "tkp"}],
            [{"text": "✅ YouTube: DonePost" if skip.get("yt_skip") else "▶️ YouTube: DonePost", "callback_data": "ytp"}]]
-    return {"inline_keyboard": [[{"text": "✅ Post 5 (Now) + TikTok Manual", "callback_data": "ts"}], sch] + pre}
+    return {"inline_keyboard": [[{"text": "✅ Post 5 (Now)", "callback_data": "ts"}], sch] + pre}
 
 
 def _tt_status_text(done, text=""):

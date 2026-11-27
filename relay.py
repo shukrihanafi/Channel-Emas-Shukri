@@ -7,7 +7,7 @@ Video disokong sehingga 20 MB (had muat turun bot Telegram). Mesej bermula denga
 C) Video siap edit: dihantar ke chat peribadi OLEH BOT (send_for_approval.py) dengan butang. Tiada apa disiar sehingga Shukri tekan
    Approve sekarang / pilih jadual. Butang diproses di sini (callback_query); item dijadual disimpan dalam state["relay"]["pending"].
 """
-import os, re, tempfile, json
+import os, re, tempfile, json, html
 from datetime import datetime, timedelta, timezone
 import requests
 import whapi, fb
@@ -754,6 +754,7 @@ def _dash_text(rs, ntesti=0):
               or (v.get("type", "Video") != "Video" and v.get("delivered") and old(v, 48))]:
         del vids[k]
     link = lambda v: _msg_link(v.get("chat"), v.get("mid")) or "(MEDIA APPROVAL)"
+    ttl = lambda v: (f"🎬 {html.escape(v['title'])}\n" if v.get("title") else "")
     today = now.astimezone(MYT).date()
 
     def when(v):
@@ -777,24 +778,24 @@ def _dash_text(rs, ntesti=0):
             continue  # Approve terus siar: rujuk laporan Channel Emas Shukri
         (vcnt if isv else ncnt).append(v["status"])
         if v["status"] == "Schedule" and v.get("due"):
-            sched.append((v["due"], v["mid"], f"{ic} {typ} {when(v)}\nLink : {link(v)}"))
+            sched.append((v["due"], v["mid"], f"{ic} {typ} {when(v)}\n{ttl(v)}Link : {link(v)}"))
         else:
-            pend.append((v["mid"], f"{ic} #BelumPost {typ} : {link(v)}"))
+            pend.append((v["mid"], f"{ic} #BelumPost {typ}\n{ttl(v)}Link : {link(v)}"))
     for v in vids.values():
         if v.get("tt") == "Belum":  # yang sudah Done tidak perlu dalam laporan
             tcnt.append("Belum")
-            tk.append((False, v["mid"], f"🟡 Video #TikTok_Belum\nLink : {link(v)}"))
+            tk.append((False, v["mid"], f"🟡 Video #TikTok_Belum\n{ttl(v)}Link : {link(v)}"))
     yl, ycnt = [], []
     for v in vids.values():
         if v.get("yt") == "Belum":
             ycnt.append("Belum")
-            yl.append((v["mid"], f"🟡 Video #YouTube_Belum\nLink : {link(v)}"))
+            yl.append((v["mid"], f"🟡 Video #YouTube_Belum\n{ttl(v)}Link : {link(v)}"))
     yl.sort()
     fl, fcnt = [], []
     for v in vids.values():
         if v.get("fb") == "Belum":
             fcnt.append("Belum")
-            fl.append((v["mid"], f"⭐️ Video #FB_Belum\nLink : {link(v)}"))
+            fl.append((v["mid"], f"⭐️ Video #FB_Belum\n{ttl(v)}Link : {link(v)}"))
     fl.sort()
     sched.sort(key=lambda x: x[:2])
     pend.sort()
@@ -947,6 +948,62 @@ def _fix_sched_labels(rs, base):
         rec["lblfix"] = True
 
 
+def _read_title(path):
+    """Baca tajuk pada thumbnail video (0.1 saat pertama) guna Claude; kosong jika gagal."""
+    key = os.getenv("ANTHROPIC_API_KEY")
+    if not key:
+        return ""
+    import base64
+    import news
+    data = base64.b64encode(open(path, "rb").read()).decode()
+    mt = "image/png" if path.lower().endswith(".png") else "image/jpeg"
+    r = requests.post("https://api.anthropic.com/v1/messages", timeout=90,
+                      headers={"x-api-key": key, "anthropic-version": "2023-06-01", "content-type": "application/json"},
+                      json={"model": news.MODEL, "max_tokens": 120, "messages": [{"role": "user", "content": [
+                          {"type": "image", "source": {"type": "base64", "media_type": mt, "data": data}},
+                          {"type": "text", "text": "Ini thumbnail video. Baca TAJUK utama yang tertulis pada gambar (huruf besar di atas). Abaikan 'shukriee.com'. "
+                                                   "Balas tajuk itu sahaja, satu baris, tanpa tanda petik. Jika tiada tulisan, balas 'TIADA'."}]}]})
+    r.raise_for_status()
+    t = "".join(b.get("text", "") for b in r.json().get("content", []) if b.get("type") == "text").strip().splitlines()
+    t = (t[0] if t else "").strip().strip('"')
+    return "" if not t or t.upper().startswith("TIADA") else t[:80]
+
+
+def _fill_titles(rs, base, token, owner):
+    """Tambah tajuk (daripada thumbnail video) pada rekod yang akan dipaparkan dalam laporan pinned. Maksimum 3 setiap larian."""
+    n = 0
+    for v in list(rs.get("vids", {}).values()):
+        if n >= 3:
+            break
+        if v.get("title") is not None or v.get("type", "Video") != "Video" or not v.get("chat") or not v.get("mid"):
+            continue
+        if v.get("delivered") and v.get("tt") != "Belum" and v.get("yt") != "Belum" and v.get("fb") != "Belum":
+            continue
+        n += 1
+        title = ""
+        try:
+            f = _tg(base, "forwardMessage", chat_id=owner, from_chat_id=v["chat"], message_id=v["mid"], disable_notification="true")
+            m = f.json().get("result") if f is not None else None
+            if not m:
+                v["title_tries"] = v.get("title_tries", 0) + 1
+                if v["title_tries"] >= 3:
+                    v["title"] = ""
+                continue
+            _tg(base, "deleteMessage", chat_id=owner, message_id=m["message_id"])
+            vd = m.get("video") or {}
+            th = vd.get("thumbnail") or vd.get("thumb") or {}
+            if th.get("file_id"):
+                title = _read_title(_fetch_file(base, token, th["file_id"]))
+            if not title:
+                title = next((l.strip() for l in (m.get("caption") or "").splitlines() if l.strip() and not l.strip().lower().startswith(("amboi", "shukriee"))), "")[:60]
+        except Exception as e:
+            print("Tajuk thumbnail gagal:", str(e)[:120])
+            v["title_tries"] = v.get("title_tries", 0) + 1
+            if v["title_tries"] < 3:
+                continue
+        v["title"] = title
+
+
 def _refresh_buttons(rs, base):
     """Butang Schedule pada media yang belum diputuskan mesti sentiasa tunjuk slot terkini (bukan tarikh lama semasa media dihantar).
     Semak setiap larian; hanya edit mesej bila label berubah (maksimum 8 sehari-larian)."""
@@ -993,6 +1050,7 @@ def run(st, notify=print, poll=0):
         _fix_delivered(rs, base)
         _refresh_buttons(rs, base)
         _fix_sched_labels(rs, base)
+        _fill_titles(rs, base, token, owner)
     except Exception as e:
         print("Kemas kini butang gagal:", e)
     tg_channel = os.getenv("TELEGRAM_CHANNEL", "").strip()

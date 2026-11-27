@@ -301,11 +301,11 @@
       "163": {
         "chat": "-1004451110392",
         "mid": 163,
-        "status": "BelumPost",
+        "status": "Approve",
         "type": "Video",
         "delivered": true,
         "done_at": "2026-11-27T07:31:11.948979+00:00",
-        "fixed": true,
+        "fixed": false,
         "tt": "Belum",
         "yt": "Belum",
         "lbl": "⏰ Schedule @ 27/11 (Fri) 23:15"

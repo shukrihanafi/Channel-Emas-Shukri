@@ -190,20 +190,15 @@ def _yt_keyboard(done):
 def yt_reminder(base, owner, text, mid, notify=print):
     """Peringatan YouTube Shorts manual: status (#YouTube_Belum) + butang, kemudian tajuk dan keterangan siap salin."""
     _tg(base, "sendMessage", chat_id=owner, text=_yt_status_text(False, text) + "\n\n"
-        "1) Simpan video ke galeri\n2) YouTube > + > Muat naik Shorts > tampal tajuk dan keterangan di bawah\n3) Siar, kemudian tekan butang di bawah",
+        "1) Simpan video di atas ke galeri\n2) YouTube > + > Muat naik Shorts > salin caption daripada video di atas\n3) Siar, kemudian tekan butang di bawah",
         reply_to_message_id=mid, reply_markup=json.dumps(_yt_keyboard(False)))
-    title = (_first_line(text)[:85].rstrip() + " #Shorts").replace("`", "'")
-    desc = ((text or "").strip() + "\n\n#Shorts #emas #goldbar").replace("`", "'")[:4900]
-    _tg(base, "sendMessage", chat_id=owner, text=f"```\n{title}\n```\n```\n{desc}\n```", parse_mode="Markdown", reply_to_message_id=mid)
 
 
 def tt_reminder(base, owner, text, mid, notify=print):
     """Peringatan TikTok manual: mesej status (#TikTok_Belum) dengan butang 'Dah post', diikuti caption siap salin. Tanpa Claude."""
     sresp = _tg(base, "sendMessage", chat_id=owner, text=_tt_status_text(False, text) + "\n\n"
-        "1) Simpan video di atas ke galeri\n2) TikTok > Upload > tampal caption di bawah\n3) Siar atau jadual, kemudian tekan butang di bawah",
+        "1) Simpan video di atas ke galeri\n2) TikTok > Upload > salin caption daripada video di atas\n3) Siar atau jadual, kemudian tekan butang di bawah",
         reply_to_message_id=mid, reply_markup=json.dumps(_tt_keyboard(False)))
-    cap = (text or "").replace("`", "'")
-    _tg(base, "sendMessage", chat_id=owner, text=f"```\n{cap}\n```", parse_mode="Markdown", reply_to_message_id=mid)
 
 
 def _next_slot(hour, tomorrow=False):
@@ -840,6 +835,7 @@ def _mark_done(base, rec):
     _tg(base, "editMessageReplyMarkup", chat_id=chat, message_id=mid,
         reply_markup=json.dumps({"inline_keyboard": [[{"text": "✅ Sudah disiar ke 5 platform", "callback_data": "noop"}]]}))
     rec["fixed"] = True
+    rec["status"] = "Approve"  # supaya _refresh_buttons tidak pasang semula butang lama
 
 
 def _fix_delivered(rs, base):
@@ -848,7 +844,7 @@ def _fix_delivered(rs, base):
     for v in list(rs.get("vids", {}).values()):
         if n >= 5:
             break
-        if v.get("delivered") and not v.get("fixed") and v.get("status") in ("Schedule", "Approve"):
+        if v.get("delivered") and not v.get("fixed"):
             _mark_done(base, v)
             n += 1
 
@@ -860,7 +856,7 @@ def _refresh_buttons(rs, base):
     for v in list(rs.get("vids", {}).values()):
         if n >= 8:
             break
-        if v.get("status") != "BelumPost" or not v.get("chat") or not v.get("mid"):
+        if v.get("status") != "BelumPost" or v.get("delivered") or not v.get("chat") or not v.get("mid"):
             continue
         key = f"a{v['mid']}"
         if key in pend or v["mid"] in cbdone:

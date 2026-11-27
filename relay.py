@@ -161,9 +161,10 @@ def approval_keyboard(page="main", kind="video", taken=(), rs=None, exclude=None
         skip = (rs or {}).get("vids", {}).get(str(exclude or "")[1:], {})
     except Exception:
         pass
-    pre = [{"text": "✅ TikTok: DonePost" if skip.get("tt_skip") else "📣 TikTok: DonePost", "callback_data": "tkp"},
-           {"text": "✅ YouTube: DonePost" if skip.get("yt_skip") else "▶️ YouTube: DonePost", "callback_data": "ytp"}]
-    return {"inline_keyboard": [[{"text": "✅ Post 5 (Now) + TikTok Manual", "callback_data": "ts"}], sch, pre]}
+    pre = [[{"text": "✅ FB Personal: DonePost" if skip.get("fb_skip") else "⭐️ FB Personal: DonePost", "callback_data": "fbp"}],
+           [{"text": "✅ TikTok: DonePost" if skip.get("tt_skip") else "📣 TikTok: DonePost", "callback_data": "tkp"}],
+           [{"text": "✅ YouTube: DonePost" if skip.get("yt_skip") else "▶️ YouTube: DonePost", "callback_data": "ytp"}]]
+    return {"inline_keyboard": [[{"text": "✅ Post 5 (Now) + TikTok Manual", "callback_data": "ts"}], sch] + pre}
 
 
 def _tt_status_text(done, text=""):
@@ -192,6 +193,25 @@ def _yt_status_text(done, text=""):
 def _yt_keyboard(done):
     return {"inline_keyboard": [[{"text": "↩️ Batal (belum post)", "callback_data": "ytu"}] if done else
                                 [{"text": "✅ Dah post di YouTube", "callback_data": "ytd"}]]}
+
+
+def _fb_status_text(done, text=""):
+    """Status FB Personal manual: #FB_Belum / #FB_Done."""
+    first = _first_line(text)
+    head = ("✅ FB Personal: SUDAH POST\n#FB_Done" if done else "⏳ FB Personal: BELUM POST\n#FB_Belum")
+    return head + (f"\n⭐️ {first[:60]}" if first else "")
+
+
+def _fb_keyboard(done):
+    return {"inline_keyboard": [[{"text": "↩️ Batal (belum post)", "callback_data": "fbu"}] if done else
+                                [{"text": "✅ Dah post di FB Personal", "callback_data": "fbd"}]]}
+
+
+def fb_reminder(base, owner, text, mid, notify=print):
+    """Peringatan FB Personal manual: satu mesej status (#FB_Belum) + butang 'Dah post'."""
+    _tg(base, "sendMessage", chat_id=owner, text=_fb_status_text(False, text) + "\n\n"
+        "1) Simpan video di atas ke galeri\n2) Facebook profil > Apa yang anda fikirkan > tambah video, salin caption daripada video di atas\n3) Siar, kemudian tekan butang di bawah",
+        reply_to_message_id=mid, reply_markup=json.dumps(_fb_keyboard(False)))
 
 
 def yt_reminder(base, owner, text, mid, notify=print):
@@ -561,14 +581,29 @@ def _handle_callback(rs, cb, owner, base, notify):
     if data == "bk":
         mark(kb())
         return ans("")
-    if data in ("tkp", "ytp"):  # tanda TikTok / YouTube sudah (atau akan) di-post sendiri, tidak perlu tunggu siaran 5 platform
+    if data in ("fbd", "fbu"):  # status FB Personal manual
+        isdone = data == "fbd"
+        body = (m.get("text") or "")
+        first = next((l[2:].strip() for l in body.splitlines() if l.startswith("⭐️")), "")
+        steps = body.split("\n\n", 1)[1] if "\n\n" in body else ""
+        txt = _fb_status_text(isdone, first) + ("\n\n" + steps if steps else "")
+        _tg(base, "editMessageText", chat_id=chat, message_id=mid, text=txt, reply_markup=json.dumps(_fb_keyboard(isdone)))
+        vm = (m.get("reply_to_message") or {}).get("message_id")
+        if vm:
+            rec = _vrec(rs, chat, vm)
+            rec["fb"] = "Done" if isdone else "Belum"
+            rec["delivered"] = True
+            if isdone:
+                rec["fb_done_at"] = _now().isoformat()
+        return ans("Ditanda: sudah post ✅" if isdone else "Ditanda: belum post")
+    if data in ("tkp", "ytp", "fbp"):  # tanda TikTok / YouTube sudah (atau akan) di-post sendiri, tidak perlu tunggu siaran 5 platform
         if key in pend or mid in done:
             return ans("Sudah diproses.")
         rec = _vrec(rs, chat, mid)
-        f = "tt_skip" if data == "tkp" else "yt_skip"
+        f = {"tkp": "tt_skip", "ytp": "yt_skip", "fbp": "fb_skip"}[data]
         rec[f] = not rec.get(f)
         mark(kb())
-        nm = "TikTok" if data == "tkp" else "YouTube"
+        nm = {"tkp": "TikTok", "ytp": "YouTube", "fbp": "FB Personal"}[data]
         return ans(f"{nm}: tiada peringatan 'belum post' selepas siaran ✅" if rec[f] else f"{nm}: peringatan dihidupkan semula")
     if not (vid or photo or m.get("text")):
         return ans("Mesej ini bukan media kelulusan.")
@@ -668,6 +703,11 @@ def _process_pending(st, rs, base, token, tg_channel, notify):
                 else:
                     yt_reminder(base, ch, it["text"], it.get("mid"), notify)
                     rec["yt"] = "Belum"
+                if rec.get("fb_skip"):
+                    rec["fb"] = "Done"
+                else:
+                    fb_reminder(base, ch, it["text"], it.get("mid"), notify)
+                    rec["fb"] = "Belum"
         except Exception as e:
             it["tries"] = it.get("tries", 0) + 1
             if it["tries"] >= 5:
@@ -697,9 +737,9 @@ def _dash_text(rs, ntesti=0):
             rec["due"] = it["due"]
     old = lambda v, h: v.get("done_at") and now - datetime.fromisoformat(v["done_at"]) > timedelta(hours=h)
     def alldone(v):
-        return v.get("tt") != "Belum" and v.get("yt") != "Belum" and (v.get("tt") == "Done" or v.get("yt") == "Done")
+        return v.get("tt") != "Belum" and v.get("yt") != "Belum" and v.get("fb") != "Belum" and (v.get("tt") == "Done" or v.get("yt") == "Done")
     for k in [k for k, v in vids.items() if (alldone(v) and old(v, 48))
-              or (v.get("type", "Video") == "Video" and v.get("delivered") and not v.get("tt") and not v.get("yt"))
+              or (v.get("type", "Video") == "Video" and v.get("delivered") and not v.get("tt") and not v.get("yt") and not v.get("fb"))
               or (v.get("type", "Video") != "Video" and v.get("delivered") and old(v, 48))]:
         del vids[k]
     link = lambda v: _msg_link(v.get("chat"), v.get("mid")) or "(MEDIA APPROVAL)"
@@ -739,6 +779,12 @@ def _dash_text(rs, ntesti=0):
             ycnt.append("Belum")
             yl.append((v["mid"], f"🟡 Video #YouTube_Belum\nLink : {link(v)}"))
     yl.sort()
+    fl, fcnt = [], []
+    for v in vids.values():
+        if v.get("fb") == "Belum":
+            fcnt.append("Belum")
+            fl.append((v["mid"], f"⭐️ Video #FB_Belum\nLink : {link(v)}"))
+    fl.sort()
     sched.sort(key=lambda x: x[:2])
     pend.sort()
     tk.sort(key=lambda x: x[:2])
@@ -762,13 +808,19 @@ def _dash_text(rs, ntesti=0):
         L += [f"{n}. {x[1]}", ""]
     if not yl:
         L += ["Tiada video YouTube dalam senarai.", ""]
+    L += ["<b>5️⃣ FB PERSONAL POST</b>", ""]
+    for n, x in enumerate(fl, 1):
+        L += [f"{n}. {x[1]}", ""]
+    if not fl:
+        L += ["Tiada video FB Personal dalam senarai.", ""]
     leg = lambda ic, name, c, empty: [f"{ic} {name}", f"Jumlah: {count(c)}" if c else empty, ""]
-    L += ["<b>5️⃣ LEGEND</b>", ""] + leg("🔴", "VIDEO @ 5 PLATFORM", vcnt, "Tiada video dalam proses.") \
+    L += ["<b>6️⃣ LEGEND</b>", ""] + leg("🔴", "VIDEO @ 5 PLATFORM", vcnt, "Tiada video dalam proses.") \
         + leg("🟡", "VIDEO @ TIKTOK", tcnt, "Tiada video TikTok dalam senarai.") \
         + leg("▶️", "VIDEO @ YOUTUBE", ycnt, "Tiada video YouTube dalam senarai.") \
+        + leg("⭐️", "VIDEO @ FB PERSONAL", fcnt, "Tiada video FB Personal dalam senarai.") \
         + leg("🟢", "NON VIDEO @ 5 PLATFORM", ncnt, "Tiada gambar / ayat dalam senarai.") \
-        + ["<b>6️⃣ 🙋🏻‍♂️ TESTIMONI (Auto push)</b>", f"Jumlah: {ntesti}", "",
-           "<b>7️⃣ HASHTAG SEARCH</b>", "", "#Schedule", "#BelumPost", "#DonePost", "#TikTok_Belum", "#TikTok_Done", "#YouTube_Belum", "#YouTube_Done", "#testimoni"]
+        + ["<b>7️⃣ 🙋🏻‍♂️ TESTIMONI (Auto push)</b>", f"Jumlah: {ntesti}", "",
+           "<b>8️⃣ HASHTAG SEARCH</b>", "", "#Schedule", "#BelumPost", "#DonePost", "#TikTok_Belum", "#TikTok_Done", "#YouTube_Belum", "#YouTube_Done", "#FB_Belum", "#FB_Done", "#testimoni"]
     return "\n".join(L)
 
 

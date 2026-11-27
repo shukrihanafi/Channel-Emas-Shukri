@@ -161,8 +161,8 @@ def approval_keyboard(page="main", kind="video", taken=(), rs=None, exclude=None
         skip = (rs or {}).get("vids", {}).get(str(exclude or "")[1:], {})
     except Exception:
         pass
-    pre = [{"text": "✅ TikTok: dah post sendiri" if skip.get("tt_skip") else "📣 TikTok: aku post sendiri", "callback_data": "tkp"},
-           {"text": "✅ YouTube: dah post sendiri" if skip.get("yt_skip") else "▶️ YouTube: aku post sendiri", "callback_data": "ytp"}]
+    pre = [{"text": "✅ TikTok: DonePost" if skip.get("tt_skip") else "📣 TikTok: DonePost", "callback_data": "tkp"},
+           {"text": "✅ YouTube: DonePost" if skip.get("yt_skip") else "▶️ YouTube: DonePost", "callback_data": "ytp"}]
     return {"inline_keyboard": [[{"text": "✅ Post 5 (Now) + TikTok Manual", "callback_data": "ts"}], sch, pre]}
 
 

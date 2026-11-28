@@ -138,7 +138,8 @@
     "2026-11-28|07:09": "07:10",
     "2026-11-28|08:09": "08:10",
     "2026-11-28|08:39": "08:39",
-    "2026-11-28|10:09": "10:09"
+    "2026-11-28|10:09": "10:09",
+    "2026-11-28|13:09": "13:10"
   },
   "news": {
     "posted": [
@@ -168,9 +169,10 @@
       "https://theedgemalaysia.com/node/826985",
       "https://www.bernama.com/bm/pasaran/news.php?id=2638373",
       "https://www.kitco.com/news/article/2026-11-25/gold-silver-reverse-early-losses-wall-street-rebounds-ahead-thanksgiving",
-      "https://goldseek.com/article/gold-wavers-after-battering-traders-assess-fed-path-ai-angst"
+      "https://goldseek.com/article/gold-wavers-after-battering-traders-assess-fed-path-ai-angst",
+      "https://theedgemalaysia.com/node/827582"
     ],
-    "rot": 5,
+    "rot": 1,
     "imgs": [
       "bar-bd-img-06.jpg",
       "bar-bd-vid-01.jpg",
@@ -475,7 +477,7 @@
   },
   "wa_usage": {
     "month": "2026-11",
-    "n": 246,
+    "n": 247,
     "day": "2026-11-28",
     "alerts": 0
   },
